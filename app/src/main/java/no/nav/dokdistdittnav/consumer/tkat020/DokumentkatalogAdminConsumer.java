@@ -70,6 +70,15 @@ class DokumentkatalogAdminConsumer implements DokumentkatalogAdmin {
 					.getDokumenttypeId(), response.getDokumentType()));
 		}
 		return DokumenttypeInfoTo.builder()
+				.dokumenttypeId(response.getDokumenttypeId())
+				.dokumentTittel(response.getDokumentTittel())
+				.vedlegg(response.getDokumentProduksjonsInfo().getVedlegg())
+				.ikkeRedigerbarMalId(response.getDokumentProduksjonsInfo().getIkkeRedigerbarMalId())
+				.redigerbarMalId(response.getDokumentProduksjonsInfo().getRedigerbarMalId())
+				.malLogikkFil(response.getDokumentProduksjonsInfo().getMalLogikkFil())
+				.malXsdReferanse(response.getDokumentProduksjonsInfo().getMalXsdReferanse())
+				.dokumentKategori(response.getDokumentKategori())
+				.sensitivt(response.getSensitivt())
 				.konvoluttvinduType(response.getDokumentProduksjonsInfo().getDistribusjonInfo().getKonvoluttvinduType())
 				.sentralPrintDokumentType(response.getDokumentProduksjonsInfo().getDistribusjonInfo()
 						.getSentralPrintDokumentType())
