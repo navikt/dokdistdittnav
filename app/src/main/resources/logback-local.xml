@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<included>
+	<include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>[%t, %d, %-5p, %C:%L] - %.-100000m%n</pattern>
+		</encoder>
+	</appender>
+
+	<root level="WARN">
+		<appender-ref ref="CONSOLE"/>
+	</root>
+
+	<logger name="no.nav.dokdistdittnav" level="INFO" additivity="false">
+		<appender-ref ref="CONSOLE"/>
+	</logger>
+
+	<!--<logger name="org.apache.camel.component.file.remote" level="TRACE" additivity="false">-->
+		<!--<appender-ref ref="CONSOLE"/>-->
+	<!--</logger>-->
+	<!--<logger name="org.apache.sshd" level="TRACE" additivity="false">-->
+		<!--<appender-ref ref="CONSOLE"/>-->
+	<!--</logger>-->
+	<!--<logger name="com.github.tomakehurst.wiremock" level="ERROR" additivity="false">-->
+		<!--<appender-ref ref="CONSOLE"/>-->
+	<!--</logger>-->
+	<!--<logger name="org.springframework" level="ERROR" additivity="false">-->
+		<!--<appender-ref ref="CONSOLE"/>-->
+	<!--</logger>-->
+	<!--<logger name="org.apache.activemq" level="ERROR" additivity="false">-->
+		<!--<appender-ref ref="CONSOLE"/>-->
+	<!--</logger>-->
+	<!--<logger name="wiremock.org" level="ERROR" additivity="false">-->
+		<!--<appender-ref ref="CONSOLE"/>-->
+	<!--</logger>-->
+	<!--<logger name="com.jcraft.jsch" level="TRACE" additivity="false">-->
+	<!--<appender-ref ref="CONSOLE"/>-->
+	<!--</logger>-->
+
+</included>

@@ -1,0 +1,52 @@
+team: teamdokumenthandtering
+image: "repo.adeo.no:5443/dok/dokdistdittnav"
+replicas:
+  min: 1
+  max: 2
+  cpuThresholdPercentage: 50
+port: 8080
+healthcheck:
+  liveness:
+    path: /isAlive
+    initialDelay: 30
+    failureThreshold: 10
+  readiness:
+    path: /isReady
+    initialDelay: 30
+    timeout: 3
+prometheus:
+  enabled: true
+  path: /actuator/prometheus
+resources:
+  limits:
+    cpu: 3000m
+    memory: 1024Mi
+fasitResources:
+  used:
+  - alias: srvdokdistdittnav
+    resourceType: credential
+    propertyMap:
+      username: serviceuser_username
+      password: serviceuser_password
+  - alias: dokdistsentralprint_s3_creds
+    resourceType: credential
+  - alias: dokdistmellomlager_s3_storage_crypto
+    resourceType: credential
+  - alias: DokumenttypeInfo_v4
+    resourceType: restservice
+  - alias: administrerforsendelse_v1
+    resourceType: restservice
+  - alias: securityTokenService
+    resourceType: baseurl
+  - alias: dokdistsentralprint_channel
+    resourceType: channel
+    propertyMap:
+      name: dokdistsentralprint_channel_name
+  - alias: mqGateway01
+    resourceType: queueManager
+  - alias: dokdistsentralprint_qdist009_funk_feil
+    resourceType: queue
+  - alias: dokdistsentralprint_qdist009_dist_s_print
+    resourceType: queue
+
+

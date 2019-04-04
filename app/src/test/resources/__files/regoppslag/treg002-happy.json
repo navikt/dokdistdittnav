@@ -1,0 +1,13 @@
+{
+  "identifikator":"1234567213",
+  "navn":"John Johnson",
+  "adresse": {
+    "adresselinje1":"linje1",
+    "adresselinje2":"linje2",
+    "adresselinje3":"linje3",
+    "postnummer":"3020",
+    "poststed":"Drammen",
+    "landkode": "TR"
+  }
+
+}

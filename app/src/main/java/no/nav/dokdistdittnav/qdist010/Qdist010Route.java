@@ -1,0 +1,88 @@
+package no.nav.dokdistdittnav.qdist010;
+
+import static org.apache.camel.LoggingLevel.ERROR;
+
+import no.nav.dokdistdittnav.constants.MdcConstants;
+import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdisttnavFunctionalException;
+import no.nav.dokdistdittnav.metrics.Qdist010MetricsRoutePolicy;
+import org.apache.camel.ExchangePattern;
+import org.apache.camel.LoggingLevel;
+import org.apache.camel.converter.jaxb.JaxbDataFormat;
+import org.apache.camel.spring.SpringRouteBuilder;
+import org.slf4j.MDC;
+import org.springframework.stereotype.Component;
+
+import javax.inject.Inject;
+import javax.jms.Queue;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+
+
+/**
+ * @author Sigurd Midttun, Visma Consulting.
+ */
+@Component
+public class Qdist010Route extends SpringRouteBuilder {
+
+	public static final String SERVICE_ID = "qdist010";
+	static final String PROPERTY_BESTILLINGS_ID = "bestillingsId";
+	static final String PROPERTY_FORSENDELSE_ID = "forsendelseId";
+
+	private final Qdist010Service qdist010Service;
+	private final DistribuerForsendelseTilSentralPrintValidatorAndMapper distribuerForsendelseTilSentralPrintValidatorAndMapper;
+	private final DokdistStatusUpdater dokdistStatusUpdater;
+	private final Queue qdist009;
+	private final Queue qdist009FunksjonellFeil;
+	private final Qdist010MetricsRoutePolicy qdist010MetricsRoutePolicy;
+
+	@Inject
+	public Qdist010Route(Qdist010Service qdist010Service,
+						 DistribuerForsendelseTilSentralPrintValidatorAndMapper distribuerForsendelseTilSentralPrintValidatorAndMapper,
+						 DokdistStatusUpdater dokdistStatusUpdater,
+						 Queue qdist009,
+						 Queue qdist009FunksjonellFeil,
+						 Qdist010MetricsRoutePolicy qdist010MetricsRoutePolicy) {
+		this.qdist010Service = qdist010Service;
+		this.distribuerForsendelseTilSentralPrintValidatorAndMapper = distribuerForsendelseTilSentralPrintValidatorAndMapper;
+		this.dokdistStatusUpdater = dokdistStatusUpdater;
+		this.qdist009 = qdist009;
+		this.qdist009FunksjonellFeil = qdist009FunksjonellFeil;
+		this.qdist010MetricsRoutePolicy = qdist010MetricsRoutePolicy;
+	}
+
+	@Override
+	public void configure() throws Exception {
+		errorHandler(defaultErrorHandler()
+				.maximumRedeliveries(0)
+				.log(log)
+				.logExhaustedMessageBody(true)
+				.loggingLevel(ERROR));
+
+		onException(AbstractDokdistdisttnavFunctionalException.class, JAXBException.class)
+				.handled(true)
+				.useOriginalMessage()
+				.log(LoggingLevel.WARN, log, "${exception}; " + getIdsForLogging())
+				.to("jms:" + qdist009FunksjonellFeil.getQueueName());
+
+		from("jms:" + qdist009.getQueueName() +
+				"?transacted=true")
+				.routeId(SERVICE_ID)
+				.routePolicy(qdist010MetricsRoutePolicy)
+				.setExchangePattern(ExchangePattern.InOnly)
+				.doTry()
+				.setProperty(PROPERTY_BESTILLINGS_ID, simple("${in.header.callId}", String.class))
+				.setProperty(PROPERTY_FORSENDELSE_ID, xpath("//forsendelseId/text()", String.class))
+				.log(LoggingLevel.INFO, log, "qdist010 har mottatt forsendelse med " + getIdsForLogging())
+				.process(exchange -> MDC.put(MdcConstants.CALL_ID, (String) exchange.getProperty(PROPERTY_BESTILLINGS_ID)))
+				.doCatch(Exception.class)
+				.end()
+				.unmarshal(new JaxbDataFormat(JAXBContext.newInstance(DistribuerForsendelseTilSentralPrint.class)))
+				.bean(distribuerForsendelseTilSentralPrintValidatorAndMapper)
+				.bean(qdist010Service);
+	}
+
+	public static String getIdsForLogging() {
+		return "bestillingsId=${exchangeProperty." + PROPERTY_BESTILLINGS_ID + "} og " +
+				"forsendelseId=${exchangeProperty." + PROPERTY_FORSENDELSE_ID + "}";
+	}
+}

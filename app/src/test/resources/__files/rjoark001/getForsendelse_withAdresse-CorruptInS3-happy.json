@@ -1,0 +1,16 @@
+{
+  "bestillingsId": "insertCallIdHere",
+  "forsendelseStatus": "KLAR_FOR_DIST",
+  "mottaker": {
+    "mottakerId": "mottakerId",
+    "mottakerNavn": "mottakerNavn",
+    "mottakerType": "PERSON"
+  },
+  "dokumenter": [
+    {
+      "tilknyttetSom": "HOVEDDOKUMENT",
+      "dokumentObjektReferanse": "dokumentObjektReferanseHoveddokCorrupt",
+      "dokumenttypeId": "dokumenttypeIdHoveddok"
+    }
+  ]
+}

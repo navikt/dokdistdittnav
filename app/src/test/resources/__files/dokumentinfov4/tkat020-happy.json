@@ -1,0 +1,118 @@
+{
+  "dokumenttypeId": "000073",
+  "dokumentTittel": "Vedtak – omregning til enslig uføretrygdet (automatisk)",
+  "dokumentType": "U",
+  "dokumentKategori": "B",
+  "sensitivt": true,
+  "utledRegisterInfo": false,
+  "tema": null,
+  "behandlingstema": null,
+  "arkivSystem": "JOARK",
+  "artifaktId": null,
+  "dokumentProduksjonsInfo": {
+    "vedlegg": false,
+    "eksternVedlegg": false,
+    "ikkeRedigerbarMalId": "MF_000073",
+    "redigerbarMalId": null,
+    "malLogikkFil": "Pesys01",
+    "malXsdReferanse": "pesysbrev01/v1.000073.xsd",
+    "spraakInfos": [],
+    "distribusjonInfo": {
+      "predefinertDistKanal": null,
+      "portoklasse": "B",
+      "sikkerhetsnivaa": 4,
+      "tosidigPrint": true,
+      "sentralPrintDokumentType": "NAV_STANDARD",
+      "konvoluttvinduType": "X",
+      "distribusjonVarsels": [
+        {
+          "varseltypeId": "DittNAV_000004",
+          "varselForDistribusjonKanal": "DITT_NAV",
+          "changeStamp": {
+            "opprettetAv": "srvdokkat",
+            "opprettetDato": [
+              2019,
+              2,
+              14,
+              12,
+              20,
+              3,
+              932000000
+            ],
+            "endretAv": null,
+            "endretDato": null
+          }
+        },
+        {
+          "varseltypeId": "SDP_000004",
+          "varselForDistribusjonKanal": "SDP",
+          "changeStamp": {
+            "opprettetAv": "srvdokkat",
+            "opprettetDato": [
+              2019,
+              2,
+              14,
+              12,
+              20,
+              3,
+              940000000
+            ],
+            "endretAv": null,
+            "endretDato": null
+          }
+        }
+      ],
+      "changeStamp": {
+        "opprettetAv": "srvdokkat",
+        "opprettetDato": [
+          2019,
+          2,
+          14,
+          12,
+          20,
+          3,
+          878000000
+        ],
+        "endretAv": null,
+        "endretDato": null
+      }
+    },
+    "changeStamp": {
+      "opprettetAv": "srvdokkat",
+      "opprettetDato": [
+        2019,
+        2,
+        8,
+        14,
+        17,
+        34,
+        896000000
+      ],
+      "endretAv": "srvdokkat",
+      "endretDato": [
+        2019,
+        2,
+        14,
+        12,
+        20,
+        3,
+        940000000
+      ]
+    }
+  },
+  "dokumentMottakInfo": null,
+  "changeStamp": {
+    "opprettetAv": "srvdokkat",
+    "opprettetDato": [
+      2019,
+      2,
+      8,
+      14,
+      17,
+      34,
+      891000000
+    ],
+    "endretAv": null,
+    "endretDato": null
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "bestillingsId": "insertCallIdHere",
+  "forsendelseStatus": "KLAR_FOR_DIST",
+  "mottaker": {
+    "mottakerId": "mottakerId",
+    "mottakerNavn": "mottakerNavn",
+    "mottakerType": "PERSON"
+  },
+  "postadresse": {
+    "adresselinje1": "adresselinjeEn",
+    "adresselinje2": "adresselinjeTo",
+    "adresselinje3": "adresselinjeTre",
+    "postnummer": "123",
+    "poststed": "poststed",
+    "landkode": "NO"
+  },
+  "dokumenter": [
+    {
+      "tilknyttetSom": "HOVEDDOKUMENT",
+      "dokumentObjektReferanse": "dokumentObjektReferanseHoveddok",
+      "dokumenttypeId": "dokumenttypeIdHoveddok"
+    },
+    {
+      "tilknyttetSom": "VEDLEGG",
+      "dokumentObjektReferanse": "dokumentObjektReferanseVedlegg1",
+      "dokumenttypeId": "dokumenttypeId2Vedlegg1"
+    },
+    {
+      "tilknyttetSom": "VEDLEGG",
+      "dokumentObjektReferanse": "dokumentObjektReferanseVedlegg2",
+      "dokumenttypeId": "dokumenttypeIdVedlegg2"
+    }
+  ]
+}
