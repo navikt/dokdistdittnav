@@ -60,7 +60,7 @@ public class S3Storage implements Storage {
 		try {
 			object = s3.getObject(BUCKET_NAME, key);
 		} catch (AmazonS3Exception ex) {
-			log.warn("Kunne ikke hente objekt fra dokdistmellomlager med nøkkel={}. Årsaken er sanssynligvis at objektet ikke finnes.");
+			log.warn("Kunne ikke hente objekt fra dokdistmellomlager med nøkkel={}. Årsaken er sanssynligvis at objektet ikke finnes.", key);
 			return null;
 		}
 
