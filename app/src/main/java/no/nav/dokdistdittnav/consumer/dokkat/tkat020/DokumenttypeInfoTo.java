@@ -1,4 +1,4 @@
-package no.nav.dokdistdittnav.consumer.tkat020;
+package no.nav.dokdistdittnav.consumer.dokkat.tkat020;
 
 import lombok.Builder;
 import lombok.Value;
@@ -24,5 +24,7 @@ public class DokumenttypeInfoTo {
 	private final String konvoluttvinduType;
 	private final String sentralPrintDokumentType;
 	private final boolean tosidigprint;
+	private final String varselTypeId;
+	private final boolean repeterendeVarsel;
 
 }

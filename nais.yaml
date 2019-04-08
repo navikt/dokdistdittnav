@@ -34,6 +34,8 @@ fasitResources:
     resourceType: credential
   - alias: DokumenttypeInfo_v4
     resourceType: restservice
+  - alias: VarselInfo_v1
+    resourceType: restservice
   - alias: administrerforsendelse_v1
     resourceType: restservice
   - alias: securityTokenService

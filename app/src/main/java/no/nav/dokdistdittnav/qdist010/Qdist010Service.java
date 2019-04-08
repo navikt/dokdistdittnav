@@ -5,6 +5,8 @@ import static no.nav.dokdistdittnav.qdist010.util.Qdist009FunctionalUtils.getDok
 import static no.nav.dokdistdittnav.qdist010.util.Qdist009FunctionalUtils.validateForsendelseStatus;
 
 import com.amazonaws.SdkClientException;
+import no.nav.dokdistdittnav.consumer.dokkat.tkat021.VarselInfo;
+import no.nav.dokdistdittnav.consumer.dokkat.tkat021.VarselInfoTo;
 import no.nav.dokdistdittnav.metrics.MetricUpdater;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.HentForsendelseResponseTo;
@@ -12,8 +14,8 @@ import no.nav.dokdistdittnav.consumer.rdist001.HentPostDestinasjonResponseTo;
 import no.nav.dokdistdittnav.consumer.regoppslag.Regoppslag;
 import no.nav.dokdistdittnav.consumer.regoppslag.to.AdresseTo;
 import no.nav.dokdistdittnav.consumer.regoppslag.to.HentAdresseRequestTo;
-import no.nav.dokdistdittnav.consumer.tkat020.DokumentkatalogAdmin;
-import no.nav.dokdistdittnav.consumer.tkat020.DokumenttypeInfoTo;
+import no.nav.dokdistdittnav.consumer.dokkat.tkat020.DokumentkatalogAdmin;
+import no.nav.dokdistdittnav.consumer.dokkat.tkat020.DokumenttypeInfoTo;
 import no.nav.dokdistdittnav.exception.functional.DokumentIkkeFunnetIS3Exception;
 import no.nav.dokdistdittnav.exception.functional.KunneIkkeDeserialisereS3JsonPayloadFunctionalException;
 import no.nav.dokdistdittnav.qdist010.domain.Adresse;
@@ -25,6 +27,7 @@ import org.apache.camel.Handler;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,6 +39,7 @@ import java.util.stream.Collectors;
 public class Qdist010Service {
 
 	private final DokumentkatalogAdmin dokumentkatalogAdmin;
+	private final VarselInfo varselInfo;
 	private final AdministrerForsendelse administrerForsendelse;
 	private final Regoppslag regoppslag;
 	private final Storage storage;
@@ -43,11 +47,13 @@ public class Qdist010Service {
 
 	@Inject
 	public Qdist010Service(DokumentkatalogAdmin dokumentkatalogAdmin,
+						   VarselInfo varselInfo,
 						   AdministrerForsendelse administrerForsendelse,
 						   Storage storage,
 						   Regoppslag regoppslag,
 						   MetricUpdater metricUpdater) {
 		this.dokumentkatalogAdmin = dokumentkatalogAdmin;
+		this.varselInfo = varselInfo;
 		this.administrerForsendelse = administrerForsendelse;
 		this.regoppslag = regoppslag;
 		this.storage = storage;
@@ -56,10 +62,12 @@ public class Qdist010Service {
 
 	@Handler
 	public void distribuerForsendelseTilSentralPrintService(DistribuerForsendelseTilSentralPrintTo distribuerForsendelseTilSentralPrintTo) {
-		HentForsendelseResponseTo hentForsendelseResponseTo = administrerForsendelse.hentForsendelse(distribuerForsendelseTilSentralPrintTo
-				.getForsendelseId());
+		HentForsendelseResponseTo hentForsendelseResponseTo = administrerForsendelse.hentForsendelse(
+				distribuerForsendelseTilSentralPrintTo
+						.getForsendelseId());
 		validateForsendelseStatus(hentForsendelseResponseTo.getForsendelseStatus());
-		DokumenttypeInfoTo dokumenttypeInfoTo = dokumentkatalogAdmin.getDokumenttypeInfo(getDokumenttypeIdHoveddokument(hentForsendelseResponseTo));
+		DokumenttypeInfoTo dokumenttypeInfoTo = dokumentkatalogAdmin.getDokumenttypeInfo(getDokumenttypeIdHoveddokument(
+				hentForsendelseResponseTo));
 		Adresse adresse = getAdresse(hentForsendelseResponseTo);
 		HentPostDestinasjonResponseTo hentPostDestinasjonResponseTo = administrerForsendelse.hentPostDestinasjon(adresse.getLandkode());
 
@@ -107,8 +115,10 @@ public class Qdist010Service {
 		return hentForsendelseResponseTo.getDokumenter().stream()
 				.map(dokumentTo -> {
 					String jsonPayload = storage.get(dokumentTo.getDokumentObjektReferanse())
-							.orElseThrow(() -> new DokumentIkkeFunnetIS3Exception(format("Kunne ikke finne dokument i S3 med key=dokumentObjektReferanse=%s", dokumentTo
-									.getDokumentObjektReferanse())));
+							.orElseThrow(() -> new DokumentIkkeFunnetIS3Exception(format(
+									"Kunne ikke finne dokument i S3 med key=dokumentObjektReferanse=%s",
+									dokumentTo
+											.getDokumentObjektReferanse())));
 					return deserializeS3JsonPayloadToDokdistDokument(jsonPayload, dokumentTo.getDokumentObjektReferanse());
 				})
 				.collect(Collectors.toList());
@@ -120,7 +130,9 @@ public class Qdist010Service {
 			dokdistDokument = JsonSerializer.deserialize(jsonPayload, DokdistDokument.class);
 			dokdistDokument.setDokumentObjektReferanse(objektReferanse);
 		} catch (SdkClientException e) {
-			throw new KunneIkkeDeserialisereS3JsonPayloadFunctionalException(format("Kunne ikke deserialisere jsonPayload fra s3 bucket for dokument med dokumentobjektreferanse=%s. Dokumentet er ikke persistert til s3 med korrekt format!", objektReferanse));
+			throw new KunneIkkeDeserialisereS3JsonPayloadFunctionalException(format(
+					"Kunne ikke deserialisere jsonPayload fra s3 bucket for dokument med dokumentobjektreferanse=%s. Dokumentet er ikke persistert til s3 med korrekt format!",
+					objektReferanse));
 		}
 		return dokdistDokument;
 	}

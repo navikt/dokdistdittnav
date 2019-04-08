@@ -1,11 +1,13 @@
-package no.nav.dokdistdittnav.consumer.tkat020;
+package no.nav.dokdistdittnav.consumer.dokkat.tkat020;
 
 import static java.lang.String.format;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistdittnav.config.alias.ServiceuserAlias;
 import no.nav.dokdistdittnav.config.cache.LokalCacheConfig;
+import no.nav.dokdistdittnav.constants.DomainConstants;
 import no.nav.dokdistdittnav.constants.RetryConstants;
+import no.nav.dokdistdittnav.consumer.dokkat.tkat021.VarselInfoConsumer;
 import no.nav.dokdistdittnav.exception.technical.Tkat020TechnicalException;
 import no.nav.dokdistdittnav.metrics.Monitor;
 import no.nav.dokdistdittnav.exception.functional.Tkat020FunctionalException;
@@ -22,6 +24,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
+
 import java.time.Duration;
 
 /**
@@ -33,6 +36,7 @@ class DokumentkatalogAdminConsumer implements DokumentkatalogAdmin {
 
 	private final String dokumenttypeInfoV4Url;
 	private final RestTemplate restTemplate;
+	private VarselInfoConsumer varselInfoConsumer;
 
 	@Inject
 	public DokumentkatalogAdminConsumer(@Value("${DokumenttypeInfo_v4_url}") String dokumenttypeInfoV4Url,
@@ -52,11 +56,16 @@ class DokumentkatalogAdminConsumer implements DokumentkatalogAdmin {
 	@Monitor(value = "dok_consumer", extraTags = {"process", "getDokumenttypeInfo"}, histogram = true)
 	public DokumenttypeInfoTo getDokumenttypeInfo(final String dokumenttypeId) {
 		try {
-			DokumentTypeInfoToV4 response = restTemplate.getForObject(this.dokumenttypeInfoV4Url + "/" + dokumenttypeId, DokumentTypeInfoToV4.class);
+			DokumentTypeInfoToV4 response = restTemplate.getForObject(this.dokumenttypeInfoV4Url + "/" + dokumenttypeId,
+					DokumentTypeInfoToV4.class);
 			return mapResponse(response);
 		} catch (HttpClientErrorException e) {
-			throw new Tkat020FunctionalException(format("TKAT020 feilet med statusKode=%s. Fant ingen dokumenttypeInfo med dokumenttypeId=%s. Feilmelding=%s", e
-					.getStatusCode(), dokumenttypeId, e.getResponseBodyAsString()), e);
+			throw new Tkat020FunctionalException(format(
+					"TKAT020 feilet med statusKode=%s. Fant ingen dokumenttypeInfo med dokumenttypeId=%s. Feilmelding=%s",
+					e
+							.getStatusCode(),
+					dokumenttypeId,
+					e.getResponseBodyAsString()), e);
 		} catch (HttpServerErrorException e) {
 			throw new Tkat020TechnicalException(format("TKAT020 feilet teknisk med statusKode=%s, feilmelding=%s", e
 					.getStatusCode(), e.getResponseBodyAsString()), e);
@@ -66,8 +75,11 @@ class DokumentkatalogAdminConsumer implements DokumentkatalogAdmin {
 	private DokumenttypeInfoTo mapResponse(final DokumentTypeInfoToV4 response) {
 		if (response.getDokumentProduksjonsInfo() == null || response.getDokumentProduksjonsInfo()
 				.getDistribusjonInfo() == null) {
-			throw new Tkat020FunctionalException(format("dokkat.DokumentProduksjonsInfo eller dokkat.DokumentProduksjonsInfo.DistribusjonInfo er null på dokument med dokumenttypeId=%s. Ikke et utgående dokument? dokumentType=%s", response
-					.getDokumenttypeId(), response.getDokumentType()));
+			throw new Tkat020FunctionalException(format(
+					"dokkat.DokumentProduksjonsInfo eller dokkat.DokumentProduksjonsInfo.DistribusjonInfo er null på dokument med dokumenttypeId=%s. Ikke et utgående dokument? dokumentType=%s",
+					response
+							.getDokumenttypeId(),
+					response.getDokumentType()));
 		}
 		return DokumenttypeInfoTo.builder()
 				.dokumenttypeId(response.getDokumenttypeId())
@@ -79,11 +91,14 @@ class DokumentkatalogAdminConsumer implements DokumentkatalogAdmin {
 				.malXsdReferanse(response.getDokumentProduksjonsInfo().getMalXsdReferanse())
 				.dokumentKategori(response.getDokumentKategori())
 				.sensitivt(response.getSensitivt())
-				.konvoluttvinduType(response.getDokumentProduksjonsInfo().getDistribusjonInfo().getKonvoluttvinduType())
-				.sentralPrintDokumentType(response.getDokumentProduksjonsInfo().getDistribusjonInfo()
-						.getSentralPrintDokumentType())
-				.tosidigprint(response.getDokumentProduksjonsInfo().getDistribusjonInfo().getTosidigPrint())
-				.portoklasse(response.getDokumentProduksjonsInfo().getDistribusjonInfo().getPortoklasse())
+				.varselTypeId(response.getDokumentProduksjonsInfo()
+						.getDistribusjonInfo()
+						.getDistribusjonVarsels()
+						.stream()
+						.filter(distribusjonVarselTo -> DomainConstants.DISTRIBUSJONS_KANAL.equals(distribusjonVarselTo.getVarselForDistribusjonKanal()))
+						.findAny()
+						.get()
+						.getVarseltypeId())
 				.build();
 	}
 
