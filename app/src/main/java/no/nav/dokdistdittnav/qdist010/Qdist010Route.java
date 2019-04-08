@@ -3,7 +3,7 @@ package no.nav.dokdistdittnav.qdist010;
 import static org.apache.camel.LoggingLevel.ERROR;
 
 import no.nav.dokdistdittnav.constants.MdcConstants;
-import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdisttnavFunctionalException;
+import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
 import no.nav.dokdistdittnav.metrics.Qdist010MetricsRoutePolicy;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.LoggingLevel;
@@ -29,7 +29,7 @@ public class Qdist010Route extends SpringRouteBuilder {
 	static final String PROPERTY_FORSENDELSE_ID = "forsendelseId";
 
 	private final Qdist010Service qdist010Service;
-	private final DistribuerForsendelseTilSentralPrintValidatorAndMapper distribuerForsendelseTilSentralPrintValidatorAndMapper;
+	private final DistribuerForsendelseTilDittNavValidatorAndMapper distribuerForsendelseTilDittNavValidatorAndMapper;
 	private final DokdistStatusUpdater dokdistStatusUpdater;
 	private final Queue qdist009;
 	private final Queue qdist009FunksjonellFeil;
@@ -37,13 +37,13 @@ public class Qdist010Route extends SpringRouteBuilder {
 
 	@Inject
 	public Qdist010Route(Qdist010Service qdist010Service,
-						 DistribuerForsendelseTilSentralPrintValidatorAndMapper distribuerForsendelseTilSentralPrintValidatorAndMapper,
+						 DistribuerForsendelseTilDittNavValidatorAndMapper distribuerForsendelseTilDittNavValidatorAndMapper,
 						 DokdistStatusUpdater dokdistStatusUpdater,
 						 Queue qdist009,
 						 Queue qdist009FunksjonellFeil,
 						 Qdist010MetricsRoutePolicy qdist010MetricsRoutePolicy) {
 		this.qdist010Service = qdist010Service;
-		this.distribuerForsendelseTilSentralPrintValidatorAndMapper = distribuerForsendelseTilSentralPrintValidatorAndMapper;
+		this.distribuerForsendelseTilDittNavValidatorAndMapper = distribuerForsendelseTilDittNavValidatorAndMapper;
 		this.dokdistStatusUpdater = dokdistStatusUpdater;
 		this.qdist009 = qdist009;
 		this.qdist009FunksjonellFeil = qdist009FunksjonellFeil;
@@ -58,7 +58,7 @@ public class Qdist010Route extends SpringRouteBuilder {
 				.logExhaustedMessageBody(true)
 				.loggingLevel(ERROR));
 
-		onException(AbstractDokdistdisttnavFunctionalException.class, JAXBException.class)
+		onException(AbstractDokdistdittnavFunctionalException.class, JAXBException.class)
 				.handled(true)
 				.useOriginalMessage()
 				.log(LoggingLevel.WARN, log, "${exception}; " + getIdsForLogging())
@@ -77,8 +77,11 @@ public class Qdist010Route extends SpringRouteBuilder {
 				.doCatch(Exception.class)
 				.end()
 				.unmarshal(new JaxbDataFormat(JAXBContext.newInstance(DistribuerForsendelseTilSentralPrint.class)))
-				.bean(distribuerForsendelseTilSentralPrintValidatorAndMapper)
-				.bean(qdist010Service);
+				.bean(distribuerForsendelseTilDittNavValidatorAndMapper)
+				.bean(qdist010Service)
+				//todo: Opprett dokumenthenvendelse via melding:virksomhet:opprettDokumenthenvendelse_v1 (mq)
+				//todo: Bestill varselutsending (mq)
+				.bean(dokdistStatusUpdater);
 	}
 
 	public static String getIdsForLogging() {

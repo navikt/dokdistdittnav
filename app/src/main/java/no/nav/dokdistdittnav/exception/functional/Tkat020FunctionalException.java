@@ -3,7 +3,7 @@ package no.nav.dokdistdittnav.exception.functional;
 /**
  * @author Jarl Øystein Samseth, Visma Consulting
  */
-public class Tkat020FunctionalException extends AbstractDokdistdisttnavFunctionalException {
+public class Tkat020FunctionalException extends AbstractDokdistdittnavFunctionalException {
 
 	public Tkat020FunctionalException(String message) {
 		super(message);

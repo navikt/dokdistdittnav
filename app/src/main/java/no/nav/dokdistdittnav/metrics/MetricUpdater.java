@@ -6,6 +6,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.stereotype.Component;
 
 @Component
+//todo bruk meg eller kast meg!
 public class MetricUpdater {
 
 	private static final String QDIST010_SERVICE = "dok_business_counter";

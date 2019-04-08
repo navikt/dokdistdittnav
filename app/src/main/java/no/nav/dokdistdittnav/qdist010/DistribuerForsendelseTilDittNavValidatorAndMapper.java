@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  * @author Sigurd Midttun, Visma Consulting.
  */
 @Component
-public class DistribuerForsendelseTilSentralPrintValidatorAndMapper {
+public class DistribuerForsendelseTilDittNavValidatorAndMapper {
 
 	@Handler
 	public DistribuerForsendelseTilSentralPrintTo ValidateAndMap(DistribuerForsendelseTilSentralPrint distribuerForsendelseTilSentralPrint) {

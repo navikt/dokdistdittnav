@@ -4,7 +4,7 @@ import static no.nav.dokdistdittnav.qdist010.Qdist010Route.SERVICE_ID;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
-import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdisttnavFunctionalException;
+import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
 import org.apache.camel.Exchange;
 import org.apache.camel.Route;
 import org.apache.camel.support.RoutePolicySupport;
@@ -61,7 +61,7 @@ public class Qdist010MetricsRoutePolicy extends RoutePolicySupport {
 	}
 
 	private boolean isFunctionalException(Exception e) {
-		return (e instanceof AbstractDokdistdisttnavFunctionalException);
+		return (e instanceof AbstractDokdistdittnavFunctionalException);
 	}
 
 	private Exception getException(Exchange exchange) {

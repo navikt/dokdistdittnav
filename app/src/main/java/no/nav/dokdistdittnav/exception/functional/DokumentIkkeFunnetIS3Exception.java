@@ -3,7 +3,7 @@ package no.nav.dokdistdittnav.exception.functional;
 /**
  * @author Jarl Øystein Samseth, Visma Consulting
  */
-public class DokumentIkkeFunnetIS3Exception extends AbstractDokdistdisttnavFunctionalException {
+public class DokumentIkkeFunnetIS3Exception extends AbstractDokdistdittnavFunctionalException {
 
 	public DokumentIkkeFunnetIS3Exception(String message) {
 		super(message);

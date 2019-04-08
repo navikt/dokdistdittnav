@@ -3,7 +3,7 @@ package no.nav.dokdistdittnav.exception.functional;
 /**
  * @author Jarl Øystein Samseth, Visma Consulting
  */
-public class ValidationException extends AbstractDokdistdisttnavFunctionalException {
+public class ValidationException extends AbstractDokdistdittnavFunctionalException {
 
 	public ValidationException(String message) {
 		super(message);
