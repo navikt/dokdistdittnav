@@ -28,7 +28,7 @@ fasitResources:
     propertyMap:
       username: serviceuser_username
       password: serviceuser_password
-  - alias: dokdistsentralprint_s3_creds
+  - alias: dokdistdittnav_s3_creds
     resourceType: credential
   - alias: dokdistmellomlager_s3_storage_crypto
     resourceType: credential
@@ -38,15 +38,15 @@ fasitResources:
     resourceType: restservice
   - alias: securityTokenService
     resourceType: baseurl
-  - alias: dokdistsentralprint_channel
+  - alias: dokdistdittnav_channel
     resourceType: channel
     propertyMap:
-      name: dokdistsentralprint_channel_name
+      name: dokdistdittnav_channel_name
   - alias: mqGateway01
     resourceType: queueManager
-  - alias: dokdistsentralprint_qdist009_funk_feil
+  - alias: dokdistdittnav_qdist010_funk_feil
     resourceType: queue
-  - alias: dokdistsentralprint_qdist009_dist_s_print
+  - alias: dokdistdittnav_qdist010_dist_ditt_nav
     resourceType: queue
 
 

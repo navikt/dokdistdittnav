@@ -31,22 +31,22 @@ public class Qdist010Route extends SpringRouteBuilder {
 	private final Qdist010Service qdist010Service;
 	private final DistribuerForsendelseTilDittNavValidatorAndMapper distribuerForsendelseTilDittNavValidatorAndMapper;
 	private final DokdistStatusUpdater dokdistStatusUpdater;
-	private final Queue qdist009;
-	private final Queue qdist009FunksjonellFeil;
+	private final Queue qdist010;
+	private final Queue qdist010FunksjonellFeil;
 	private final Qdist010MetricsRoutePolicy qdist010MetricsRoutePolicy;
 
 	@Inject
 	public Qdist010Route(Qdist010Service qdist010Service,
 						 DistribuerForsendelseTilDittNavValidatorAndMapper distribuerForsendelseTilDittNavValidatorAndMapper,
 						 DokdistStatusUpdater dokdistStatusUpdater,
-						 Queue qdist009,
-						 Queue qdist009FunksjonellFeil,
+						 Queue qdist010,
+						 Queue qdist010FunksjonellFeil,
 						 Qdist010MetricsRoutePolicy qdist010MetricsRoutePolicy) {
 		this.qdist010Service = qdist010Service;
 		this.distribuerForsendelseTilDittNavValidatorAndMapper = distribuerForsendelseTilDittNavValidatorAndMapper;
 		this.dokdistStatusUpdater = dokdistStatusUpdater;
-		this.qdist009 = qdist009;
-		this.qdist009FunksjonellFeil = qdist009FunksjonellFeil;
+		this.qdist010 = qdist010;
+		this.qdist010FunksjonellFeil = qdist010FunksjonellFeil;
 		this.qdist010MetricsRoutePolicy = qdist010MetricsRoutePolicy;
 	}
 
@@ -62,9 +62,9 @@ public class Qdist010Route extends SpringRouteBuilder {
 				.handled(true)
 				.useOriginalMessage()
 				.log(LoggingLevel.WARN, log, "${exception}; " + getIdsForLogging())
-				.to("jms:" + qdist009FunksjonellFeil.getQueueName());
+				.to("jms:" + qdist010FunksjonellFeil.getQueueName());
 
-		from("jms:" + qdist009.getQueueName() +
+		from("jms:" + qdist010.getQueueName() +
 				"?transacted=true")
 				.routeId(SERVICE_ID)
 				.routePolicy(qdist010MetricsRoutePolicy)

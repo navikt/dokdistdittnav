@@ -1,4 +1,4 @@
-package no.nav.dokdistsentralprint.itest.config;
+package no.nav.dokdistdittnav.itest.config;
 
 import static org.mockito.Mockito.mock;
 
