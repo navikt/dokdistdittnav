@@ -1,4 +1,4 @@
-package no.nav.dokdistsentralprint;
+package no.nav.dokdistdittnav;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

@@ -1,8 +1,8 @@
 package no.nav.dokdistdittnav.qdist010;
 
 import static java.lang.String.format;
-import static no.nav.dokdistdittnav.qdist010.util.Qdist009FunctionalUtils.getDokumenttypeIdHoveddokument;
-import static no.nav.dokdistdittnav.qdist010.util.Qdist009FunctionalUtils.validateForsendelseStatus;
+import static no.nav.dokdistdittnav.qdist010.util.Qdist010FunctionalUtils.getDokumenttypeIdHoveddokument;
+import static no.nav.dokdistdittnav.qdist010.util.Qdist010FunctionalUtils.validateForsendelseStatus;
 
 import com.amazonaws.SdkClientException;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;

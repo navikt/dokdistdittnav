@@ -9,8 +9,8 @@ import java.util.stream.Collectors;
 /**
  * @author Sigurd Midttun, Visma Consulting.
  */
-public final class Qdist009FunctionalUtils {
-	private Qdist009FunctionalUtils() {
+public final class Qdist010FunctionalUtils {
+	private Qdist010FunctionalUtils() {
 	}
 
 	public static void validateForsendelseStatus(String forsendelseStatus) {

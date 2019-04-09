@@ -13,24 +13,24 @@ import javax.jms.JMSException;
 import javax.jms.Queue;
 
 @Component
-public class Qdist009FunksjonellBOQCheck extends AbstractDependencyCheck {
+public class Qdist010FunksjonellBOQCheck extends AbstractDependencyCheck {
 
-	private final Queue qdist009FunksjonellFeil;
+	private final Queue qdist010FunksjonellFeil;
 	private final JmsTemplate jmsTemplate;
 
 	@Inject
-	public Qdist009FunksjonellBOQCheck(MeterRegistry registry, Queue qdist009FunksjonellFeil, JmsTemplate jmsTemplate) throws JMSException {
-		super(DependencyType.QUEUE, "qdist008FunksjonellFeilQueue", qdist009FunksjonellFeil.getQueueName(), Importance.CRITICAL, registry);
-		this.qdist009FunksjonellFeil = qdist009FunksjonellFeil;
+	public Qdist010FunksjonellBOQCheck(MeterRegistry registry, Queue qdist010FunksjonellFeil, JmsTemplate jmsTemplate) throws JMSException {
+		super(DependencyType.QUEUE, "qdist010FunksjonellFeilQueue", qdist010FunksjonellFeil.getQueueName(), Importance.CRITICAL, registry);
+		this.qdist010FunksjonellFeil = qdist010FunksjonellFeil;
 		this.jmsTemplate = jmsTemplate;
 	}
 
 	@Override
 	protected void doCheck() {
 		try {
-			checkQueue(qdist009FunksjonellFeil);
+			checkQueue(qdist010FunksjonellFeil);
 		} catch (Exception e) {
-			throw new ApplicationNotReadyException("JMS Queue Browser failed to get queue: " + qdist009FunksjonellFeil, e);
+			throw new ApplicationNotReadyException("JMS Queue Browser failed to get queue: " + qdist010FunksjonellFeil, e);
 		}
 	}
 

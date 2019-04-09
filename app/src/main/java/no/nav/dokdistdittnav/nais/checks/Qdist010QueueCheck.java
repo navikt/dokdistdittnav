@@ -13,24 +13,24 @@ import javax.jms.JMSException;
 import javax.jms.Queue;
 
 @Component
-public class Qdist009QueueCheck extends AbstractDependencyCheck {
+public class Qdist010QueueCheck extends AbstractDependencyCheck {
 
-	private final Queue qdist009;
+	private final Queue qdist010;
 	private final JmsTemplate jmsTemplate;
 
 	@Inject
-	public Qdist009QueueCheck(MeterRegistry registry, Queue qdist009, JmsTemplate jmsTemplate) throws JMSException {
-		super(DependencyType.QUEUE, "Qdist008Queue", qdist009.getQueueName(), Importance.CRITICAL, registry);
-		this.qdist009 = qdist009;
+	public Qdist010QueueCheck(MeterRegistry registry, Queue qdist010, JmsTemplate jmsTemplate) throws JMSException {
+		super(DependencyType.QUEUE, "Qdist008Queue", qdist010.getQueueName(), Importance.CRITICAL, registry);
+		this.qdist010 = qdist010;
 		this.jmsTemplate = jmsTemplate;
 	}
 
 	@Override
 	protected void doCheck() {
 		try {
-			checkQueue(qdist009);
+			checkQueue(qdist010);
 		} catch (Exception e) {
-			throw new ApplicationNotReadyException("JMS Queue Browser failed to get queue: " + qdist009, e);
+			throw new ApplicationNotReadyException("JMS Queue Browser failed to get queue: " + qdist010, e);
 		}
 	}
 
