@@ -36,6 +36,7 @@
 		<activemq.version>5.15.2</activemq.version>
 		<commons-io.version>2.4</commons-io.version>
 		<awaitility.version>3.1.2</awaitility.version>
+		<dokkat-schemas.version>10.4.2</dokkat-schemas.version>
 	</properties>
 
 	<dependencyManagement>

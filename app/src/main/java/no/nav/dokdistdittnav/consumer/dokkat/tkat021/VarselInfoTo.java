@@ -11,5 +11,5 @@ import lombok.Value;
 public class VarselInfoTo {
 
 	private final String varselTypeId;
-	private final boolean repeterendeVarsel;
+	private final boolean stoppRepeterendeVarsel;
 }

@@ -2,7 +2,6 @@ package no.nav.dokdistdittnav.consumer.dokkat.tkat021;
 
 import static java.lang.String.format;
 
-import javax.inject.Inject;
 import no.nav.dokdistdittnav.config.alias.ServiceuserAlias;
 import no.nav.dokdistdittnav.config.cache.LokalCacheConfig;
 import no.nav.dokdistdittnav.constants.RetryConstants;
@@ -21,6 +20,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import javax.inject.Inject;
 import java.time.Duration;
 
 /**
@@ -33,7 +33,7 @@ public class VarselInfoConsumer implements VarselInfo {
 	private final RestTemplate restTemplate;
 
 	@Inject
-	public VarselInfoConsumer(@Value("${DokumenttypeInfo_v4_url}") String varselInfoV1Url,
+	public VarselInfoConsumer(@Value("${VarselInfo_v1_url}") String varselInfoV1Url,
 							  RestTemplateBuilder restTemplateBuilder, final
 							  ServiceuserAlias serviceuserAlias) {
 		this.varselInfoV1Url = varselInfoV1Url;
@@ -51,28 +51,21 @@ public class VarselInfoConsumer implements VarselInfo {
 	@Monitor(value = "dok_consumer", extraTags = {"process", "getVarselInfo"}, histogram = true)
 	public VarselInfoTo getVarselInfo(String varselTypeId) {
 		try {
-			VarselInfoRestTo response = restTemplate.getForObject(this.varselInfoV1Url + "/" + varselTypeId,
-					VarselInfoRestTo.class);
+			VarselInfoRestTo response = restTemplate.getForObject(this.varselInfoV1Url + "/" + varselTypeId, VarselInfoRestTo.class);
 			return mapResponse(response);
 		} catch (HttpClientErrorException e) {
-			throw new Tkat021FunctionalException(format(
-					"TKAT021 feilet med statusKode=%s. Fant ingen VarselInfo med VarselTypeId=%s. Feilmelding=%s",
-					e.getStatusCode(),
-					varselTypeId,
-					e.getResponseBodyAsString()), e);
+			throw new Tkat021FunctionalException(format("TKAT021 feilet med statusKode=%s. Fant ingen VarselInfo med VarselTypeId=%s. Feilmelding=%s",
+					e.getStatusCode(), varselTypeId, e.getResponseBodyAsString()), e);
 		} catch (HttpServerErrorException e) {
-			throw new Tkat021TechnicalException(format("TKAT021 feilet teknisk med statusKode=%s, feilmelding=%s", e
-					.getStatusCode(), e.getResponseBodyAsString()), e);
+			throw new Tkat021TechnicalException(format("TKAT021 feilet teknisk med statusKode=%s i oppslag på varselTypeId=%s. Feilmelding=%s", e
+					.getStatusCode(), varselTypeId, e.getResponseBodyAsString()), e);
 		}
 	}
 
 	private VarselInfoTo mapResponse(final VarselInfoRestTo response) {
-		if (response == null) {
-			throw new Tkat021FunctionalException(format("VarselInfo er null"));
-		}
 		return VarselInfoTo.builder()
 				.varselTypeId(response.getVarseltypeId())
-				.repeterendeVarsel(response.getAntallRevarslinger() == null ? false:true)
+				.stoppRepeterendeVarsel(response.getRevarslingIntervall() != null)
 				.build();
 	}
 }
