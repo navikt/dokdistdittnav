@@ -27,18 +27,18 @@ public class JmsConfig {
 	private static final int UTF_8_WITH_PUA = 1208;
 
 	@Bean
-	public Queue qdist009(@Value("${dokdistsentralprint_qdist009_dist_s_print.queuename}") String qdist009QueueName) throws JMSException {
-		return new MQQueue(qdist009QueueName);
+	public Queue qdist010(@Value("${dokdistdittnav_qdist010_dist_ditt_nav.queuename}") String qdist010QueueName) throws JMSException {
+		return new MQQueue(qdist010QueueName);
 	}
 
 	@Bean
-	public Queue qdist009FunksjonellFeil(@Value("${dokdistsentralprint_qdist009_funk_feil.queuename}") String qdist009FunksjonellFeil) throws JMSException {
-		return new MQQueue(qdist009FunksjonellFeil);
+	public Queue qdist010FunksjonellFeil(@Value("${dokdistdittnav_qdist010_funk_feil.queuename}") String qdist010FunksjonellFeil) throws JMSException {
+		return new MQQueue(qdist010FunksjonellFeil);
 	}
 
 	@Bean
 	public ConnectionFactory wmqConnectionFactory(final MqGatewayAlias mqGatewayAlias,
-												  final @Value("${dokdistsentralprint_channel.name}") String channelName,
+												  final @Value("${dokdistdittnav_channel.name}") String channelName,
 												  final SrvAppserverProperties srvAppserverProperties) throws JMSException {
 		return createConnectionFactory(mqGatewayAlias, channelName, srvAppserverProperties);
 	}

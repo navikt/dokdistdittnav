@@ -19,7 +19,7 @@ public class MetricUpdater {
 		this.meterRegistry = meterRegistry;
 	}
 
-	public void updateQdist009Metrics(String landkode,
+	public void updateQdist010Metrics(String landkode,
 											 String postdestinasjon) {
 		meterRegistry.counter(QDIST010_SERVICE,
 				MetricLabels.LABEL_PROCESS, SERVICE_ID,

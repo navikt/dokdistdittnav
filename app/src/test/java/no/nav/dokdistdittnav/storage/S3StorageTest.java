@@ -1,4 +1,4 @@
-package no.nav.dokdistsentralprint.storage;
+package no.nav.dokdistdittnav.storage;
 
 import static no.nav.dokdistdittnav.constants.RetryConstants.MAX_ATTEMPTS_SHORT;
 import static no.nav.dokdistdittnav.storage.config.StorageConfiguration.BUCKET_NAME;
@@ -14,10 +14,6 @@ import static org.mockito.Mockito.when;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3Object;
 import no.nav.dokdistdittnav.exception.technical.KunneIkkeLeseFraS3BucketTechnicalException;
-import no.nav.dokdistdittnav.storage.DokdistDokument;
-import no.nav.dokdistdittnav.storage.JsonSerializer;
-import no.nav.dokdistdittnav.storage.S3Storage;
-import no.nav.dokdistdittnav.storage.Storage;
 import no.nav.dokdistdittnav.storage.crypto.Crypto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

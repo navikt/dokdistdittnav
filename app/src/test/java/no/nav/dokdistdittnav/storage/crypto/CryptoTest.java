@@ -1,4 +1,4 @@
-package no.nav.dokdistsentralprint.storage.crypto;
+package no.nav.dokdistdittnav.storage.crypto;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import no.nav.dokdistdittnav.storage.DokdistDokument;
 import no.nav.dokdistdittnav.storage.JsonSerializer;
-import no.nav.dokdistdittnav.storage.crypto.Crypto;
 import org.junit.jupiter.api.Test;
 
 /**

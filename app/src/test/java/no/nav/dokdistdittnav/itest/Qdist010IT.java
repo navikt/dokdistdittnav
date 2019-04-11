@@ -1,4 +1,4 @@
-package no.nav.dokdistsentralprint.itest;
+package no.nav.dokdistdittnav.itest;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -13,10 +13,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static no.nav.dokdistdittnav.config.cache.LokalCacheConfig.TKAT020_CACHE;
 import static no.nav.dokdistdittnav.constants.RetryConstants.MAX_ATTEMPTS_SHORT;
-import static no.nav.dokdistsentralprint.itest.config.SftpConfig.startSshServer;
-import static no.nav.dokdistsentralprint.testUtils.classpathToString;
-import static no.nav.dokdistsentralprint.testUtils.fileToString;
-import static no.nav.dokdistsentralprint.testUtils.unzipToDirectory;
+import static no.nav.dokdistdittnav.testUtils.classpathToString;
+import static no.nav.dokdistdittnav.testUtils.fileToString;
+import static no.nav.dokdistdittnav.testUtils.unzipToDirectory;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -27,14 +26,13 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import no.nav.dokdistdittnav.Application;
-import no.nav.dokdistsentralprint.itest.config.ApplicationTestConfig;
+import no.nav.dokdistdittnav.itest.config.ApplicationTestConfig;
 import no.nav.dokdistdittnav.storage.DokdistDokument;
 import no.nav.dokdistdittnav.storage.JsonSerializer;
 import no.nav.dokdistdittnav.storage.Storage;
 import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.http.HttpHeaders;
 import org.apache.http.entity.ContentType;
-import org.apache.sshd.server.SshServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,7 +43,6 @@ import org.junit.jupiter.api.io.TempDir;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.context.ActiveProfiles;
@@ -87,10 +84,10 @@ public class Qdist010IT {
 	private JmsTemplate jmsTemplate;
 
 	@Inject
-	private Queue qdist009;
+	private Queue qdist010;
 
 	@Inject
-	private Queue qdist009FunksjonellFeil;
+	private Queue qdist010FunksjonellFeil;
 
 	@Inject
 	private Queue backoutQueue;
@@ -101,21 +98,17 @@ public class Qdist010IT {
 	@Inject
 	public CacheManager cacheManager;
 
-	private static SshServer sshServer;
-
 	@TempDir
 	static Path tempDir;
 
 	@BeforeAll
 	public static void setupBeforeAll() throws IOException {
-		sshServer = startSshServer(tempDir);
-		System.setProperty("sftp.privateKeyFile", new ClassPathResource("ssh/id_rsa").getURL().getPath());
-		System.setProperty("sftp.port", Integer.toString(sshServer.getPort()));
+
 	}
 
 	@AfterAll
 	public static void stopServer() throws Exception {
-		sshServer.stop(true);
+
 	}
 
 	@BeforeEach
@@ -160,14 +153,14 @@ public class Qdist010IT {
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withBodyFile("sts/sts-happy.xml")));
 
-		sendStringMessage(qdist009, classpathToString("qdist009/qdist009-happy.xml"));
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
-		String zippedFilePath = tempDir.toString() + "/outbound/dokdistsentralprint/" + CALL_ID + ".zip";
+		String zippedFilePath = tempDir.toString() + "/outbound/dokdistdittnav/" + CALL_ID + ".zip";
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(new File(zippedFilePath).exists()));
 
 		unzipToDirectory(zippedFilePath, new File(tempDir.toString()).toPath());
 		String actualBestillingXmlString = fileToString(new File(tempDir.toString() + "/" + CALL_ID + ".xml"));
-		String expectedBestillingXmlString = classpathToString("/qdist009/bestilling_xml.xml").replaceAll("insertCallIdHere", CALL_ID);
+		String expectedBestillingXmlString = classpathToString("/qdist010/bestilling_xml.xml").replaceAll("insertCallIdHere", CALL_ID);
 		String hoveddokContent = fileToString(new File(tempDir.toString() + "/" + DOKUMENT_OBJEKT_REFERANSE_HOVEDDOK + ".pdf"));
 		String vedlegg1Content = fileToString(new File(tempDir.toString() + "/" + DOKUMENT_OBJEKT_REFERANSE_VEDLEGG1 + ".pdf"));
 		String vedlegg2Content = fileToString(new File(tempDir.toString() + "/" + DOKUMENT_OBJEKT_REFERANSE_VEDLEGG2 + ".pdf"));
@@ -196,14 +189,14 @@ public class Qdist010IT {
 						.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile("rjoark001/getPostDestinasjon-happy.json")));
 
-		sendStringMessage(qdist009, classpathToString("qdist009/qdist009-happy.xml"));
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
-		String zippedFilePath = tempDir.toString() + "/outbound/dokdistsentralprint/" + CALL_ID + ".zip";
+		String zippedFilePath = tempDir.toString() + "/outbound/dokdistdittnav/" + CALL_ID + ".zip";
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(new File(zippedFilePath).exists()));
 
 		unzipToDirectory(zippedFilePath, new File(tempDir.toString()).toPath());
 		String actualBestillingXmlString = fileToString(new File(tempDir.toString() + "/" + CALL_ID + ".xml"));
-		String expectedBestillingXmlString = classpathToString("/qdist009/bestilling_utenRegoppslag_xml.xml").replaceAll("insertCallIdHere", CALL_ID);
+		String expectedBestillingXmlString = classpathToString("/qdist010/bestilling_utenRegoppslag_xml.xml").replaceAll("insertCallIdHere", CALL_ID);
 		String hoveddokContent = fileToString(new File(tempDir.toString() + "/" + DOKUMENT_OBJEKT_REFERANSE_HOVEDDOK + ".pdf"));
 		String vedlegg1Content = fileToString(new File(tempDir.toString() + "/" + DOKUMENT_OBJEKT_REFERANSE_VEDLEGG1 + ".pdf"));
 		String vedlegg2Content = fileToString(new File(tempDir.toString() + "/" + DOKUMENT_OBJEKT_REFERANSE_VEDLEGG2 + ".pdf"));
@@ -225,12 +218,12 @@ public class Qdist010IT {
 		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID)
 				.willReturn(aResponse().withStatus(HttpStatus.NOT_FOUND.value())));
 
-		sendStringMessage(qdist009, classpathToString("qdist009/qdist009-happy.xml"));
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-			String resultOnQdist009FunksjonellFeilQueue = receive(qdist009FunksjonellFeil);
-			assertNotNull(resultOnQdist009FunksjonellFeilQueue);
-			assertEquals(resultOnQdist009FunksjonellFeilQueue, classpathToString("qdist009/qdist009-happy.xml"));
+			String resultOnQdist010FunksjonellFeilQueue = receive(qdist010FunksjonellFeil);
+			assertNotNull(resultOnQdist010FunksjonellFeilQueue);
+			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
 		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
@@ -241,12 +234,12 @@ public class Qdist010IT {
 		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID)
 				.willReturn(aResponse().withStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())));
 
-		sendStringMessage(qdist009, classpathToString("qdist009/qdist009-happy.xml"));
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-			String resultOnQdist009BackoutQueue = receive(backoutQueue);
-			assertNotNull(resultOnQdist009BackoutQueue);
-			assertEquals(resultOnQdist009BackoutQueue, classpathToString("qdist009/qdist009-happy.xml"));
+			String resultOnQdist010BackoutQueue = receive(backoutQueue);
+			assertNotNull(resultOnQdist010BackoutQueue);
+			assertEquals(resultOnQdist010BackoutQueue, classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
 		verify(MAX_ATTEMPTS_SHORT, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
@@ -259,12 +252,12 @@ public class Qdist010IT {
 						.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBody(classpathToString("__files/rjoark001/getForsendelse_noAdresseBekreftetForsendelseStatus.json").replace("insertCallIdHere", CALL_ID))));
 
-		sendStringMessage(qdist009, classpathToString("qdist009/qdist009-happy.xml"));
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-			String resultOnQdist009FunksjonellFeilQueue = receive(qdist009FunksjonellFeil);
-			assertNotNull(resultOnQdist009FunksjonellFeilQueue);
-			assertEquals(resultOnQdist009FunksjonellFeilQueue, classpathToString("qdist009/qdist009-happy.xml"));
+			String resultOnQdist010FunksjonellFeilQueue = receive(qdist010FunksjonellFeil);
+			assertNotNull(resultOnQdist010FunksjonellFeilQueue);
+			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
 		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
@@ -279,12 +272,12 @@ public class Qdist010IT {
 						.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBody(classpathToString("__files/rjoark001/getForsendelse_noAdresse-happy.json").replace("insertCallIdHere", CALL_ID))));
 
-		sendStringMessage(qdist009, classpathToString("qdist009/qdist009-happy.xml"));
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-			String resultOnQdist009FunksjonellFeilQueue = receive(qdist009FunksjonellFeil);
-			assertNotNull(resultOnQdist009FunksjonellFeilQueue);
-			assertEquals(resultOnQdist009FunksjonellFeilQueue, classpathToString("qdist009/qdist009-happy.xml"));
+			String resultOnQdist010FunksjonellFeilQueue = receive(qdist010FunksjonellFeil);
+			assertNotNull(resultOnQdist010FunksjonellFeilQueue);
+			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
 		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
@@ -300,12 +293,12 @@ public class Qdist010IT {
 						.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBody(classpathToString("__files/rjoark001/getForsendelse_noAdresse-happy.json").replace("insertCallIdHere", CALL_ID))));
 
-		sendStringMessage(qdist009, classpathToString("qdist009/qdist009-happy.xml"));
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-			String resultOnQdist009BackoutQueue = receive(backoutQueue);
-			assertNotNull(resultOnQdist009BackoutQueue);
-			assertEquals(resultOnQdist009BackoutQueue, classpathToString("qdist009/qdist009-happy.xml"));
+			String resultOnQdist010BackoutQueue = receive(backoutQueue);
+			assertNotNull(resultOnQdist010BackoutQueue);
+			assertEquals(resultOnQdist010BackoutQueue, classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
 		verify(MAX_ATTEMPTS_SHORT, getRequestedFor(urlEqualTo("/dokkat/dokumenttypeIdHoveddok")));
@@ -327,12 +320,12 @@ public class Qdist010IT {
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withBodyFile("sts/sts-happy.xml")));
 
-		sendStringMessage(qdist009, classpathToString("qdist009/qdist009-happy.xml"));
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-			String resultOnQdist009FunksjonellFeilQueue = receive(qdist009FunksjonellFeil);
-			assertNotNull(resultOnQdist009FunksjonellFeilQueue);
-			assertEquals(resultOnQdist009FunksjonellFeilQueue, classpathToString("qdist009/qdist009-happy.xml"));
+			String resultOnQdist010FunksjonellFeilQueue = receive(qdist010FunksjonellFeil);
+			assertNotNull(resultOnQdist010FunksjonellFeilQueue);
+			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
 		verify(1, getRequestedFor(urlEqualTo("/dokkat/dokumenttypeIdHoveddok")));
@@ -356,12 +349,12 @@ public class Qdist010IT {
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withBodyFile("sts/sts-happy.xml")));
 
-		sendStringMessage(qdist009, classpathToString("qdist009/qdist009-happy.xml"));
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-			String resultOnQdist009BackoutQueue = receive(backoutQueue);
-			assertNotNull(resultOnQdist009BackoutQueue);
-			assertEquals(resultOnQdist009BackoutQueue, classpathToString("qdist009/qdist009-happy.xml"));
+			String resultOnQdist010BackoutQueue = receive(backoutQueue);
+			assertNotNull(resultOnQdist010BackoutQueue);
+			assertEquals(resultOnQdist010BackoutQueue, classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
 		verify(1, getRequestedFor(urlEqualTo("/dokkat/dokumenttypeIdHoveddok")));
@@ -389,12 +382,12 @@ public class Qdist010IT {
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withBodyFile("sts/sts-happy.xml")));
 
-		sendStringMessage(qdist009, classpathToString("qdist009/qdist009-happy.xml"));
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-			String resultOnQdist009FunksjonellFeilQueue = receive(qdist009FunksjonellFeil);
-			assertNotNull(resultOnQdist009FunksjonellFeilQueue);
-			assertEquals(resultOnQdist009FunksjonellFeilQueue, classpathToString("qdist009/qdist009-happy.xml"));
+			String resultOnQdist010FunksjonellFeilQueue = receive(qdist010FunksjonellFeil);
+			assertNotNull(resultOnQdist010FunksjonellFeilQueue);
+			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
 		verify(1, getRequestedFor(urlEqualTo("/dokkat/dokumenttypeIdHoveddok")));
@@ -423,12 +416,12 @@ public class Qdist010IT {
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withBodyFile("sts/sts-happy.xml")));
 
-		sendStringMessage(qdist009, classpathToString("qdist009/qdist009-happy.xml"));
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-			String resultOnQdist009BackoutQueue = receive(backoutQueue);
-			assertNotNull(resultOnQdist009BackoutQueue);
-			assertEquals(resultOnQdist009BackoutQueue, classpathToString("qdist009/qdist009-happy.xml"));
+			String resultOnQdist010BackoutQueue = receive(backoutQueue);
+			assertNotNull(resultOnQdist010BackoutQueue);
+			assertEquals(resultOnQdist010BackoutQueue, classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
 		verify(1, getRequestedFor(urlEqualTo("/dokkat/dokumenttypeIdHoveddok")));
@@ -461,12 +454,12 @@ public class Qdist010IT {
 						.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile("rjoark001/getPostDestinasjon-happy.json")));
 
-		sendStringMessage(qdist009, classpathToString("qdist009/qdist009-happy.xml"));
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-			String resultOnQdist009FunksjonellFeilQueue = receive(qdist009FunksjonellFeil);
-			assertNotNull(resultOnQdist009FunksjonellFeilQueue);
-			assertEquals(resultOnQdist009FunksjonellFeilQueue, classpathToString("qdist009/qdist009-happy.xml"));
+			String resultOnQdist010FunksjonellFeilQueue = receive(qdist010FunksjonellFeil);
+			assertNotNull(resultOnQdist010FunksjonellFeilQueue);
+			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
 		verify(1, getRequestedFor(urlEqualTo("/dokkat/dokumenttypeIdHoveddok")));
@@ -491,12 +484,12 @@ public class Qdist010IT {
 						.withBodyFile("rjoark001/getPostDestinasjon-happy.json")));
 		stubFor(get("/administrerforsendelse/hentpostdestinasjon/TR")
 				.willReturn(aResponse().withStatus(HttpStatus.NOT_FOUND.value())));
-		sendStringMessage(qdist009, classpathToString("qdist009/qdist009-happy.xml"));
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-			String resultOnQdist009FunksjonellFeilQueue = receive(qdist009FunksjonellFeil);
-			assertNotNull(resultOnQdist009FunksjonellFeilQueue);
-			assertEquals(resultOnQdist009FunksjonellFeilQueue, classpathToString("qdist009/qdist009-happy.xml"));
+			String resultOnQdist010FunksjonellFeilQueue = receive(qdist010FunksjonellFeil);
+			assertNotNull(resultOnQdist010FunksjonellFeilQueue);
+			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
 		verify(1, getRequestedFor(urlEqualTo("/dokkat/dokumenttypeIdHoveddokNotInS3")));
@@ -527,12 +520,12 @@ public class Qdist010IT {
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withBodyFile("sts/sts-happy.xml")));
 
-		sendStringMessage(qdist009, classpathToString("qdist009/qdist009-happy.xml"));
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-			String resultOnQdist009FunksjonellFeilQueue = receive(qdist009FunksjonellFeil);
-			assertNotNull(resultOnQdist009FunksjonellFeilQueue);
-			assertEquals(resultOnQdist009FunksjonellFeilQueue, classpathToString("qdist009/qdist009-happy.xml"));
+			String resultOnQdist010FunksjonellFeilQueue = receive(qdist010FunksjonellFeil);
+			assertNotNull(resultOnQdist010FunksjonellFeilQueue);
+			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
 		verifyAllStubs();
@@ -562,12 +555,12 @@ public class Qdist010IT {
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withBodyFile("sts/sts-happy.xml")));
 
-		sendStringMessage(qdist009, classpathToString("qdist009/qdist009-happy.xml"));
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-			String resultOnQdist009BackoutQueue = receive(backoutQueue);
-			assertNotNull(resultOnQdist009BackoutQueue);
-			assertEquals(resultOnQdist009BackoutQueue, classpathToString("qdist009/qdist009-happy.xml"));
+			String resultOnQdist010BackoutQueue = receive(backoutQueue);
+			assertNotNull(resultOnQdist010BackoutQueue);
+			assertEquals(resultOnQdist010BackoutQueue, classpathToString("qdist010/qdist010-happy.xml"));
 		});
 		verify(1, getRequestedFor(urlEqualTo("/dokkat/dokumenttypeIdHoveddok")));
 		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
