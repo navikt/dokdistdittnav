@@ -1,15 +1,17 @@
-package no.nav.dokdistdittnav.consumer.tkat020;
+package no.nav.dokdistdittnav.consumer.dokkat.tkat020;
 
 import static java.lang.String.format;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistdittnav.config.alias.ServiceuserAlias;
 import no.nav.dokdistdittnav.config.cache.LokalCacheConfig;
+import no.nav.dokdistdittnav.constants.DomainConstants;
 import no.nav.dokdistdittnav.constants.RetryConstants;
-import no.nav.dokdistdittnav.exception.technical.Tkat020TechnicalException;
-import no.nav.dokdistdittnav.metrics.Monitor;
 import no.nav.dokdistdittnav.exception.functional.Tkat020FunctionalException;
 import no.nav.dokdistdittnav.exception.technical.AbstractDokdistdittnavTechnicalException;
+import no.nav.dokdistdittnav.exception.technical.Tkat020TechnicalException;
+import no.nav.dokdistdittnav.metrics.Monitor;
+import no.nav.dokkat.api.tkat020.DistribusjonVarselTo;
 import no.nav.dokkat.api.tkat020.v4.DokumentTypeInfoToV4;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -55,8 +57,8 @@ class DokumentkatalogAdminConsumer implements DokumentkatalogAdmin {
 			DokumentTypeInfoToV4 response = restTemplate.getForObject(this.dokumenttypeInfoV4Url + "/" + dokumenttypeId, DokumentTypeInfoToV4.class);
 			return mapResponse(response);
 		} catch (HttpClientErrorException e) {
-			throw new Tkat020FunctionalException(format("TKAT020 feilet med statusKode=%s. Fant ingen dokumenttypeInfo med dokumenttypeId=%s. Feilmelding=%s", e
-					.getStatusCode(), dokumenttypeId, e.getResponseBodyAsString()), e);
+			throw new Tkat020FunctionalException(format("TKAT020 feilet med statusKode=%s. Fant ingen dokumenttypeInfo med dokumenttypeId=%s. Feilmelding=%s",
+					e.getStatusCode(), dokumenttypeId, e.getResponseBodyAsString()), e);
 		} catch (HttpServerErrorException e) {
 			throw new Tkat020TechnicalException(format("TKAT020 feilet teknisk med statusKode=%s, feilmelding=%s", e
 					.getStatusCode(), e.getResponseBodyAsString()), e);
@@ -64,17 +66,21 @@ class DokumentkatalogAdminConsumer implements DokumentkatalogAdmin {
 	}
 
 	private DokumenttypeInfoTo mapResponse(final DokumentTypeInfoToV4 response) {
-		if (response.getDokumentProduksjonsInfo() == null || response.getDokumentProduksjonsInfo()
-				.getDistribusjonInfo() == null) {
-			throw new Tkat020FunctionalException(format("dokkat.DokumentProduksjonsInfo eller dokkat.DokumentProduksjonsInfo.DistribusjonInfo er null på dokument med dokumenttypeId=%s. Ikke et utgående dokument? dokumentType=%s", response
-					.getDokumenttypeId(), response.getDokumentType()));
+		if (response.getDokumentProduksjonsInfo() == null ||
+				response.getDokumentProduksjonsInfo().getDistribusjonInfo() == null) {
+			throw new Tkat020FunctionalException(format("DokumentProduksjonsInfo eller DokumentProduksjonsInfo.DistribusjonInfo er null for dokumenttypeId=%s. Ikke et utgående dokument? dokumentType=%s",
+					response.getDokumenttypeId(), response.getDokumentType()));
 		}
+
+		DistribusjonVarselTo distribusjonVarsel = response.getDokumentProduksjonsInfo()
+				.getDistribusjonInfo().getDistribusjonVarsels().stream()
+				.filter(distribusjonVarselTo -> DomainConstants.DISTRIBUSJONS_KANAL.equals(distribusjonVarselTo.getVarselForDistribusjonKanal()))
+				.findAny()
+				.orElseThrow(() -> new Tkat020FunctionalException(format("Fant ingen distribusjonVarsel med varselForDistribusjonKanal=DittNav for dokumenttypeId=%s",
+						response.getDokumenttypeId())));
+
 		return DokumenttypeInfoTo.builder()
-				.konvoluttvinduType(response.getDokumentProduksjonsInfo().getDistribusjonInfo().getKonvoluttvinduType())
-				.sentralPrintDokumentType(response.getDokumentProduksjonsInfo().getDistribusjonInfo()
-						.getSentralPrintDokumentType())
-				.tosidigprint(response.getDokumentProduksjonsInfo().getDistribusjonInfo().getTosidigPrint())
-				.portoklasse(response.getDokumentProduksjonsInfo().getDistribusjonInfo().getPortoklasse())
+				.varselTypeId(distribusjonVarsel.getVarseltypeId())
 				.build();
 	}
 

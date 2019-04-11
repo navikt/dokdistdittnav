@@ -111,6 +111,11 @@
 			<artifactId>dokkat-api</artifactId>
 			<version>${dokkat-api}</version>
 		</dependency>
+		<dependency>
+			<groupId>no.nav.dokkat</groupId>
+			<artifactId>dokkat-schemas</artifactId>
+			<version>${dokkat-schemas.version}</version>
+		</dependency>
 		<!--test-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

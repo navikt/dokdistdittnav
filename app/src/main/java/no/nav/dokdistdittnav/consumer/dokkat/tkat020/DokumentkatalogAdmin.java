@@ -1,4 +1,4 @@
-package no.nav.dokdistdittnav.consumer.tkat020;
+package no.nav.dokdistdittnav.consumer.dokkat.tkat020;
 
 /**
  * @author Sigurd Midttun, Visma Consulting.
