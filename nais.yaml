@@ -50,5 +50,9 @@ fasitResources:
     resourceType: queue
   - alias: dokdistdittnav_qdist010_dist_ditt_nav
     resourceType: queue
+  - alias: henvendelse_dokument.henvendelse
+    resourceType: queue
+  - alias: varselproduksjon.best_varsel_m_handling
+      resourceType: queue
 
 

@@ -37,6 +37,16 @@ public class JmsConfig {
 	}
 
 	@Bean
+	public Queue dokumentHenvendelse(@Value("${henvendelse_dokument.henvendelse.queuename}") String henvendelseDokumentQueueName) throws JMSException {
+		return new MQQueue(henvendelseDokumentQueueName);
+	}
+
+	@Bean
+	public Queue varselUtsending(@Value("${varselproduksjon.best_varsel_m_handling.queuename}") String varselUtsendingQueueName) throws JMSException {
+		return new MQQueue(varselUtsendingQueueName);
+	}
+
+	@Bean
 	public ConnectionFactory wmqConnectionFactory(final MqGatewayAlias mqGatewayAlias,
 												  final @Value("${dokdistdittnav_channel.name}") String channelName,
 												  final SrvAppserverProperties srvAppserverProperties) throws JMSException {
