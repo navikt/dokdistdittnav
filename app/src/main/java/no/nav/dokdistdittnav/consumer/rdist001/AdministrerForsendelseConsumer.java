@@ -56,8 +56,15 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 	public HentForsendelseResponseTo hentForsendelse(final String forsendelseId) {
 		try {
 			HttpEntity entity = new HttpEntity<>(createHeaders());
-			return restTemplate.exchange(this.administrerforsendelseV1Url + "/" + forsendelseId, HttpMethod.GET, entity, HentForsendelseResponseTo.class)
+			HentForsendelseResponseTo forsendelse =
+					restTemplate.exchange(this.administrerforsendelseV1Url + "/" + forsendelseId, HttpMethod.GET, entity, HentForsendelseResponseTo.class)
 					.getBody();
+
+			if (forsendelse.getArkivInformasjon() == null) {
+				throw new Rdist001HentForsendelseFunctionalException("Kall mot rdist001 - hentForsendelse returnerte forsendelse uten ArkivInformasjon");
+			}
+
+			return forsendelse;
 		} catch (HttpClientErrorException e) {
 			throw new Rdist001HentForsendelseFunctionalException(String.format("Kall mot rdist001 - hentForsendelse feilet funksjonelt med statusKode=%s, feilmelding=%s", e
 					.getStatusCode(), e.getMessage()), e);

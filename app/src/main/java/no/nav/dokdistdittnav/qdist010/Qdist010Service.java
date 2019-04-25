@@ -12,6 +12,7 @@ import no.nav.dokdistdittnav.consumer.rdist001.HentForsendelseResponseTo;
 import no.nav.dokdistdittnav.metrics.MetricUpdater;
 import no.nav.dokdistdittnav.qdist010.domain.DistribuerForsendelseTilSentralPrintTo;
 import no.nav.dokdistdittnav.storage.Storage;
+import no.nav.melding.virksomhet.opprettdokumenthenvendelse.v1.opprettdokumenthenvendelse.Arkivtemaer;
 import no.nav.melding.virksomhet.opprettdokumenthenvendelse.v1.opprettdokumenthenvendelse.Dokumenthenvendelse;
 import no.nav.melding.virksomhet.varselmedhandling.v1.varselmedhandling.ObjectFactory;
 import no.nav.melding.virksomhet.varselmedhandling.v1.varselmedhandling.Parameter;
@@ -27,6 +28,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.GregorianCalendar;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 /**
@@ -67,38 +69,44 @@ public class Qdist010Service {
 		DokumenttypeInfoTo dokumenttypeInfoTo = dokumentkatalogAdmin.getDokumenttypeInfo(getDokumenttypeIdHoveddokument(hentForsendelseResponseTo));
 
 		String varselbestillingId = UUID.randomUUID().toString();
+		XMLGregorianCalendar now = getNow();
 		VarselInfoTo varselInfoTo = varselInfo.getVarselInfo(dokumenttypeInfoTo.getVarselTypeId());
-		VarselMedHandling varsel = mapToVarselMedHandling(hentForsendelseResponseTo, varselInfoTo, dokumenttypeInfoTo, varselbestillingId);
+		VarselMedHandling varsel = mapToVarselMedHandling(hentForsendelseResponseTo, dokumenttypeInfoTo, varselbestillingId, now);
 		exchange.setProperty(PROPERTY_UNMARSHALLED_VARSEL, varsel);
 
-		return mapToDokumenthenvendelse(hentForsendelseResponseTo, varselInfoTo, varselbestillingId);
+		return mapToDokumenthenvendelse(hentForsendelseResponseTo, varselInfoTo, varselbestillingId, now);
 	}
 
-	private Dokumenthenvendelse mapToDokumenthenvendelse(HentForsendelseResponseTo forsendelse, VarselInfoTo varselInfo, String varselbestillingId) {
+	private Dokumenthenvendelse mapToDokumenthenvendelse(HentForsendelseResponseTo forsendelse, VarselInfoTo varselInfo, String varselbestillingId, XMLGregorianCalendar now) {
 		no.nav.melding.virksomhet.opprettdokumenthenvendelse.v1.opprettdokumenthenvendelse.ObjectFactory henvendelseOF =
 				new no.nav.melding.virksomhet.opprettdokumenthenvendelse.v1.opprettdokumenthenvendelse.ObjectFactory();
 		Dokumenthenvendelse dokumenthenvendelse = henvendelseOF.createDokumenthenvendelse();
 		dokumenthenvendelse.setPersonident(forsendelse.getMottaker().getMottakerId());
-		//dokumenthenvendelse.setDokumenttittel(forsendelse.getForsendelseTittel());
-		//dokumenthenvendelse.setArkivtema(forsendelse.getTema());
-		//dokumenthenvendelse.setFerdigstiltDato(forsendelse.?);
-		//dokumenthenvendelse.setJournalpostId(forsendelse.getArkivInformasjon().getArkivId());
-		//dokumenthenvendelse.getDokumentIdListe().addAll(forsendelse.getDokumenter()...);
+		dokumenthenvendelse.setDokumenttittel(forsendelse.getForsendelseTittel());
+		Arkivtemaer arkivtemaer = henvendelseOF.createArkivtemaer();
+		arkivtemaer.setValue(forsendelse.getTema());
+		dokumenthenvendelse.setArkivtema(arkivtemaer);
+		dokumenthenvendelse.setFerdigstiltDato(now);
+		dokumenthenvendelse.setJournalpostId(forsendelse.getArkivInformasjon().getArkivId());
+		dokumenthenvendelse.getDokumentIdListe().addAll(forsendelse.getDokumenter().stream()
+				.map(dokument -> dokument.getArkivDokumentInfoId())
+				.filter(id -> id != null && !id.equals(""))
+				.collect(Collectors.toList()));
 		dokumenthenvendelse.setVarselbestillingId(varselbestillingId);
 		dokumenthenvendelse.setStoppRepeterendeVarsel(varselInfo.isStoppRepeterendeVarsel());
 
 		return dokumenthenvendelse;
     }
 
-    private VarselMedHandling mapToVarselMedHandling(HentForsendelseResponseTo forsendelse, VarselInfoTo varselInfo, DokumenttypeInfoTo dokumenttypeInfo, String varselbestillingId) {
+    private VarselMedHandling mapToVarselMedHandling(HentForsendelseResponseTo forsendelse, DokumenttypeInfoTo dokumenttypeInfo, String varselbestillingId, XMLGregorianCalendar now) {
 		ObjectFactory varselOF = new ObjectFactory();
 		VarselMedHandling varselMedHandling = varselOF.createVarselMedHandling();
 		varselMedHandling.setVarselbestillingId(varselbestillingId);
 		varselMedHandling.setReVarsel(false);
 		varselMedHandling.setMottaker(getMottaker(forsendelse.getMottaker().getMottakerId(), varselOF));
 		varselMedHandling.setVarseltypeId(dokumenttypeInfo.getVarselTypeId());
-		//varselMedHandling.getParameterListe().add(createParameter(varselOF, DOKUMENTTITTEL_KEY, forsendelse.getForsendelseTittel()));
-		varselMedHandling.getParameterListe().add(createParameter(varselOF, FERDIGSTILTDATO_KEY, getNow()));
+		varselMedHandling.getParameterListe().add(createParameter(varselOF, DOKUMENTTITTEL_KEY, forsendelse.getForsendelseTittel()));
+		varselMedHandling.getParameterListe().add(createParameter(varselOF, FERDIGSTILTDATO_KEY, now != null ? now.toString() : ""));
 		varselMedHandling.getParameterListe().add(createParameter(varselOF, VARSELBESTILLING_ID_KEY, varselbestillingId));
 
 		return varselMedHandling;
@@ -117,14 +125,14 @@ public class Qdist010Service {
 		return param;
 	}
 
-	private String getNow() {
+	private XMLGregorianCalendar getNow() {
 		XMLGregorianCalendar now = null;
 		try {
 			now = DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar());
 		} catch (DatatypeConfigurationException e) {
 			// Ignore
 		}
-		return now != null ? now.toString() : "";
+		return now;
 	}
 
 }

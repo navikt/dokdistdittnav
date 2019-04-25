@@ -76,8 +76,8 @@ class DokumentkatalogAdminConsumer implements DokumentkatalogAdmin {
 				.getDistribusjonInfo().getDistribusjonVarsels().stream()
 				.filter(distribusjonVarselTo -> DomainConstants.DISTRIBUSJONS_KANAL.equals(distribusjonVarselTo.getVarselForDistribusjonKanal()))
 				.findAny()
-				.orElseThrow(() -> new Tkat020FunctionalException(format("Fant ingen distribusjonVarsel med varselForDistribusjonKanal=DittNav for dokumenttypeId=%s",
-						response.getDokumenttypeId())));
+				.orElseThrow(() -> new Tkat020FunctionalException(format("Fant ingen distribusjonVarsel med varselForDistribusjonKanal=%s for dokumenttypeId=%s",
+						DomainConstants.DISTRIBUSJONS_KANAL, response.getDokumenttypeId())));
 
 		return DokumenttypeInfoTo.builder()
 				.varselTypeId(distribusjonVarsel.getVarseltypeId())
