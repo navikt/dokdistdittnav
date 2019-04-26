@@ -42,8 +42,8 @@ public class Qdist010Route extends SpringRouteBuilder {
 	private final Queue varselUtsending;
 	private final Qdist010MetricsRoutePolicy qdist010MetricsRoutePolicy;
 
-	private DataFormat dokumentHenvendelseFormat = setupDokumentHenvendelseFormat();
-	private DataFormat varselFormat = setupVarselFormat();
+	private final DataFormat dokumentHenvendelseFormat = setupDokumentHenvendelseFormat();
+	private final DataFormat varselFormat = setupVarselFormat();
 
 	@Inject
 	public Qdist010Route(Qdist010Service qdist010Service,
@@ -100,7 +100,8 @@ public class Qdist010Route extends SpringRouteBuilder {
 				.marshal(varselFormat)
 				.convertBodyTo(String.class, StandardCharsets.UTF_8.toString())
 				.to("jms:" + varselUtsending.getQueueName())
-				.bean(dokdistStatusUpdater);
+				.bean(dokdistStatusUpdater)
+				.log(LoggingLevel.INFO, log, "qdist010 har sendt dokumenthenvendelse og varsel for forsendelse med " + getIdsForLogging());
 	}
 
 	public static String getIdsForLogging() {
