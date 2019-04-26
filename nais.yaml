@@ -23,36 +23,36 @@ resources:
     memory: 1024Mi
 fasitResources:
   used:
-  - alias: srvdokdistdittnav
-    resourceType: credential
-    propertyMap:
-      username: serviceuser_username
-      password: serviceuser_password
-  - alias: dokdistdittnav_s3_creds
-    resourceType: credential
-  - alias: dokdistmellomlager_s3_storage_crypto
-    resourceType: credential
-  - alias: DokumenttypeInfo_v4
-    resourceType: restservice
-  - alias: VarselInfo_v1
-    resourceType: restservice
-  - alias: administrerforsendelse_v1
-    resourceType: restservice
-  - alias: securityTokenService
-    resourceType: baseurl
-  - alias: dokdistdittnav_channel
-    resourceType: channel
-    propertyMap:
-      name: dokdistdittnav_channel_name
-  - alias: mqGateway01
-    resourceType: queueManager
-  - alias: dokdistdittnav_qdist010_funk_feil
-    resourceType: queue
-  - alias: dokdistdittnav_qdist010_dist_ditt_nav
-    resourceType: queue
-  - alias: henvendelse_dokument.henvendelse
-    resourceType: queue
-  - alias: varselproduksjon.best_varsel_m_handling
+    - alias: srvdokdistdittnav
+      resourceType: credential
+      propertyMap:
+        username: serviceuser_username
+        password: serviceuser_password
+    - alias: dokdistdittnav_s3_creds
+      resourceType: credential
+    - alias: dokdistmellomlager_s3_storage_crypto
+      resourceType: credential
+    - alias: DokumenttypeInfo_v4
+      resourceType: restservice
+    - alias: VarselInfo_v1
+      resourceType: restservice
+    - alias: administrerforsendelse_v1
+      resourceType: restservice
+    - alias: securityTokenService
+      resourceType: baseurl
+    - alias: dokdistdittnav_channel
+      resourceType: channel
+      propertyMap:
+        name: dokdistdittnav_channel_name
+    - alias: mqGateway01
+      resourceType: queueManager
+    - alias: dokdistdittnav_qdist010_funk_feil
       resourceType: queue
+    - alias: dokdistdittnav_qdist010_dist_ditt_nav
+      resourceType: queue
+    - alias: henvendelse_dokument.henvendelse
+      resourceType: queue
+    - alias: varselproduksjon.best_varsel_m_handling
+        resourceType: queue
 
 
