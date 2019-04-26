@@ -116,6 +116,19 @@
 			<artifactId>dokkat-schemas</artifactId>
 			<version>${dokkat-schemas.version}</version>
 		</dependency>
+		<!--Tjenestespesifikasjoner-->
+		<dependency>
+			<groupId>no.nav.meldinger.virksomhet</groupId>
+			<artifactId>nav-virksomhet-opprettDokumenthenvendelse-v1-meldingsdefinisjon</artifactId>
+			<version>${nav-virksomhet-opprettDokumenthenvendelse-v1.version}</version>
+			<classifier>jaxb</classifier>
+		</dependency>
+		<dependency>
+			<groupId>no.nav.meldinger.virksomhet</groupId>
+			<artifactId>nav-virksomhet-varselMedHandling-v1-meldingsdefinisjon</artifactId>
+			<version>${nav-virksomhet-varselMedHandling-v1.version}</version>
+			<classifier>jaxb</classifier>
+		</dependency>
 		<!--test-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
