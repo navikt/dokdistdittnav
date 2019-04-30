@@ -35,6 +35,16 @@ public class JmsItestConfig {
 		return new ActiveMQQueue("ActiveMQ.DLQ");
 	}
 
+	@Bean
+	public Queue dokumentHenvendelse(@Value("${henvendelse_dokument.henvendelse.queuename}") String henvendelseDokumentQueueName) {
+		return new ActiveMQQueue(henvendelseDokumentQueueName);
+	}
+
+	@Bean
+	public Queue varselUtsending(@Value("${varselproduksjon.best_varsel_m_handling.queuename}") String varselUtsendingQueueName) {
+		return new ActiveMQQueue(varselUtsendingQueueName);
+	}
+
 	@Bean(initMethod = "start", destroyMethod = "stop")
 	public BrokerService broker() {
 		BrokerService service = new BrokerService();

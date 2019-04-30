@@ -1,0 +1,34 @@
+{
+  "varseltypeId": "DittNAV_000004",
+  "varselNavn": "Brev",
+  "varselKategori": "DISTRIBUSJON",
+  "varselForDistribusjonKanal": "DITT_NAV",
+  "inaktiv": false,
+  "revarslingIntervall": 7,
+  "antallRevarslinger": 1,
+  "varselURL": "$navnobaseurl$/innloggingsinfo/type/dokument/varselid/{VarselbestillingsId}",
+  "preferertKanal": [
+    "DITT_NAV",
+    "EPOST"
+  ],
+  "varselmals": [
+    {
+      "kanal": "EPOST",
+      "varselTittel": "Brev fra NAV",
+      "foerstegangsvarselTekst": "Hei! Du har fått et brev fra NAV. Les det i innboksen på Ditt NAV: $navnobaseurl$/innloggingsinfo/type/dokument/varselid/{VarselbestillingsId}. Dette brevet blir ikke sendt i posten. Les mer på nav.no/digitalebrev Vennlig hilsen NAV",
+      "revarslingTekst": "Hei! NAV minner om at du har fått et brev. Les det i innboksen på Ditt NAV: $navnobaseurl$/innloggingsinfo/type/dokument/varselid/{VarselbestillingsId}. Hvis du allerede har åpnet brevet, kan du se bort fra denne meldingen. Dette brevet blir ikke sendt i posten. Les mer på nav.no/digitalebrev Vennlig hilsen NAV"
+    },
+    {
+      "kanal": "SMS",
+      "varselTittel": null,
+      "foerstegangsvarselTekst": "Hei! Du har fått et brev fra NAV. Les det i innboksen på Ditt NAV: $navnobaseurl$/innloggingsinfo/type/dokument/varselid/{VarselbestillingsId}. Dette brevet blir ikke sendt i posten. Les mer på nav.no/digitalebrev Vennlig hilsen NAV",
+      "revarslingTekst": "Hei! NAV minner om at du har fått et brev. Les det i innboksen på Ditt NAV: $navnobaseurl$/innloggingsinfo/type/dokument/varselid/{VarselbestillingsId}. Hvis du allerede har åpnet brevet, kan du se bort fra denne meldingen. Dette brevet blir ikke sendt i posten. Les mer på nav.no/digitalebrev Vennlig hilsen NAV"
+    },
+    {
+      "kanal": "DITT_NAV",
+      "varselTittel": null,
+      "foerstegangsvarselTekst": "Du har fått et brev.",
+      "revarslingTekst": "Vi minner om at du har fått et brev."
+    }
+  ]
+}
