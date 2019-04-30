@@ -9,7 +9,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class DistribuerForsendelseTilSentralPrintTo {
+public class DistribuerForsendelseTilDittNavTo {
 
 	private String forsendelseId;
 }

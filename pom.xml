@@ -39,6 +39,7 @@
 		<dokkat-schemas.version>10.4.2</dokkat-schemas.version>
 		<nav-virksomhet-opprettDokumenthenvendelse-v1.version>1.0.2</nav-virksomhet-opprettDokumenthenvendelse-v1.version>
 		<nav-virksomhet-varselMedHandling-v1.version>1.0.0</nav-virksomhet-varselMedHandling-v1.version>
+		<melding-virksomhet-dokdistfordeling.version>2.0.2</melding-virksomhet-dokdistfordeling.version>
 	</properties>
 
 	<dependencyManagement>

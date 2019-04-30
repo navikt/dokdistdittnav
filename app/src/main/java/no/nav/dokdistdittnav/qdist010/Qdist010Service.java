@@ -11,7 +11,7 @@ import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.HentForsendelseResponseTo;
 import no.nav.dokdistdittnav.exception.technical.KunneIkkeHenteDagensDatoTechnicalException;
 import no.nav.dokdistdittnav.metrics.MetricUpdater;
-import no.nav.dokdistdittnav.qdist010.domain.DistribuerForsendelseTilSentralPrintTo;
+import no.nav.dokdistdittnav.qdist010.domain.DistribuerForsendelseTilDittNavTo;
 import no.nav.dokdistdittnav.qdist010.map.DokumenthenvendelseMapper;
 import no.nav.dokdistdittnav.qdist010.map.VarselMedHandlingMapper;
 import no.nav.dokdistdittnav.storage.Storage;
@@ -60,8 +60,8 @@ public class Qdist010Service {
 	}
 
 	@Handler
-	public Dokumenthenvendelse distribuerForsendelseTilDittNAVService(DistribuerForsendelseTilSentralPrintTo distribuerForsendelseTilSentralPrintTo, Exchange exchange) {
-		HentForsendelseResponseTo hentForsendelseResponseTo = administrerForsendelse.hentForsendelse(distribuerForsendelseTilSentralPrintTo
+	public Dokumenthenvendelse distribuerForsendelseTilDittNAVService(DistribuerForsendelseTilDittNavTo distribuerForsendelseTilDittNavTo, Exchange exchange) {
+		HentForsendelseResponseTo hentForsendelseResponseTo = administrerForsendelse.hentForsendelse(distribuerForsendelseTilDittNavTo
 				.getForsendelseId());
 		validateForsendelseStatus(hentForsendelseResponseTo.getForsendelseStatus());
 		DokumenttypeInfoTo dokumenttypeInfoTo = dokumentkatalogAdmin.getDokumenttypeInfo(getDokumenttypeIdHoveddokument(hentForsendelseResponseTo));

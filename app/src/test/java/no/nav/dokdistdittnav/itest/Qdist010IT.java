@@ -119,7 +119,35 @@ public class Qdist010IT {
 					is(varselReplace(classpathToString("tvarsel003/tvarsel003-happy.xml"))));
 		});
 
-		verifyAllStubs();
+		verifyAllStubs(1);
+	}
+
+	@Test
+	public void shouldThrowForsendelseManglerForsendelseIdFunctionalExceptionManglerForsendelseId() throws Exception {
+
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-feilId.xml"));
+
+		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+			String resultOnQdist010FunksjonellFeilQueue = receive(qdist010FunksjonellFeil);
+			assertNotNull(resultOnQdist010FunksjonellFeilQueue);
+			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-feilId.xml"));
+		});
+
+		verifyAllStubs(0);
+	}
+
+	@Test
+	public void shouldThrowForsendelseManglerForsendelseIdFunctionalExceptionTomForsendelseId() throws Exception {
+
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-tom-forsendelseId.xml"));
+
+		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+			String resultOnQdist010FunksjonellFeilQueue = receive(qdist010FunksjonellFeil);
+			assertNotNull(resultOnQdist010FunksjonellFeilQueue);
+			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-tom-forsendelseId.xml"));
+		});
+
+		verifyAllStubs(0);
 	}
 
 	@Test
@@ -136,6 +164,9 @@ public class Qdist010IT {
 		});
 
 		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+		verify(0, getRequestedFor(urlEqualTo("/dokumenttypeinfo/" + DOKUMENTTYPE_ID_HOVEDDOK)));
+		verify(0, getRequestedFor(urlEqualTo("/varselinfo/" + VARSEL_TYPE_ID)));
+		verify(0, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")));
 	}
 
 	@Test
@@ -152,6 +183,9 @@ public class Qdist010IT {
 		});
 
 		verify(MAX_ATTEMPTS_SHORT, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+		verify(0, getRequestedFor(urlEqualTo("/dokumenttypeinfo/" + DOKUMENTTYPE_ID_HOVEDDOK)));
+		verify(0, getRequestedFor(urlEqualTo("/varselinfo/" + VARSEL_TYPE_ID)));
+		verify(0, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")));
 	}
 
 	@Test
@@ -169,6 +203,9 @@ public class Qdist010IT {
 		});
 
 		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+		verify(0, getRequestedFor(urlEqualTo("/dokumenttypeinfo/" + DOKUMENTTYPE_ID_HOVEDDOK)));
+		verify(0, getRequestedFor(urlEqualTo("/varselinfo/" + VARSEL_TYPE_ID)));
+		verify(0, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")));
 	}
 
 	@Test
@@ -186,6 +223,9 @@ public class Qdist010IT {
 		});
 
 		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+		verify(0, getRequestedFor(urlEqualTo("/dokumenttypeinfo/" + DOKUMENTTYPE_ID_HOVEDDOK)));
+		verify(0, getRequestedFor(urlEqualTo("/varselinfo/" + VARSEL_TYPE_ID)));
+		verify(0, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")));
 	}
 
 	@Test
@@ -206,6 +246,8 @@ public class Qdist010IT {
 
 		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
 		verify(1, getRequestedFor(urlEqualTo("/dokumenttypeinfo/" + DOKUMENTTYPE_ID_HOVEDDOK)));
+		verify(0, getRequestedFor(urlEqualTo("/varselinfo/" + VARSEL_TYPE_ID)));
+		verify(0, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")));
 	}
 
 	@Test
@@ -227,6 +269,8 @@ public class Qdist010IT {
 
 		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
 		verify(1, getRequestedFor(urlEqualTo("/dokumenttypeinfo/" + DOKUMENTTYPE_ID_HOVEDDOK)));
+		verify(0, getRequestedFor(urlEqualTo("/varselinfo/" + VARSEL_TYPE_ID)));
+		verify(0, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")));
 	}
 
 	@Test
@@ -248,6 +292,8 @@ public class Qdist010IT {
 
 		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
 		verify(1, getRequestedFor(urlEqualTo("/dokumenttypeinfo/" + DOKUMENTTYPE_ID_HOVEDDOK)));
+		verify(0, getRequestedFor(urlEqualTo("/varselinfo/" + VARSEL_TYPE_ID)));
+		verify(0, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")));
 	}
 
 	@Test
@@ -268,6 +314,8 @@ public class Qdist010IT {
 
 		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
 		verify(MAX_ATTEMPTS_SHORT, getRequestedFor(urlEqualTo("/dokumenttypeinfo/" + DOKUMENTTYPE_ID_HOVEDDOK)));
+		verify(0, getRequestedFor(urlEqualTo("/varselinfo/" + VARSEL_TYPE_ID)));
+		verify(0, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")));
 	}
 
 	@Test
@@ -292,6 +340,7 @@ public class Qdist010IT {
 		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
 		verify(1, getRequestedFor(urlEqualTo("/dokumenttypeinfo/" + DOKUMENTTYPE_ID_HOVEDDOK)));
 		verify(1, getRequestedFor(urlEqualTo("/varselinfo/" + VARSEL_TYPE_ID)));
+		verify(0, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")));
 	}
 
 	@Test
@@ -316,6 +365,7 @@ public class Qdist010IT {
 		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
 		verify(1, getRequestedFor(urlEqualTo("/dokumenttypeinfo/" + DOKUMENTTYPE_ID_HOVEDDOK)));
 		verify(MAX_ATTEMPTS_SHORT, getRequestedFor(urlEqualTo("/varselinfo/" + VARSEL_TYPE_ID)));
+		verify(0, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")));
 	}
 
 	@Test
@@ -340,7 +390,7 @@ public class Qdist010IT {
 			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
-		verifyAllStubs();
+		verifyAllStubs(1);
 	}
 
 	@Test
@@ -389,11 +439,11 @@ public class Qdist010IT {
 		return (T) response;
 	}
 
-	private void verifyAllStubs() {
-		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
-		verify(1, getRequestedFor(urlEqualTo("/dokumenttypeinfo/" + DOKUMENTTYPE_ID_HOVEDDOK)));
-		verify(1, getRequestedFor(urlEqualTo("/varselinfo/" + VARSEL_TYPE_ID)));
-		verify(1, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")));
+	private void verifyAllStubs(int count) {
+		verify(count, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+		verify(count, getRequestedFor(urlEqualTo("/dokumenttypeinfo/" + DOKUMENTTYPE_ID_HOVEDDOK)));
+		verify(count, getRequestedFor(urlEqualTo("/varselinfo/" + VARSEL_TYPE_ID)));
+		verify(count, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")));
 	}
 
 	private String henvendelseReplace(String henvendelse) {
