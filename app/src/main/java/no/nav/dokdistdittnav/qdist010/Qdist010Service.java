@@ -10,7 +10,6 @@ import no.nav.dokdistdittnav.consumer.dokkat.tkat021.VarselInfoTo;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.HentForsendelseResponseTo;
 import no.nav.dokdistdittnav.exception.technical.KunneIkkeHenteDagensDatoTechnicalException;
-import no.nav.dokdistdittnav.metrics.MetricUpdater;
 import no.nav.dokdistdittnav.qdist010.domain.DistribuerForsendelseTilDittNavTo;
 import no.nav.dokdistdittnav.qdist010.map.DokumenthenvendelseMapper;
 import no.nav.dokdistdittnav.qdist010.map.VarselMedHandlingMapper;
@@ -37,7 +36,6 @@ public class Qdist010Service {
 	private final DokumentkatalogAdmin dokumentkatalogAdmin;
 	private final VarselInfo varselInfo;
 	private final AdministrerForsendelse administrerForsendelse;
-	private final MetricUpdater metricUpdater;
 
 	public static final String PROPERTY_UNMARSHALLED_VARSEL = "QDIST010.varsel";
 
@@ -47,12 +45,10 @@ public class Qdist010Service {
 	@Inject
 	public Qdist010Service(DokumentkatalogAdmin dokumentkatalogAdmin,
 						   VarselInfo varselInfo,
-						   AdministrerForsendelse administrerForsendelse,
-						   MetricUpdater metricUpdater) {
+						   AdministrerForsendelse administrerForsendelse) {
 		this.dokumentkatalogAdmin = dokumentkatalogAdmin;
 		this.varselInfo = varselInfo;
 		this.administrerForsendelse = administrerForsendelse;
-		this.metricUpdater = metricUpdater;
 	}
 
 	@Handler
