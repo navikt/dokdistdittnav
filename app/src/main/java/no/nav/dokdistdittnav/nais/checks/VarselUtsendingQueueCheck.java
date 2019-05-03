@@ -1,9 +1,9 @@
 package no.nav.dokdistdittnav.nais.checks;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import no.nav.dokdistdittnav.nais.selftest.DependencyType;
 import no.nav.dokdistdittnav.nais.selftest.AbstractDependencyCheck;
 import no.nav.dokdistdittnav.nais.selftest.ApplicationNotReadyException;
+import no.nav.dokdistdittnav.nais.selftest.DependencyType;
 import no.nav.dokdistdittnav.nais.selftest.Importance;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
@@ -13,24 +13,24 @@ import javax.jms.JMSException;
 import javax.jms.Queue;
 
 @Component
-public class Qdist010QueueCheck extends AbstractDependencyCheck {
+public class VarselUtsendingQueueCheck extends AbstractDependencyCheck {
 
-	private final Queue qdist010;
+	private final Queue varselUtsending;
 	private final JmsTemplate jmsTemplate;
 
 	@Inject
-	public Qdist010QueueCheck(MeterRegistry registry, Queue qdist010, JmsTemplate jmsTemplate) throws JMSException {
-		super(DependencyType.QUEUE, "Qdist010Queue", qdist010.getQueueName(), Importance.CRITICAL, registry);
-		this.qdist010 = qdist010;
+	public VarselUtsendingQueueCheck(MeterRegistry registry, Queue varselUtsending, JmsTemplate jmsTemplate) throws JMSException {
+		super(DependencyType.QUEUE, "VarselUtsendingQueue", varselUtsending.getQueueName(), Importance.WARNING, registry);
+		this.varselUtsending = varselUtsending;
 		this.jmsTemplate = jmsTemplate;
 	}
 
 	@Override
 	protected void doCheck() {
 		try {
-			checkQueue(qdist010);
+			checkQueue(varselUtsending);
 		} catch (Exception e) {
-			throw new ApplicationNotReadyException("JMS Queue Browser failed to get queue: " + qdist010, e);
+			throw new ApplicationNotReadyException("JMS Queue Browser failed to get queue: " + varselUtsending, e);
 		}
 	}
 
