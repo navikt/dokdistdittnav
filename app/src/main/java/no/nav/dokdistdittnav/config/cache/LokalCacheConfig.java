@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 public class LokalCacheConfig {
 
 	public static final String TKAT020_CACHE = "tkat020Cache";
-	public static final String TKAT021_CACHE = "tkat020Cache";
+	public static final String TKAT021_CACHE = "tkat021Cache";
 
 	@Bean
 	@Primary

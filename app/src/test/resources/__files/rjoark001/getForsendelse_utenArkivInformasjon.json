@@ -1,10 +1,21 @@
 {
   "bestillingsId": "insertCallIdHere",
+  "modus": "T",
   "forsendelseStatus": "KLAR_FOR_DIST",
+  "tema": "FS22",
+  "forsendelseTittel": "forsendelseTittel",
   "mottaker": {
     "mottakerId": "mottakerId",
     "mottakerNavn": "mottakerNavn",
     "mottakerType": "PERSON"
+  },
+  "postadresse": {
+    "adresselinje1": "adresselinjeEn",
+    "adresselinje2": "adresselinjeTo",
+    "adresselinje3": "adresselinjeTre",
+    "postnummer": "123",
+    "poststed": "poststed",
+    "landkode": "NO"
   },
   "dokumenter": [
     {

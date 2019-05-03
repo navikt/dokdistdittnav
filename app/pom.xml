@@ -116,6 +116,11 @@
 			<artifactId>dokkat-schemas</artifactId>
 			<version>${dokkat-schemas.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>no.nav.meldinger.virksomhet</groupId>
+			<artifactId>melding-virksomhet-dokdistfordeling</artifactId>
+			<version>${melding-virksomhet-dokdistfordeling.version}</version>
+		</dependency>
 		<!--Tjenestespesifikasjoner-->
 		<dependency>
 			<groupId>no.nav.meldinger.virksomhet</groupId>

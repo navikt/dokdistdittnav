@@ -7,10 +7,12 @@ import io.micrometer.core.instrument.Timer;
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
 import org.apache.camel.Exchange;
 import org.apache.camel.Route;
+import org.apache.camel.ValidationException;
 import org.apache.camel.support.RoutePolicySupport;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import javax.xml.bind.JAXBException;
 
 /**
  * @author Ugur Alpay Cenar, Visma Consulting.
@@ -61,7 +63,9 @@ public class Qdist010MetricsRoutePolicy extends RoutePolicySupport {
 	}
 
 	private boolean isFunctionalException(Exception e) {
-		return (e instanceof AbstractDokdistdittnavFunctionalException);
+		return (e instanceof AbstractDokdistdittnavFunctionalException ||
+				e instanceof JAXBException ||
+				e instanceof ValidationException);
 	}
 
 	private Exception getException(Exchange exchange) {

@@ -1,0 +1,13 @@
+
+<ns2:dokumenthenvendelse xmlns:ns2="http://nav.no/melding/virksomhet/opprettDokumenthenvendelse/v1/opprettDokumenthenvendelse">
+    <personident>mottakerId</personident>
+    <dokumenttittel>forsendelseTittel</dokumenttittel>
+    <arkivtema>FS22</arkivtema>
+    <ferdigstiltDato>2019-04-29T14:33:18.719+02:00</ferdigstiltDato>
+    <journalpostId>123</journalpostId>
+    <dokumentIdListe>arkivDokumentInfoId1</dokumentIdListe>
+    <dokumentIdListe>arkivDokumentInfoId2</dokumentIdListe>
+    <dokumentIdListe>arkivDokumentInfoId3</dokumentIdListe>
+    <varselbestillingId></varselbestillingId>
+    <stoppRepeterendeVarsel>false</stoppRepeterendeVarsel>
+</ns2:dokumenthenvendelse>
