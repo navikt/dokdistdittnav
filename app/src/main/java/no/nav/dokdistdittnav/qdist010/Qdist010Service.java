@@ -14,7 +14,6 @@ import no.nav.dokdistdittnav.metrics.MetricUpdater;
 import no.nav.dokdistdittnav.qdist010.domain.DistribuerForsendelseTilDittNavTo;
 import no.nav.dokdistdittnav.qdist010.map.DokumenthenvendelseMapper;
 import no.nav.dokdistdittnav.qdist010.map.VarselMedHandlingMapper;
-import no.nav.dokdistdittnav.storage.Storage;
 import no.nav.melding.virksomhet.opprettdokumenthenvendelse.v1.opprettdokumenthenvendelse.Dokumenthenvendelse;
 import no.nav.melding.virksomhet.varselmedhandling.v1.varselmedhandling.VarselMedHandling;
 import org.apache.camel.Exchange;
@@ -38,7 +37,6 @@ public class Qdist010Service {
 	private final DokumentkatalogAdmin dokumentkatalogAdmin;
 	private final VarselInfo varselInfo;
 	private final AdministrerForsendelse administrerForsendelse;
-	private final Storage storage;
 	private final MetricUpdater metricUpdater;
 
 	public static final String PROPERTY_UNMARSHALLED_VARSEL = "QDIST010.varsel";
@@ -50,12 +48,10 @@ public class Qdist010Service {
 	public Qdist010Service(DokumentkatalogAdmin dokumentkatalogAdmin,
 						   VarselInfo varselInfo,
 						   AdministrerForsendelse administrerForsendelse,
-						   Storage storage,
 						   MetricUpdater metricUpdater) {
 		this.dokumentkatalogAdmin = dokumentkatalogAdmin;
 		this.varselInfo = varselInfo;
 		this.administrerForsendelse = administrerForsendelse;
-		this.storage = storage;
 		this.metricUpdater = metricUpdater;
 	}
 

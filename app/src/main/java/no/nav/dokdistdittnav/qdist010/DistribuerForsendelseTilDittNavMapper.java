@@ -1,7 +1,5 @@
 package no.nav.dokdistdittnav.qdist010;
 
-import static java.lang.String.format;
-
 import no.nav.dokdistdittnav.qdist010.domain.DistribuerForsendelseTilDittNavTo;
 import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKanal;
 import org.apache.camel.Handler;
