@@ -184,6 +184,12 @@
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-registry-prometheus</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>no.stelvio</groupId>
+			<artifactId>stelvio-common-java</artifactId>
+			<version>4.1.8</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
