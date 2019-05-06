@@ -7,6 +7,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import no.nav.dokdistdittnav.consumer.dokkat.tkat021.VarselInfoTo;
 import no.nav.dokdistdittnav.consumer.rdist001.HentForsendelseResponseTo;
+import no.nav.dokdistdittnav.exception.technical.KunneIkkeHenteDagensDatoTechnicalException;
 import no.nav.dokdistdittnav.qdist010.map.DokumenthenvendelseMapper;
 import no.nav.melding.virksomhet.opprettdokumenthenvendelse.v1.opprettdokumenthenvendelse.Dokumenthenvendelse;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,6 @@ public class DokumenthenvendelseMapperTest {
 	private static final String MOTTAKER_ID = "mottakerId";
 	private static final String ARKIV_ID = "arkivId";
 	private static final String ARKIV_DOKUMENT_INFO_ID = "arkiverDokumentInfoId";
-	private static final String VARSELTYPE_ID = "varselTypeId";
 	private static final Boolean STOPP_REPETERENDE_VARSEL = false;
 	private static final String VARSEL_BESTILLING_ID = "varselBestillingId";
 	private XMLGregorianCalendar FERDIGSTILL_DATO;
@@ -34,7 +34,7 @@ public class DokumenthenvendelseMapperTest {
 
 
 	@Test
-	public void shouldMap() throws DatatypeConfigurationException {
+	public void shouldMap() {
 		FERDIGSTILL_DATO = getXMLGregorianCalendarNow();
 		Dokumenthenvendelse dokumenthenvendelse = dokumenthenvendelseMapper.map(createHentForsendelseResponseTo(),
 				createVarselInfoTo(),
@@ -73,11 +73,14 @@ public class DokumenthenvendelseMapperTest {
 				.build();
 	}
 
-	private XMLGregorianCalendar getXMLGregorianCalendarNow()
-			throws DatatypeConfigurationException {
-		GregorianCalendar gregorianCalendar = new GregorianCalendar();
-		DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
-		return datatypeFactory.newXMLGregorianCalendar(gregorianCalendar);
+	private XMLGregorianCalendar getXMLGregorianCalendarNow() {
+		XMLGregorianCalendar now;
+		try {
+			now = DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar());
+		} catch (DatatypeConfigurationException e) {
+			throw new KunneIkkeHenteDagensDatoTechnicalException("QDIST010 kunne ikke hente dagens dato", e);
+		}
+		return now;
 	}
 
 

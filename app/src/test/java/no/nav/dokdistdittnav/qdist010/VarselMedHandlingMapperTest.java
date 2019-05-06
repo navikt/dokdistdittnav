@@ -7,6 +7,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import no.nav.dokdistdittnav.consumer.dokkat.tkat020.DokumenttypeInfoTo;
 import no.nav.dokdistdittnav.consumer.rdist001.HentForsendelseResponseTo;
+import no.nav.dokdistdittnav.exception.technical.KunneIkkeHenteDagensDatoTechnicalException;
 import no.nav.dokdistdittnav.qdist010.map.VarselMedHandlingMapper;
 import no.nav.melding.virksomhet.varselmedhandling.v1.varselmedhandling.ObjectFactory;
 import no.nav.melding.virksomhet.varselmedhandling.v1.varselmedhandling.Person;
@@ -23,21 +24,21 @@ public class VarselMedHandlingMapperTest {
 	private static final String MOTTAKER_ID = "mottakerId";
 	private static final String VARSEL_TYPE_ID = "varseltypeId";
 	private static final String VARSEL_BESTILLINGS_ID = "varselbestillingsId";
-	private XMLGregorianCalendar FERDIGSTILL_DATO;
+	private XMLGregorianCalendar FERDIGSTILL_DATO = getXMLGregorianCalendarNow();
 	private static final String FORSENDELSE_TITTEL = "forsendelsertittel";
 
 	private static VarselMedHandlingMapper varselMedHandlingMapper = new VarselMedHandlingMapper();
 
 	@Test
-	public void shouldMap() throws DatatypeConfigurationException {
+	public void shouldMap() {
 		FERDIGSTILL_DATO = getXMLGregorianCalendarNow();
 		VarselMedHandling varselMedHandling = varselMedHandlingMapper.map(createHentForsendelseResponseTo(),
 				createDokumentTypeInfoTo(),
 				VARSEL_BESTILLINGS_ID,
 				FERDIGSTILL_DATO);
 
-		assertEquals(VARSEL_BESTILLINGS_ID,varselMedHandling.getVarselbestillingId());
-		assertEquals(createPerson().getIdent(), ((Person)varselMedHandling.getMottaker()).getIdent());
+		assertEquals(VARSEL_BESTILLINGS_ID, varselMedHandling.getVarselbestillingId());
+		assertEquals(createPerson().getIdent(), ((Person) varselMedHandling.getMottaker()).getIdent());
 		assertEquals(VARSEL_TYPE_ID, varselMedHandling.getVarseltypeId());
 		assertEquals(FORSENDELSE_TITTEL, varselMedHandling.getParameterListe().get(0).getValue());
 		assertEquals(FERDIGSTILL_DATO.toString(), varselMedHandling.getParameterListe().get(1).getValue());
@@ -59,14 +60,17 @@ public class VarselMedHandlingMapperTest {
 				.build();
 	}
 
-	private XMLGregorianCalendar getXMLGregorianCalendarNow()
-			throws DatatypeConfigurationException {
-		GregorianCalendar gregorianCalendar = new GregorianCalendar();
-		DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
-		return datatypeFactory.newXMLGregorianCalendar(gregorianCalendar);
+	private XMLGregorianCalendar getXMLGregorianCalendarNow() {
+		XMLGregorianCalendar now;
+		try {
+			now = DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar());
+		} catch (DatatypeConfigurationException e) {
+			throw new KunneIkkeHenteDagensDatoTechnicalException("QDIST010 kunne ikke hente dagens dato", e);
+		}
+		return now;
 	}
 
-	private Person createPerson(){
+	private Person createPerson() {
 		ObjectFactory varselOF = new ObjectFactory();
 		Person aktoer = varselOF.createPerson();
 		aktoer.setIdent(MOTTAKER_ID);
