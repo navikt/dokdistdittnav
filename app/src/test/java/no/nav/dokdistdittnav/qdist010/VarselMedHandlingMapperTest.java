@@ -9,7 +9,6 @@ import no.nav.dokdistdittnav.consumer.dokkat.tkat020.DokumenttypeInfoTo;
 import no.nav.dokdistdittnav.consumer.rdist001.HentForsendelseResponseTo;
 import no.nav.dokdistdittnav.exception.technical.KunneIkkeHenteDagensDatoTechnicalException;
 import no.nav.dokdistdittnav.qdist010.map.VarselMedHandlingMapper;
-import no.nav.melding.virksomhet.varselmedhandling.v1.varselmedhandling.ObjectFactory;
 import no.nav.melding.virksomhet.varselmedhandling.v1.varselmedhandling.Person;
 import no.nav.melding.virksomhet.varselmedhandling.v1.varselmedhandling.VarselMedHandling;
 import org.junit.jupiter.api.Test;
@@ -24,25 +23,31 @@ public class VarselMedHandlingMapperTest {
 	private static final String MOTTAKER_ID = "mottakerId";
 	private static final String VARSEL_TYPE_ID = "varseltypeId";
 	private static final String VARSEL_BESTILLINGS_ID = "varselbestillingsId";
-	private XMLGregorianCalendar FERDIGSTILL_DATO = getXMLGregorianCalendarNow();
+	private final XMLGregorianCalendar FERDIGSTILL_DATO = getXMLGregorianCalendarNow();
 	private static final String FORSENDELSE_TITTEL = "forsendelsertittel";
+	private static final String DOKUMENTTITTEL_KEY = "DokumentTittel";
+	private static final String FERDIGSTILTDATO_KEY = "FerdigstiltDato";
+	private static final String VARSELBESTILLING_ID_KEY = "VarselbestillingsId";
 
 	private static VarselMedHandlingMapper varselMedHandlingMapper = new VarselMedHandlingMapper();
 
 	@Test
 	public void shouldMap() {
-		FERDIGSTILL_DATO = getXMLGregorianCalendarNow();
 		VarselMedHandling varselMedHandling = varselMedHandlingMapper.map(createHentForsendelseResponseTo(),
 				createDokumentTypeInfoTo(),
 				VARSEL_BESTILLINGS_ID,
 				FERDIGSTILL_DATO);
 
 		assertEquals(VARSEL_BESTILLINGS_ID, varselMedHandling.getVarselbestillingId());
-		assertEquals(createPerson().getIdent(), ((Person) varselMedHandling.getMottaker()).getIdent());
+		assertEquals(MOTTAKER_ID, ((Person) varselMedHandling.getMottaker()).getIdent());
 		assertEquals(VARSEL_TYPE_ID, varselMedHandling.getVarseltypeId());
 		assertEquals(FORSENDELSE_TITTEL, varselMedHandling.getParameterListe().get(0).getValue());
 		assertEquals(FERDIGSTILL_DATO.toString(), varselMedHandling.getParameterListe().get(1).getValue());
 		assertEquals(VARSEL_BESTILLINGS_ID, varselMedHandling.getParameterListe().get(2).getValue());
+		assertEquals(DOKUMENTTITTEL_KEY, varselMedHandling.getParameterListe().get(0).getKey());
+		assertEquals(FERDIGSTILTDATO_KEY, varselMedHandling.getParameterListe().get(1).getKey());
+		assertEquals(VARSELBESTILLING_ID_KEY, varselMedHandling.getParameterListe().get(2).getKey());
+		assertEquals(null, varselMedHandling.getUtloepstidspunkt());
 	}
 
 	private HentForsendelseResponseTo createHentForsendelseResponseTo() {
@@ -69,12 +74,4 @@ public class VarselMedHandlingMapperTest {
 		}
 		return now;
 	}
-
-	private Person createPerson() {
-		ObjectFactory varselOF = new ObjectFactory();
-		Person aktoer = varselOF.createPerson();
-		aktoer.setIdent(MOTTAKER_ID);
-		return aktoer;
-	}
-
 }

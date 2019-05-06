@@ -25,7 +25,11 @@ public class DokumenthenvendelseMapperTest {
 	private static final String FORSENDELSE_TITTEL = "forsenselseTittel";
 	private static final String MOTTAKER_ID = "mottakerId";
 	private static final String ARKIV_ID = "arkivId";
-	private static final String ARKIV_DOKUMENT_INFO_ID = "arkiverDokumentInfoId";
+	private static final String ARKIV_DOKUMENT_INFO_ID_1 = "arkiverDokumentInfoId";
+	private static final String ARKIV_DOKUMENT_INFO_ID_2 = "arkiverDokumentInfoId";
+	private static final String ARKIV_DOKUMENT_INFO_ID_3 = "arkiverDokumentInfoId";
+	private static final String TILKNYTTET_SOM_HOVEDDOK = "HOVEDDOKUMENT";
+	private static final String TILKNYTTET_SOM_VEDLEGG = "VEDLEGG";
 	private static final Boolean STOPP_REPETERENDE_VARSEL = false;
 	private static final String VARSEL_BESTILLING_ID = "varselBestillingId";
 	private XMLGregorianCalendar FERDIGSTILL_DATO;
@@ -48,7 +52,9 @@ public class DokumenthenvendelseMapperTest {
 		assertEquals(ARKIV_ID, dokumenthenvendelse.getJournalpostId());
 		assertEquals(VARSEL_BESTILLING_ID, dokumenthenvendelse.getVarselbestillingId());
 		assertEquals(STOPP_REPETERENDE_VARSEL, dokumenthenvendelse.isStoppRepeterendeVarsel());
-		assertEquals(ARKIV_DOKUMENT_INFO_ID, dokumenthenvendelse.getDokumentIdListe().get(0));
+		assertEquals(ARKIV_DOKUMENT_INFO_ID_1, dokumenthenvendelse.getDokumentIdListe().get(0));
+		assertEquals(ARKIV_DOKUMENT_INFO_ID_2, dokumenthenvendelse.getDokumentIdListe().get(1));
+		assertEquals(ARKIV_DOKUMENT_INFO_ID_3, dokumenthenvendelse.getDokumentIdListe().get(2));
 	}
 
 	private HentForsendelseResponseTo createHentForsendelseResponseTo() {
@@ -62,8 +68,17 @@ public class DokumenthenvendelseMapperTest {
 						.arkivId(ARKIV_ID)
 						.build())
 				.dokumenter(Arrays.asList(HentForsendelseResponseTo.DokumentTo.builder()
-						.arkivDokumentInfoId(ARKIV_DOKUMENT_INFO_ID)
-						.build()))
+								.arkivDokumentInfoId(ARKIV_DOKUMENT_INFO_ID_1)
+								.tilknyttetSom(TILKNYTTET_SOM_HOVEDDOK)
+								.build(),
+						HentForsendelseResponseTo.DokumentTo.builder()
+								.arkivDokumentInfoId(ARKIV_DOKUMENT_INFO_ID_2)
+								.tilknyttetSom(TILKNYTTET_SOM_VEDLEGG)
+								.build(),
+						HentForsendelseResponseTo.DokumentTo.builder()
+								.arkivDokumentInfoId(ARKIV_DOKUMENT_INFO_ID_3)
+								.tilknyttetSom(TILKNYTTET_SOM_VEDLEGG)
+								.build()))
 				.build();
 	}
 
