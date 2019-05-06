@@ -28,18 +28,12 @@ fasitResources:
       propertyMap:
         username: serviceuser_username
         password: serviceuser_password
-    - alias: dokdistdittnav_s3_creds
-      resourceType: credential
-    - alias: dokdistmellomlager_s3_storage_crypto
-      resourceType: credential
     - alias: DokumenttypeInfo_v4
       resourceType: restservice
     - alias: VarselInfo_v1
       resourceType: restservice
     - alias: administrerforsendelse_v1
       resourceType: restservice
-    - alias: securityTokenService
-      resourceType: baseurl
     - alias: dokdistdittnav_channel
       resourceType: channel
       propertyMap:

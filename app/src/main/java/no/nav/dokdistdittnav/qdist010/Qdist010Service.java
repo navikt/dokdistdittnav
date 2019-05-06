@@ -72,7 +72,7 @@ public class Qdist010Service {
 		try {
 			now = DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar());
 		} catch (DatatypeConfigurationException e) {
-			throw new KunneIkkeHenteDagensDatoTechnicalException("QDIST010 kunne ikke hente dagens dato", e);
+			throw new KunneIkkeHenteDagensDatoTechnicalException("qdist010 kunne ikke hente dagens dato", e);
 		}
 		return now;
 	}
