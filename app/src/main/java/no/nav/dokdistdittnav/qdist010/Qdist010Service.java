@@ -1,5 +1,6 @@
 package no.nav.dokdistdittnav.qdist010;
 
+import static no.nav.dokdistdittnav.qdist010.Qdist010Route.PROPERTY_BESTILLINGS_ID;
 import static no.nav.dokdistdittnav.qdist010.util.Qdist010FunctionalUtils.getDokumenttypeIdHoveddokument;
 import static no.nav.dokdistdittnav.qdist010.util.Qdist010FunctionalUtils.validateForsendelseStatus;
 
@@ -55,6 +56,7 @@ public class Qdist010Service {
 	public Dokumenthenvendelse distribuerForsendelseTilDittNAVService(DistribuerForsendelseTilDittNavTo distribuerForsendelseTilDittNavTo, Exchange exchange) {
 		HentForsendelseResponseTo hentForsendelseResponseTo = administrerForsendelse.hentForsendelse(distribuerForsendelseTilDittNavTo
 				.getForsendelseId());
+		exchange.setProperty(PROPERTY_BESTILLINGS_ID, hentForsendelseResponseTo.getBestillingsId());
 		validateForsendelseStatus(hentForsendelseResponseTo.getForsendelseStatus());
 		DokumenttypeInfoTo dokumenttypeInfoTo = dokumentkatalogAdmin.getDokumenttypeInfo(getDokumenttypeIdHoveddokument(hentForsendelseResponseTo));
 
