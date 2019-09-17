@@ -1,6 +1,8 @@
 package no.nav.dokdistdittnav.qdist010;
 
 import static no.nav.dokdistdittnav.qdist010.Qdist010Route.PROPERTY_BESTILLINGS_ID;
+import static no.nav.dokdistdittnav.qdist010.Qdist010Route.PROPERTY_JOURNALPOST_ID;
+import static no.nav.dokdistdittnav.qdist010.Qdist010Route.PROPERTY_VARSELBESTILLING_ID;
 import static no.nav.dokdistdittnav.qdist010.util.Qdist010FunctionalUtils.getDokumenttypeIdHoveddokument;
 import static no.nav.dokdistdittnav.qdist010.util.Qdist010FunctionalUtils.validateForsendelseStatus;
 
@@ -61,6 +63,8 @@ public class Qdist010Service {
 		DokumenttypeInfoTo dokumenttypeInfoTo = dokumentkatalogAdmin.getDokumenttypeInfo(getDokumenttypeIdHoveddokument(hentForsendelseResponseTo));
 
 		String varselbestillingId = UUID.randomUUID().toString();
+		exchange.setProperty(PROPERTY_VARSELBESTILLING_ID, varselbestillingId);
+		exchange.setProperty(PROPERTY_JOURNALPOST_ID, hentForsendelseResponseTo.getArkivInformasjon().getArkivId());
 		XMLGregorianCalendar now = getNow();
 		VarselInfoTo varselInfoTo = varselInfo.getVarselInfo(dokumenttypeInfoTo.getVarselTypeId());
 		VarselMedHandling varsel = varselMedHandlingMapper.map(hentForsendelseResponseTo, dokumenttypeInfoTo, varselbestillingId, now);
