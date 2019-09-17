@@ -1,5 +1,6 @@
 package no.nav.dokdistdittnav.qdist010;
 
+import static no.nav.dokdistdittnav.qdist010.Qdist010Route.PROPERTY_BESTILLINGS_ID;
 import static no.nav.dokdistdittnav.qdist010.Qdist010Route.PROPERTY_JOURNALPOST_ID;
 import static no.nav.dokdistdittnav.qdist010.Qdist010Route.PROPERTY_VARSELBESTILLING_ID;
 import static no.nav.dokdistdittnav.qdist010.util.Qdist010FunctionalUtils.getDokumenttypeIdHoveddokument;
@@ -41,7 +42,6 @@ public class Qdist010Service {
 
 	public static final String PROPERTY_UNMARSHALLED_VARSEL = "QDIST010.varsel";
 
-
 	private final DokumenthenvendelseMapper dokumenthenvendelseMapper = new DokumenthenvendelseMapper();
 	private final VarselMedHandlingMapper varselMedHandlingMapper = new VarselMedHandlingMapper();
 
@@ -58,6 +58,7 @@ public class Qdist010Service {
 	public Dokumenthenvendelse distribuerForsendelseTilDittNAVService(DistribuerForsendelseTilDittNavTo distribuerForsendelseTilDittNavTo, Exchange exchange) {
 		HentForsendelseResponseTo hentForsendelseResponseTo = administrerForsendelse.hentForsendelse(distribuerForsendelseTilDittNavTo
 				.getForsendelseId());
+		exchange.setProperty(PROPERTY_BESTILLINGS_ID, hentForsendelseResponseTo.getBestillingsId());
 		validateForsendelseStatus(hentForsendelseResponseTo.getForsendelseStatus());
 		DokumenttypeInfoTo dokumenttypeInfoTo = dokumentkatalogAdmin.getDokumenttypeInfo(getDokumenttypeIdHoveddokument(hentForsendelseResponseTo));
 

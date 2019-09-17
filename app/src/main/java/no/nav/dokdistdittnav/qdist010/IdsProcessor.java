@@ -1,15 +1,14 @@
 package no.nav.dokdistdittnav.qdist010;
 
+import static no.nav.dokdistdittnav.constants.MdcConstants.CALL_ID;
+import static no.nav.dokdistdittnav.qdist010.Qdist010Route.PROPERTY_FORSENDELSE_ID;
+
 import no.nav.dokdistdittnav.exception.functional.ForsendelseManglerForsendelseIdFunctionalException;
 import no.nav.dokdistdittnav.exception.functional.ForsendelseManglerPaakrevdHeaderFunctionalException;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.xml.XPathBuilder;
 import org.slf4j.MDC;
-
-import static no.nav.dokdistdittnav.constants.MdcConstants.CALL_ID;
-import static no.nav.dokdistdittnav.qdist010.Qdist010Route.PROPERTY_BESTILLINGS_ID;
-import static no.nav.dokdistdittnav.qdist010.Qdist010Route.PROPERTY_FORSENDELSE_ID;
 
 /**
  * @author Erik Bråten, Visma Consulting.
@@ -29,8 +28,7 @@ public class IdsProcessor implements Processor {
         } else if (callId.trim().isEmpty()) {
             throw new ForsendelseManglerPaakrevdHeaderFunctionalException("qdist010 har mottatt forsendelse med tom header callId");
         }
-        exchange.setProperty(PROPERTY_BESTILLINGS_ID, callId);
-        MDC.put(CALL_ID, exchange.getProperty(PROPERTY_BESTILLINGS_ID, String.class));
+        MDC.put(CALL_ID, callId);
     }
 
     private void setForsendelseIdAsProperty(Exchange exchange) {
