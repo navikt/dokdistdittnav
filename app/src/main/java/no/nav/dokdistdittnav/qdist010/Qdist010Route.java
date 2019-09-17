@@ -32,6 +32,8 @@ public class Qdist010Route extends SpringRouteBuilder {
 	public static final String SERVICE_ID = "qdist010";
 	static final String PROPERTY_BESTILLINGS_ID = "bestillingsId";
 	static final String PROPERTY_FORSENDELSE_ID = "forsendelseId";
+	static final String PROPERTY_VARSELBESTILLING_ID = "varselbestillingId";
+	static final String PROPERTY_JOURNALPOST_ID = "journalpostId";
 
 	private final Qdist010Service qdist010Service;
 	private final DistribuerForsendelseTilDittNavMapper distribuerForsendelseTilDittNavMapper;
@@ -92,17 +94,23 @@ public class Qdist010Route extends SpringRouteBuilder {
 				.marshal(dokumentHenvendelseFormat)
 				.convertBodyTo(String.class, StandardCharsets.UTF_8.toString())
 				.to("jms:" + dokumentHenvendelse.getQueueName())
+				.log(LoggingLevel.INFO, log, "qdist010 har sendt dokumenthenvendelse for forsendelse med " + getIdsForLogging() + "og" + getAdditionalIdsForLogging())
 				.setBody(exchangeProperty(Qdist010Service.PROPERTY_UNMARSHALLED_VARSEL))
 				.marshal(varselFormat)
 				.convertBodyTo(String.class, StandardCharsets.UTF_8.toString())
 				.to("jms:" + varselUtsending.getQueueName())
 				.bean(dokdistStatusUpdater)
-				.log(LoggingLevel.INFO, log, "qdist010 har sendt dokumenthenvendelse og varsel for forsendelse med " + getIdsForLogging());
+				.log(LoggingLevel.INFO, log, "qdist010 har sendt varsel og oppdatert status=EKSPEDERT i dokdistDb for forsendelse med " + getIdsForLogging() + "og" + getAdditionalIdsForLogging());
 	}
 
 	public static String getIdsForLogging() {
 		return "bestillingsId=${exchangeProperty." + PROPERTY_BESTILLINGS_ID + "} og " +
 				"forsendelseId=${exchangeProperty." + PROPERTY_FORSENDELSE_ID + "}";
+	}
+
+	public static String getAdditionalIdsForLogging() {
+		return "journalpostId=${exchangeProperty." + PROPERTY_JOURNALPOST_ID + "} og " +
+				"varselbestillingId==${exchangeProperty." + PROPERTY_VARSELBESTILLING_ID + "}";
 	}
 
 	public DataFormat setupVarselFormat() {
