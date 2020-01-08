@@ -2,7 +2,7 @@ team: teamdokumenthandtering
 image: "repo.adeo.no:5443/dok/dokdistdittnav"
 replicas:
   min: 1
-  max: 2
+  max: 4
   cpuThresholdPercentage: 50
 port: 8080
 healthcheck:
@@ -21,6 +21,9 @@ resources:
   limits:
     cpu: 3000m
     memory: 1024Mi
+  requests:
+    cpu: 60m
+    memory: 600Mi
 fasitResources:
   used:
     - alias: srvdokdistdittnav
