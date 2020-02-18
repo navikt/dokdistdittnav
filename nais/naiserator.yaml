@@ -1,0 +1,66 @@
+kind: Application
+apiVersion: nais.io/v1alpha1
+metadata:
+  name: dokdistdittnav
+  namespace: {{ NAMESPACE }}
+  labels:
+    team: teamdokumenthandtering
+spec:
+  env:
+    - name: DOKUMENTTYPEINFO_V4_URL
+      value: {{ DOKUMENTTYPEINFO_V4_URL }}
+    - name: VARSELINFO_V1_URL
+      value: {{ VARSELINFO_V1_URL }}
+    - name: ADMINISTRERFORSENDELSE_V1_URL
+      value: {{ ADMINISTRERFORSENDELSE_V1_URL }}
+    - name: DOKDISTDITTNAV_CHANNEL_NAME
+      value: {{ DOKDISTDITTNAV_CHANNEL_NAME }}
+    - name: MQGATEWAY01_HOSTNAME
+      value: {{ MQGATEWAY01_HOSTNAME }}
+    - name: MQGATEWAY01_PORT
+      value: "{{ MQGATEWAY01_PORT }}"
+    - name: MQGATEWAY01_NAME
+      value: {{ MQGATEWAY01_NAME }}
+    - name: DOKDISTDITTNAV_QDIST010_FUNK_FEIL_QUEUENAME
+      value: {{ DOKDISTDITTNAV_QDIST010_FUNK_FEIL_QUEUENAME }}
+    - name: DOKDISTDITTNAV_QDIST010_DIST_DITT_NAV_QUEUENAME
+      value: {{ DOKDISTDITTNAV_QDIST010_DIST_DITT_NAV_QUEUENAME }}
+    - name: HENVENDELSE_DOKUMENT_HENVENDELSE_QUEUENAME
+      value: {{ HENVENDELSE_DOKUMENT_HENVENDELSE_QUEUENAME }}
+    - name: VARSELPRODUKSJON_BEST_VARSEL_M_HANDLING_QUEUENAME
+      value: {{ VARSELPRODUKSJON_BEST_VARSEL_M_HANDLING_QUEUENAME }}
+  image: {{ image }}
+  ingresses:
+        {{#each INGRESSES}}
+          - {{this }}
+        {{/each}}
+  liveness:
+    path: /isAlive
+    port: 8080
+    initialDelay: 30
+    failureThreshold: 10
+  port: 8080
+  prometheus:
+    enabled: true
+    path: /actuator/prometheus
+  readiness:
+    path: /isReady
+    port: 8080
+    initialDelay: 30
+    timeout: 3
+  replicas:
+    min: 1
+    max: 4
+    cpuThresholdPercentage: 50
+  resources:
+    limits:
+      cpu: 3000m
+      memory: 1024Mi
+    requests:
+      cpu: 60m
+      memory: 600Mi
+  vault:
+    enabled: true
+    paths:
+      - kvPath: {{ SRVDOKDISTDITTNAV }}
+        mountPath: /var/run/secrets/nais.io/srvdokdistdittnav
