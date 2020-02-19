@@ -26,7 +26,7 @@ public class SrvAppserverProperties {
 
 	@PostConstruct
 	public void postConstruct() {
-		if (***passord=gammelt_passord***) {
+		if (password == null) {
 			password = "";
 		}
 	}
