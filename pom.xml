@@ -14,34 +14,32 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.1.3.RELEASE</version>
+        <version>2.3.3.RELEASE</version>
     </parent>
 
     <properties>
-        <java.version>1.8</java.version>
-        <camel.version>2.25.1</camel.version>
+        <java.version>11</java.version>
+        <camel.version>3.5.0</camel.version>
         <javax.inject.version>1</javax.inject.version>
         <logstash-logback-encoder.version>6.4</logstash-logback-encoder.version>
-        <resilience4j.version>0.11.0</resilience4j.version>
-        <aws-java-sdk-s3.version>1.11.497</aws-java-sdk-s3.version>
-        <dokkat-api>10.4.0</dokkat-api>
-        <wmq.version>8.0.0.6</wmq.version>
-        <cxf.version>3.4.0</cxf.version>
-        <activemq.version>5.15.2</activemq.version>
-        <commons-io.version>2.4</commons-io.version>
-        <dokkat-schemas.version>10.4.2</dokkat-schemas.version>
+        <resilience4j.version>1.5.0</resilience4j.version>
+        <aws-java-sdk-s3.version>1.11.873</aws-java-sdk-s3.version>
+        <dokkat.version>11.0.6</dokkat.version>
+        <wmq.version>9.2.0.0</wmq.version>
         <nav-virksomhet-opprettDokumenthenvendelse-v1.version>1.0.2
         </nav-virksomhet-opprettDokumenthenvendelse-v1.version>
         <nav-virksomhet-varselMedHandling-v1.version>1.0.0</nav-virksomhet-varselMedHandling-v1.version>
         <melding-virksomhet-dokdistfordeling.version>2.0.4</melding-virksomhet-dokdistfordeling.version>
         <jaxb2-basics-runtime.version>1.11.1</jaxb2-basics-runtime.version>
-        <commons-lang3.version>3.7</commons-lang3.version>
-        <lombok.version>1.18.4</lombok.version>
+        <commons-lang3.version>3.11</commons-lang3.version>
+        <lombok.version>1.18.12</lombok.version>
+        <rxjava.version>2.2.19</rxjava.version>
         <!-- test -->
-        <spring-cloud-contract-wiremock.version>1.2.5.RELEASE</spring-cloud-contract-wiremock.version>
-        <awaitility.version>3.1.2</awaitility.version>
-        <junit-jupiter.version>5.4.1</junit-jupiter.version>
-        <junit5.mockito.version>2.25.1</junit5.mockito.version>
+        <activemq.version>5.15.13</activemq.version>
+        <spring-cloud-contract-wiremock.version>2.2.4.RELEASE</spring-cloud-contract-wiremock.version>
+        <awaitility.version>4.0.3</awaitility.version>
+        <junit5.mockito.version>3.5.13</junit5.mockito.version>
+        <commons-io.version>2.8.0</commons-io.version>
     </properties>
 
     <dependencyManagement>
@@ -82,29 +80,16 @@
                 <version>${resilience4j.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-spring-boot-starter-jaxws</artifactId>
-                <version>${cxf.version}</version>
+                <groupId>io.reactivex.rxjava2</groupId>
+                <artifactId>rxjava</artifactId>
+                <version>${rxjava.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.camel</groupId>
-                <artifactId>camel-core</artifactId>
+                <groupId>org.apache.camel.springboot</groupId>
+                <artifactId>camel-spring-boot-bom</artifactId>
                 <version>${camel.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.camel</groupId>
-                <artifactId>camel-jms</artifactId>
-                <version>${camel.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.camel</groupId>
-                <artifactId>camel-jaxb</artifactId>
-                <version>${camel.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.camel</groupId>
-                <artifactId>camel-spring-boot-starter</artifactId>
-                <version>${camel.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>com.amazonaws</groupId>
@@ -122,19 +107,14 @@
                 <version>${wmq.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-ws-security</artifactId>
-                <version>${cxf.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>no.nav.dokkat</groupId>
                 <artifactId>dokkat-api</artifactId>
-                <version>${dokkat-api}</version>
+                <version>${dokkat.version}</version>
             </dependency>
             <dependency>
                 <groupId>no.nav.dokkat</groupId>
                 <artifactId>dokkat-schemas</artifactId>
-                <version>10.4.2</version>
+                <version>${dokkat.version}</version>
             </dependency>
             <dependency>
                 <groupId>no.nav.meldinger.virksomhet</groupId>
@@ -163,12 +143,6 @@
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
                 <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter</artifactId>
-                <version>${junit5.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
@@ -203,15 +177,6 @@
         </dependencies>
     </dependencyManagement>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
     <build>
         <resources>
             <resource>
@@ -219,23 +184,36 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
-        <extensions>
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-webdav-jackrabbit</artifactId>
-                <version>1.0</version>
-            </extension>
-        </extensions>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.1</version>
+                <version>2.22.2</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.22.1</version>
+                <version>2.22.2</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-toolchains-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>toolchain</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <toolchains>
+                        <jdk>
+                            <version>11</version>
+                            <vendor>openjdk</vendor>
+                        </jdk>
+                    </toolchains>
+                </configuration>
             </plugin>
         </plugins>
     </build>

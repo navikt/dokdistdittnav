@@ -1,7 +1,5 @@
 package no.nav.dokdistdittnav.qdist010;
 
-import static org.apache.camel.LoggingLevel.ERROR;
-
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
 import no.nav.dokdistdittnav.metrics.Qdist010MetricsRoutePolicy;
 import no.nav.melding.virksomhet.opprettdokumenthenvendelse.v1.opprettdokumenthenvendelse.Dokumenthenvendelse;
@@ -10,9 +8,9 @@ import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKa
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.ValidationException;
+import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
-import org.apache.camel.spring.SpringRouteBuilder;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -22,12 +20,14 @@ import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 import java.nio.charset.StandardCharsets;
 
+import static org.apache.camel.LoggingLevel.ERROR;
+
 
 /**
  * @author Sigurd Midttun, Visma Consulting.
  */
 @Component
-public class Qdist010Route extends SpringRouteBuilder {
+public class Qdist010Route extends RouteBuilder {
 
 	public static final String SERVICE_ID = "qdist010";
 	static final String PROPERTY_BESTILLINGS_ID = "bestillingsId";
@@ -112,7 +112,7 @@ public class Qdist010Route extends SpringRouteBuilder {
 
 	public DataFormat setupVarselFormat() {
 		return getJaxbDataFormatForNonRoot(VarselMedHandling.class.getPackage().getName(),
-				VarselMedHandling.class.getName(),
+				VarselMedHandling.class,
 				"http://nav.no/melding/virksomhet/varselMedHandling/v1/varselMedHandling",
 				"varselMedHandling");
 	}
@@ -120,14 +120,14 @@ public class Qdist010Route extends SpringRouteBuilder {
 
 	public DataFormat setupDokumentHenvendelseFormat() {
 		return getJaxbDataFormatForNonRoot(Dokumenthenvendelse.class.getPackage().getName(),
-				Dokumenthenvendelse.class.getName(),
+				Dokumenthenvendelse.class,
 				"http://nav.no/melding/virksomhet/opprettDokumenthenvendelse/v1/opprettDokumenthenvendelse",
 				"dokumenthenvendelse");
 	}
 
-	private static JaxbDataFormat getJaxbDataFormatForNonRoot(String packageName, String className, String namespaceURI, String localPart) {
+	private static JaxbDataFormat getJaxbDataFormatForNonRoot(String packageName, Class<?> clazz, String namespaceURI, String localPart) {
 		JaxbDataFormat result = new JaxbDataFormat(packageName);
-		result.setPartClass(className);
+		result.setPartClass(clazz);
 		result.setFragment(true);
 		result.setPartNamespace(new QName(
 				namespaceURI,
