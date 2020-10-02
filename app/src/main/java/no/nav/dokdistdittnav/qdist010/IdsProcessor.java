@@ -7,7 +7,7 @@ import no.nav.dokdistdittnav.exception.functional.ForsendelseManglerForsendelseI
 import no.nav.dokdistdittnav.exception.functional.ForsendelseManglerPaakrevdHeaderFunctionalException;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.camel.builder.xml.XPathBuilder;
+import org.apache.camel.language.xpath.XPathBuilder;
 import org.slf4j.MDC;
 
 /**
