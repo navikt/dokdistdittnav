@@ -19,7 +19,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <camel.version>3.5.0</camel.version>
+        <camel.version>3.6.0</camel.version>
         <javax.inject.version>1</javax.inject.version>
         <logstash-logback-encoder.version>6.4</logstash-logback-encoder.version>
         <resilience4j.version>1.5.0</resilience4j.version>
