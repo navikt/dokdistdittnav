@@ -19,7 +19,7 @@ import java.util.GregorianCalendar;
 /**
  * @author Olav Røstvold Thorsen, Visma Consulting.
  */
-public class DokumenthenvendelseMapperTest {
+class DokumenthenvendelseMapperTest {
 
 	private static final String TEMA = "BIL";
 	private static final String FORSENDELSE_TITTEL = "forsenselseTittel";
@@ -32,14 +32,13 @@ public class DokumenthenvendelseMapperTest {
 	private static final String TILKNYTTET_SOM_VEDLEGG = "VEDLEGG";
 	private static final Boolean STOPP_REPETERENDE_VARSEL = false;
 	private static final String VARSEL_BESTILLING_ID = "varselBestillingId";
-	private XMLGregorianCalendar FERDIGSTILL_DATO;
 
-	private static DokumenthenvendelseMapper dokumenthenvendelseMapper = new DokumenthenvendelseMapper();
+	private static final DokumenthenvendelseMapper dokumenthenvendelseMapper = new DokumenthenvendelseMapper();
 
 
 	@Test
-	public void shouldMap() {
-		FERDIGSTILL_DATO = getXMLGregorianCalendarNow();
+	void shouldMap() {
+		XMLGregorianCalendar FERDIGSTILL_DATO = getXMLGregorianCalendarNow();
 		Dokumenthenvendelse dokumenthenvendelse = dokumenthenvendelseMapper.map(createHentForsendelseResponseTo(),
 				createVarselInfoTo(),
 				VARSEL_BESTILLING_ID,

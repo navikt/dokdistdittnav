@@ -1,6 +1,7 @@
 package no.nav.dokdistdittnav.qdist010;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -18,7 +19,7 @@ import java.util.GregorianCalendar;
 /**
  * @author Olav Røstvold Thorsen, Visma Consulting.
  */
-public class VarselMedHandlingMapperTest {
+class VarselMedHandlingMapperTest {
 
 	private static final String MOTTAKER_ID = "mottakerId";
 	private static final String VARSEL_TYPE_ID = "varseltypeId";
@@ -29,10 +30,10 @@ public class VarselMedHandlingMapperTest {
 	private static final String FERDIGSTILTDATO_KEY = "FerdigstiltDato";
 	private static final String VARSELBESTILLING_ID_KEY = "VarselbestillingsId";
 
-	private static VarselMedHandlingMapper varselMedHandlingMapper = new VarselMedHandlingMapper();
+	private static final VarselMedHandlingMapper varselMedHandlingMapper = new VarselMedHandlingMapper();
 
 	@Test
-	public void shouldMap() {
+	void shouldMap() {
 		VarselMedHandling varselMedHandling = varselMedHandlingMapper.map(createHentForsendelseResponseTo(),
 				createDokumentTypeInfoTo(),
 				VARSEL_BESTILLINGS_ID,
@@ -47,7 +48,7 @@ public class VarselMedHandlingMapperTest {
 		assertEquals(DOKUMENTTITTEL_KEY, varselMedHandling.getParameterListe().get(0).getKey());
 		assertEquals(FERDIGSTILTDATO_KEY, varselMedHandling.getParameterListe().get(1).getKey());
 		assertEquals(VARSELBESTILLING_ID_KEY, varselMedHandling.getParameterListe().get(2).getKey());
-		assertEquals(null, varselMedHandling.getUtloepstidspunkt());
+		assertNull(varselMedHandling.getUtloepstidspunkt());
 	}
 
 	private HentForsendelseResponseTo createHentForsendelseResponseTo() {

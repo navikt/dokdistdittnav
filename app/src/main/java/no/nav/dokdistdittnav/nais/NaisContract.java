@@ -83,14 +83,14 @@ public class NaisContract {
 	}
 
 	private boolean isAnyVitalDependencyUnhealthy(List<Result> results) {
-		return results.stream().anyMatch((result) -> result.equals(Result.ERROR));
+		return results.stream().anyMatch(result -> result.equals(Result.ERROR));
 	}
 
 
 	private Result getOverallSelftestResult(List<DependencyCheckResult> results) {
-		if (results.stream().anyMatch((result) -> result.getResult().equals(Result.ERROR))) {
+		if (results.stream().anyMatch(result -> result.getResult().equals(Result.ERROR))) {
 			return Result.ERROR;
-		} else if (results.stream().anyMatch((result) -> result.getResult().equals(Result.WARNING))) {
+		} else if (results.stream().anyMatch(result -> result.getResult().equals(Result.WARNING))) {
 			return Result.WARNING;
 		}
 

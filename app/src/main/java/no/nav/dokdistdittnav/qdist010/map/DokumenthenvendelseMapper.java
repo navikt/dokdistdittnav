@@ -25,7 +25,7 @@ public class DokumenthenvendelseMapper {
         dokumenthenvendelse.setFerdigstiltDato(now);
         dokumenthenvendelse.setJournalpostId(forsendelse.getArkivInformasjon().getArkivId());
         dokumenthenvendelse.getDokumentIdListe().addAll(forsendelse.getDokumenter().stream()
-                .map(dokument -> dokument.getArkivDokumentInfoId())
+                .map(HentForsendelseResponseTo.DokumentTo::getArkivDokumentInfoId)
                 .collect(Collectors.toList()));
         dokumenthenvendelse.setVarselbestillingId(varselbestillingId);
         dokumenthenvendelse.setStoppRepeterendeVarsel(varselInfo.isStoppRepeterendeVarsel());
