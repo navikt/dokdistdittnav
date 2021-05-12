@@ -18,6 +18,7 @@ import javax.jms.Queue;
 import static com.ibm.mq.constants.CMQC.MQENC_NATIVE;
 import static com.ibm.msg.client.jms.JmsConstants.JMS_IBM_CHARACTER_SET;
 import static com.ibm.msg.client.jms.JmsConstants.JMS_IBM_ENCODING;
+import static com.ibm.msg.client.jms.JmsConstants.USER_AUTHENTICATION_MQCSP;
 import static com.ibm.msg.client.wmq.common.CommonConstants.WMQ_CM_CLIENT;
 
 /**
@@ -68,6 +69,7 @@ public class JmsConfig {
 		connectionFactory.setCCSID(UTF_8_WITH_PUA);
 		connectionFactory.setIntProperty(JMS_IBM_ENCODING, MQENC_NATIVE);
 		connectionFactory.setIntProperty(JMS_IBM_CHARACTER_SET, UTF_8_WITH_PUA);
+		connectionFactory.setBooleanProperty(USER_AUTHENTICATION_MQCSP, false);
 		UserCredentialsConnectionFactoryAdapter adapter = new UserCredentialsConnectionFactoryAdapter();
 		adapter.setTargetConnectionFactory(connectionFactory);
 		adapter.setUsername(srvAppserverProperties.getUsername());
