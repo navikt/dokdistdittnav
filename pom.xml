@@ -14,31 +14,31 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.5.RELEASE</version>
+        <version>2.4.5</version>
     </parent>
 
     <properties>
         <java.version>11</java.version>
-        <camel.version>3.6.0</camel.version>
+        <camel.version>3.7.4</camel.version>
         <javax.inject.version>1</javax.inject.version>
-        <logstash-logback-encoder.version>6.4</logstash-logback-encoder.version>
-        <resilience4j.version>1.5.0</resilience4j.version>
-        <aws-java-sdk-s3.version>1.11.873</aws-java-sdk-s3.version>
+        <logstash-logback-encoder.version>6.6</logstash-logback-encoder.version>
+        <resilience4j.version>1.7.0</resilience4j.version>
+        <aws-java-sdk-s3.version>1.11.1016</aws-java-sdk-s3.version>
         <dokkat.version>11.0.6</dokkat.version>
-        <wmq.version>9.2.0.0</wmq.version>
+        <wmq.version>9.2.2.0</wmq.version>
         <nav-virksomhet-opprettDokumenthenvendelse-v1.version>1.0.2
         </nav-virksomhet-opprettDokumenthenvendelse-v1.version>
         <nav-virksomhet-varselMedHandling-v1.version>1.0.0</nav-virksomhet-varselMedHandling-v1.version>
         <melding-virksomhet-dokdistfordeling.version>2.0.4</melding-virksomhet-dokdistfordeling.version>
         <jaxb2-basics-runtime.version>1.11.1</jaxb2-basics-runtime.version>
-        <commons-lang3.version>3.11</commons-lang3.version>
-        <lombok.version>1.18.12</lombok.version>
-        <rxjava.version>2.2.19</rxjava.version>
+        <commons-lang3.version>3.12.0</commons-lang3.version>
+        <lombok.version>1.18.20</lombok.version>
+        <rxjava.version>2.2.21</rxjava.version>
         <!-- test -->
-        <activemq.version>5.15.13</activemq.version>
-        <spring-cloud-contract-wiremock.version>2.2.4.RELEASE</spring-cloud-contract-wiremock.version>
-        <awaitility.version>4.0.3</awaitility.version>
-        <junit5.mockito.version>3.5.13</junit5.mockito.version>
+        <activemq.version>5.16.2</activemq.version>
+        <spring-cloud-contract-wiremock.version>3.0.2</spring-cloud-contract-wiremock.version>
+        <awaitility.version>4.1.0</awaitility.version>
+        <junit5.mockito.version>3.9.0</junit5.mockito.version>
         <commons-io.version>2.8.0</commons-io.version>
     </properties>
 
@@ -188,12 +188,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.2</version>
+                <version>3.0.0-M5</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.22.2</version>
+                <version>3.0.0-M5</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

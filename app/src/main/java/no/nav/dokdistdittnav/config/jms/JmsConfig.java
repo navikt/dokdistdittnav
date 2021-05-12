@@ -1,10 +1,8 @@
 
 package no.nav.dokdistdittnav.config.jms;
 
-import com.ibm.mq.constants.MQConstants;
 import com.ibm.mq.jms.MQConnectionFactory;
 import com.ibm.mq.jms.MQQueue;
-import com.ibm.msg.client.wmq.WMQConstants;
 import no.nav.dokdistdittnav.config.alias.MqGatewayAlias;
 import no.nav.dokdistdittnav.config.props.SrvAppserverProperties;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +14,12 @@ import org.springframework.jms.connection.UserCredentialsConnectionFactoryAdapte
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Queue;
+
+import static com.ibm.mq.constants.CMQC.MQENC_NATIVE;
+import static com.ibm.msg.client.jms.JmsConstants.JMS_IBM_CHARACTER_SET;
+import static com.ibm.msg.client.jms.JmsConstants.JMS_IBM_ENCODING;
+import static com.ibm.msg.client.jms.JmsConstants.USER_AUTHENTICATION_MQCSP;
+import static com.ibm.msg.client.wmq.common.CommonConstants.WMQ_CM_CLIENT;
 
 /**
  * @author Sigurd Midttun, Visma Consulting AS
@@ -61,10 +65,11 @@ public class JmsConfig {
 		connectionFactory.setPort(mqGatewayAlias.getPort());
 		connectionFactory.setChannel(channelName);
 		connectionFactory.setQueueManager(mqGatewayAlias.getName());
-		connectionFactory.setTransportType(WMQConstants.WMQ_CM_CLIENT);
+		connectionFactory.setTransportType(WMQ_CM_CLIENT);
 		connectionFactory.setCCSID(UTF_8_WITH_PUA);
-		connectionFactory.setIntProperty(WMQConstants.JMS_IBM_ENCODING, MQConstants.MQENC_NATIVE);
-		connectionFactory.setIntProperty(WMQConstants.JMS_IBM_CHARACTER_SET, UTF_8_WITH_PUA);
+		connectionFactory.setIntProperty(JMS_IBM_ENCODING, MQENC_NATIVE);
+		connectionFactory.setIntProperty(JMS_IBM_CHARACTER_SET, UTF_8_WITH_PUA);
+		connectionFactory.setBooleanProperty(USER_AUTHENTICATION_MQCSP, false);
 		UserCredentialsConnectionFactoryAdapter adapter = new UserCredentialsConnectionFactoryAdapter();
 		adapter.setTargetConnectionFactory(connectionFactory);
 		adapter.setUsername(srvAppserverProperties.getUsername());
