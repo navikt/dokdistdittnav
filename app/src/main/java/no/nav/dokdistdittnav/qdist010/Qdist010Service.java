@@ -16,6 +16,8 @@ import no.nav.dokdistdittnav.exception.technical.KunneIkkeHenteDagensDatoTechnic
 import no.nav.dokdistdittnav.qdist010.domain.DistribuerForsendelseTilDittNavTo;
 import no.nav.dokdistdittnav.qdist010.map.DokumenthenvendelseMapper;
 import no.nav.dokdistdittnav.qdist010.map.VarselMedHandlingMapper;
+import no.nav.melding.virksomhet.opprettdokumenthenvendelse.v1.opprettdokumenthenvendelse.Dokumenthenvendelse;
+import no.nav.melding.virksomhet.varselmedhandling.v1.varselmedhandling.VarselMedHandling;
 import org.apache.camel.Exchange;
 import org.apache.camel.Handler;
 import org.springframework.stereotype.Service;

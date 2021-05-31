@@ -52,7 +52,7 @@ public class JmsConfig {
 	}
 
 	@Bean
-	public PooledConnectionFactory wmqConnectionFactory(final MqGatewayAlias mqGatewayAlias,
+	public ConnectionFactory wmqConnectionFactory(final MqGatewayAlias mqGatewayAlias,
 												  final @Value("${dokdistdittnav_channel.name}") String channelName,
 												  final SrvAppserverProperties srvAppserverProperties,
 												  final ServiceuserAlias serviceuserAlias) throws JMSException {

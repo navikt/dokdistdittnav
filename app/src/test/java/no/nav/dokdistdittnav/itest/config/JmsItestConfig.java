@@ -54,7 +54,7 @@ public class JmsItestConfig {
 	}
 
 	@Bean
-	public PooledConnectionFactory activemqConnectionFactory() {
+	public ConnectionFactory activemqConnectionFactory() {
 		ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory("vm://localhost?create=false");
 		RedeliveryPolicy redeliveryPolicy = new RedeliveryPolicy();
 		redeliveryPolicy.setMaximumRedeliveries(0);
