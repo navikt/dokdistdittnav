@@ -20,7 +20,6 @@ import javax.jms.Queue;
 import static com.ibm.mq.constants.CMQC.MQENC_NATIVE;
 import static com.ibm.msg.client.jms.JmsConstants.JMS_IBM_CHARACTER_SET;
 import static com.ibm.msg.client.jms.JmsConstants.JMS_IBM_ENCODING;
-import static com.ibm.msg.client.jms.JmsConstants.USER_AUTHENTICATION_MQCSP;
 import static com.ibm.msg.client.wmq.common.CommonConstants.WMQ_CM_CLIENT;
 
 /**
@@ -53,7 +52,7 @@ public class JmsConfig {
 	}
 
 	@Bean
-	public ConnectionFactory wmqConnectionFactory(final MqGatewayAlias mqGatewayAlias,
+	public PooledConnectionFactory wmqConnectionFactory(final MqGatewayAlias mqGatewayAlias,
 												  final @Value("${dokdistdittnav_channel.name}") String channelName,
 												  final SrvAppserverProperties srvAppserverProperties,
 												  final ServiceuserAlias serviceuserAlias) throws JMSException {
@@ -61,9 +60,9 @@ public class JmsConfig {
 	}
 
 	private PooledConnectionFactory createConnectionFactory(final MqGatewayAlias mqGatewayAlias,
-																			final String channelName,
-																			final SrvAppserverProperties srvAppserverProperties,
-																			final ServiceuserAlias serviceuserAlias) throws JMSException {
+															final String channelName,
+															final SrvAppserverProperties srvAppserverProperties,
+															final ServiceuserAlias serviceuserAlias) throws JMSException {
 		MQConnectionFactory connectionFactory = new MQConnectionFactory();
 		connectionFactory.setHostName(mqGatewayAlias.getHostname());
 		connectionFactory.setPort(mqGatewayAlias.getPort());
@@ -78,16 +77,9 @@ public class JmsConfig {
 		adapter.setUsername(srvAppserverProperties.getUsername());
 		adapter.setPassword(srvAppserverProperties.getPassword());
 
-		if (mqGatewayAlias.isTlsbroker()) {
-			// Konfigurasjon for IBM MQ broker med TLS og autorisasjon med serviceuser mot onpremise Active Directory.
-			adapter.setUsername(serviceuserAlias.getUsername());
-			adapter.setPassword(serviceuserAlias.getPassword());
-		} else {
-			// Legacy IBM MQ broker
-			connectionFactory.setBooleanProperty(USER_AUTHENTICATION_MQCSP, false);
-			adapter.setUsername(srvAppserverProperties.getUsername());
-			adapter.setPassword(srvAppserverProperties.getPassword());
-		}
+		// Konfigurasjon for IBM MQ broker med TLS og autorisasjon med serviceuser mot onpremise Active Directory.
+		adapter.setUsername(serviceuserAlias.getUsername());
+		adapter.setPassword(serviceuserAlias.getPassword());
 
 		PooledConnectionFactory pooledFactory = new PooledConnectionFactory();
 		pooledFactory.setConnectionFactory(adapter);

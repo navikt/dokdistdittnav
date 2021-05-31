@@ -2,9 +2,6 @@ package no.nav.dokdistdittnav.qdist010;
 
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
 import no.nav.dokdistdittnav.metrics.Qdist010MetricsRoutePolicy;
-import no.nav.melding.virksomhet.opprettdokumenthenvendelse.v1.opprettdokumenthenvendelse.Dokumenthenvendelse;
-import no.nav.melding.virksomhet.varselmedhandling.v1.varselmedhandling.VarselMedHandling;
-import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKanal;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.ValidationException;
