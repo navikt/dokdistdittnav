@@ -34,7 +34,6 @@
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <lombok.version>1.18.20</lombok.version>
         <rxjava.version>2.2.21</rxjava.version>
-        <!-- test -->
         <activemq.version>5.16.2</activemq.version>
         <spring-cloud-contract-wiremock.version>3.0.2</spring-cloud-contract-wiremock.version>
         <awaitility.version>4.1.0</awaitility.version>
@@ -105,6 +104,11 @@
                 <groupId>com.ibm.mq</groupId>
                 <artifactId>com.ibm.mq.allclient</artifactId>
                 <version>${wmq.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
+                <artifactId>activemq-jms-pool</artifactId>
+                <version>${activemq.version}</version>
             </dependency>
             <dependency>
                 <groupId>no.nav.dokkat</groupId>

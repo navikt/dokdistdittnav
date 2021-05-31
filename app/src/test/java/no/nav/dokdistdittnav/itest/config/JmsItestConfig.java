@@ -5,6 +5,7 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.RedeliveryPolicy;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.command.ActiveMQQueue;
+import org.apache.activemq.jms.pool.PooledConnectionFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -53,12 +54,15 @@ public class JmsItestConfig {
 	}
 
 	@Bean
-	public ConnectionFactory activemqConnectionFactory() {
+	public PooledConnectionFactory activemqConnectionFactory() {
 		ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory("vm://localhost?create=false");
 		RedeliveryPolicy redeliveryPolicy = new RedeliveryPolicy();
 		redeliveryPolicy.setMaximumRedeliveries(0);
 		activeMQConnectionFactory.setRedeliveryPolicy(redeliveryPolicy);
-		return activeMQConnectionFactory;
+		PooledConnectionFactory pooledFactory = new PooledConnectionFactory();
+		pooledFactory.setConnectionFactory(activeMQConnectionFactory);
+		pooledFactory.setMaxConnections(1);
+		return pooledFactory;
 	}
 }
 
