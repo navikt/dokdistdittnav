@@ -5,7 +5,6 @@ import com.ibm.mq.jms.MQConnectionFactory;
 import com.ibm.mq.jms.MQQueue;
 import no.nav.dokdistdittnav.config.alias.MqGatewayAlias;
 import no.nav.dokdistdittnav.config.alias.ServiceuserAlias;
-import no.nav.dokdistdittnav.config.props.SrvAppserverProperties;
 import org.apache.activemq.jms.pool.PooledConnectionFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -54,14 +53,12 @@ public class JmsConfig {
 	@Bean
 	public ConnectionFactory wmqConnectionFactory(final MqGatewayAlias mqGatewayAlias,
 												  final @Value("${dokdistdittnav_channel.name}") String channelName,
-												  final SrvAppserverProperties srvAppserverProperties,
 												  final ServiceuserAlias serviceuserAlias) throws JMSException {
-		return createConnectionFactory(mqGatewayAlias, channelName, srvAppserverProperties, serviceuserAlias);
+		return createConnectionFactory(mqGatewayAlias, channelName, serviceuserAlias);
 	}
 
 	private PooledConnectionFactory createConnectionFactory(final MqGatewayAlias mqGatewayAlias,
 															final String channelName,
-															final SrvAppserverProperties srvAppserverProperties,
 															final ServiceuserAlias serviceuserAlias) throws JMSException {
 		MQConnectionFactory connectionFactory = new MQConnectionFactory();
 		connectionFactory.setHostName(mqGatewayAlias.getHostname());
@@ -74,8 +71,6 @@ public class JmsConfig {
 		connectionFactory.setIntProperty(JMS_IBM_CHARACTER_SET, UTF_8_WITH_PUA);
 		UserCredentialsConnectionFactoryAdapter adapter = new UserCredentialsConnectionFactoryAdapter();
 		adapter.setTargetConnectionFactory(connectionFactory);
-		adapter.setUsername(srvAppserverProperties.getUsername());
-		adapter.setPassword(srvAppserverProperties.getPassword());
 
 		// Konfigurasjon for IBM MQ broker med TLS og autorisasjon med serviceuser mot onpremise Active Directory.
 		adapter.setUsername(serviceuserAlias.getUsername());
