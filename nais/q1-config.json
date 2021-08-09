@@ -11,8 +11,8 @@
 	"HENVENDELSE_DOKUMENT_HENVENDELSE_QUEUENAME": "QA.Q1_HENVENDELSE_DOKUMENT.HENVENDELSE",
 	"VARSELPRODUKSJON_BEST_VARSEL_M_HANDLING_QUEUENAME": "QA.Q1_VARSELPRODUKSJON.BEST_VARSEL_M_HANDLING",
 	"SRVDOKDISTDITTNAV": "/serviceuser/data/dev/srvdokdistdittnav",
-	"NAMESPACE": "q1",
+	"NAMESPACE": "teamdokumenthandtering",
 	"INGRESSES": [
-		"https://dokdistdittnav-q1.nais.preprod.local"
+		"https://dokdistdittnav-q1.dev.intern.nav.no"
 	]
 }

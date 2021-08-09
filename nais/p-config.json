@@ -11,8 +11,8 @@
 	"HENVENDELSE_DOKUMENT_HENVENDELSE_QUEUENAME": "QA.P_HENVENDELSE.DOKUMENT_HENVENDELSE",
 	"VARSELPRODUKSJON_BEST_VARSEL_M_HANDLING_QUEUENAME": "QA.P_VARSELPRODUKSJON.BEST_VARSEL_M_HANDLING",
 	"SRVDOKDISTDITTNAV": "/serviceuser/data/prod/srvdokdistdittnav",
-	"NAMESPACE": "default",
+	"NAMESPACE": "teamdokumenthandtering",
 	"INGRESSES": [
-		"https://dokdistdittnav.nais.adeo.no"
+		"https://dokdistdittnav.intern.nav.no"
 	]
 }
