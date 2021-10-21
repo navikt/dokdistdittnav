@@ -12,6 +12,8 @@
 	"VARSELPRODUKSJON_BEST_VARSEL_M_HANDLING_QUEUENAME": "QA.P_VARSELPRODUKSJON.BEST_VARSEL_M_HANDLING",
 	"SRVDOKDISTDITTNAV": "/serviceuser/data/prod/srvdokdistdittnav",
 	"NAMESPACE": "teamdokumenthandtering",
+	"MIN_REPLICAS": "1",
+	"MAX_REPLICAS": "4",
 	"INGRESSES": [
 		"https://dokdistdittnav.intern.nav.no"
 	]
