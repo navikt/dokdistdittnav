@@ -19,17 +19,12 @@
 
     <properties>
         <java.version>17</java.version>
-        <camel.version>3.11.1</camel.version>
+
+        <camel.version>3.14.0</camel.version>
         <javax.inject.version>1</javax.inject.version>
-        <logstash-logback-encoder.version>6.6</logstash-logback-encoder.version>
+        <logstash-logback-encoder.version>7.0.1</logstash-logback-encoder.version>
         <resilience4j.version>1.7.1</resilience4j.version>
-        <aws-java-sdk-s3.version>1.11.1034</aws-java-sdk-s3.version>
-        <dokkat.version>11.0.6</dokkat.version>
         <wmq.version>9.2.2.0</wmq.version>
-        <nav-virksomhet-opprettDokumenthenvendelse-v1.version>1.0.2
-        </nav-virksomhet-opprettDokumenthenvendelse-v1.version>
-        <nav-virksomhet-varselMedHandling-v1.version>1.0.0</nav-virksomhet-varselMedHandling-v1.version>
-        <melding-virksomhet-dokdistfordeling.version>2.0.4</melding-virksomhet-dokdistfordeling.version>
         <jaxb2-basics-runtime.version>1.11.1</jaxb2-basics-runtime.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <lombok.version>1.18.20</lombok.version>
@@ -40,6 +35,12 @@
         <junit5.mockito.version>3.9.0</junit5.mockito.version>
         <commons-io.version>2.8.0</commons-io.version>
         <maven-toolchains-plugin.version>3.0.0</maven-toolchains-plugin.version>
+
+        <dokkat.version>11.0.6</dokkat.version>
+        <nav-virksomhet-opprettDokumenthenvendelse-v1.version>1.0.2
+        </nav-virksomhet-opprettDokumenthenvendelse-v1.version>
+        <nav-virksomhet-varselMedHandling-v1.version>1.0.0</nav-virksomhet-varselMedHandling-v1.version>
+        <melding-virksomhet-dokdistfordeling.version>2.0.4</melding-virksomhet-dokdistfordeling.version>
     </properties>
 
     <dependencyManagement>
@@ -56,27 +57,7 @@
             </dependency>
             <dependency>
                 <groupId>io.github.resilience4j</groupId>
-                <artifactId>resilience4j-spring-boot</artifactId>
-                <version>${resilience4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.resilience4j</groupId>
-                <artifactId>resilience4j-metrics</artifactId>
-                <version>${resilience4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.resilience4j</groupId>
-                <artifactId>resilience4j-prometheus</artifactId>
-                <version>${resilience4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.resilience4j</groupId>
-                <artifactId>resilience4j-timelimiter</artifactId>
-                <version>${resilience4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.resilience4j</groupId>
-                <artifactId>resilience4j-circuitbreaker</artifactId>
+                <artifactId>resilience4j-spring-boot2</artifactId>
                 <version>${resilience4j.version}</version>
             </dependency>
             <dependency>
@@ -90,11 +71,6 @@
                 <version>${camel.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.amazonaws</groupId>
-                <artifactId>aws-java-sdk-s3</artifactId>
-                <version>${aws-java-sdk-s3.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.jvnet.jaxb2_commons</groupId>
