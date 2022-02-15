@@ -1,6 +1,7 @@
 {
   "bestillingsId": "insertCallIdHere",
   "forsendelseStatus": "KLAR_FOR_DIST",
+  "distribusjonstype": "VIKTIG",
   "mottaker": {
     "mottakerId": "mottakerId",
     "mottakerNavn": "mottakerNavn",

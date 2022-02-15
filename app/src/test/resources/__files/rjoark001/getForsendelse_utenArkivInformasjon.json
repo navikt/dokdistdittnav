@@ -4,6 +4,7 @@
   "forsendelseStatus": "KLAR_FOR_DIST",
   "tema": "FS22",
   "forsendelseTittel": "forsendelseTittel",
+  "distribusjonstype": "VEDTAK",
   "mottaker": {
     "mottakerId": "mottakerId",
     "mottakerNavn": "mottakerNavn",

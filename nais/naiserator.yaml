@@ -6,7 +6,11 @@ metadata:
   labels:
     team: teamdokumenthandtering
 spec:
+  kafka:
+    pool: { { KAFKA_POOL } }
   env:
+    - name: KAFKA_BROKERS
+      value: {{ KAFKA_BROKERS }}
     - name: DOKUMENTTYPEINFO_V4_URL
       value: {{ DOKUMENTTYPEINFO_V4_URL }}
     - name: VARSELINFO_V1_URL

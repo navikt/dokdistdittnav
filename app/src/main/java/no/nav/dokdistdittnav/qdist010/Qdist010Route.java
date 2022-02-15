@@ -1,5 +1,8 @@
 package no.nav.dokdistdittnav.qdist010;
 
+import no.nav.dokdistdittnav.brukernotifikasjon.ProdusentNotifikasjon;
+import no.nav.dokdistdittnav.config.alias.BrukernotifikasjonTopic;
+import no.nav.dokdistdittnav.consumer.rdist001.HentForsendelseResponseTo;
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
 import no.nav.dokdistdittnav.metrics.Qdist010MetricsRoutePolicy;
 import no.nav.melding.virksomhet.opprettdokumenthenvendelse.v1.opprettdokumenthenvendelse.Dokumenthenvendelse;
@@ -9,6 +12,7 @@ import org.apache.camel.ExchangePattern;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.ValidationException;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.kafka.KafkaConstants;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
 import org.springframework.stereotype.Component;
@@ -21,6 +25,7 @@ import javax.xml.namespace.QName;
 import java.nio.charset.StandardCharsets;
 
 import static org.apache.camel.LoggingLevel.ERROR;
+import static org.apache.camel.component.kafka.KafkaConstants.KEY;
 
 
 /**
@@ -35,34 +40,24 @@ public class Qdist010Route extends RouteBuilder {
 	static final String PROPERTY_VARSELBESTILLING_ID = "varselbestillingId";
 	static final String PROPERTY_JOURNALPOST_ID = "journalpostId";
 
-	private final Qdist010Service qdist010Service;
-	private final DistribuerForsendelseTilDittNavMapper distribuerForsendelseTilDittNavMapper;
+	private final ProdusentNotifikasjon produsentNotifikasjon;
 	private final DokdistStatusUpdater dokdistStatusUpdater;
 	private final Queue qdist010;
 	private final Queue qdist010FunksjonellFeil;
-	private final Queue dokumentHenvendelse;
-	private final Queue varselUtsending;
 	private final Qdist010MetricsRoutePolicy qdist010MetricsRoutePolicy;
-
-	private final DataFormat dokumentHenvendelseFormat = setupDokumentHenvendelseFormat();
-	private final DataFormat varselFormat = setupVarselFormat();
+	private final BrukernotifikasjonTopic topic;
 
 	@Inject
-	public Qdist010Route(Qdist010Service qdist010Service,
-						 DistribuerForsendelseTilDittNavMapper distribuerForsendelseTilDittNavMapper,
+	public Qdist010Route(ProdusentNotifikasjon produsentNotifikasjon, BrukernotifikasjonTopic topic,
 						 DokdistStatusUpdater dokdistStatusUpdater,
 						 Queue qdist010,
 						 Queue qdist010FunksjonellFeil,
-						 Queue dokumentHenvendelse,
-						 Queue varselUtsending,
 						 Qdist010MetricsRoutePolicy qdist010MetricsRoutePolicy) {
-		this.qdist010Service = qdist010Service;
-		this.distribuerForsendelseTilDittNavMapper = distribuerForsendelseTilDittNavMapper;
+		this.produsentNotifikasjon = produsentNotifikasjon;
+		this.topic = topic;
 		this.dokdistStatusUpdater = dokdistStatusUpdater;
 		this.qdist010 = qdist010;
 		this.qdist010FunksjonellFeil = qdist010FunksjonellFeil;
-		this.dokumentHenvendelse = dokumentHenvendelse;
-		this.varselUtsending = varselUtsending;
 		this.qdist010MetricsRoutePolicy = qdist010MetricsRoutePolicy;
 	}
 
@@ -89,18 +84,14 @@ public class Qdist010Route extends RouteBuilder {
 				.log(LoggingLevel.INFO, log, "qdist010 har mottatt forsendelse med forsendelseId=${exchangeProperty." + PROPERTY_FORSENDELSE_ID + "}")
 				.to("validator:no/nav/meldinger/virksomhet/dokdistfordeling/xsd/qdist008/out/distribuertilkanal.xsd")
 				.unmarshal(new JaxbDataFormat(JAXBContext.newInstance(DistribuerTilKanal.class)))
-				.bean(distribuerForsendelseTilDittNavMapper)
-				.bean(qdist010Service)
-				.marshal(dokumentHenvendelseFormat)
-				.convertBodyTo(String.class, StandardCharsets.UTF_8.toString())
-				.to("jms:" + dokumentHenvendelse.getQueueName())
-				.log(LoggingLevel.INFO, log, "qdist010 har sendt dokumenthenvendelse for forsendelse med " + getIdsForLogging())
-				.setBody(exchangeProperty(Qdist010Service.PROPERTY_UNMARSHALLED_VARSEL))
-				.marshal(varselFormat)
-				.convertBodyTo(String.class, StandardCharsets.UTF_8.toString())
-				.to("jms:" + varselUtsending.getQueueName())
+				.process(exchange -> {
+					DistribuerTilKanal distribuerTilKanal = exchange.getIn().getBody(DistribuerTilKanal.class);
+					exchange.setProperty(PROPERTY_FORSENDELSE_ID, distribuerTilKanal.getForsendelseId());
+				})
+				.bean(produsentNotifikasjon)
+				.log(LoggingLevel.INFO, log, "qdist010 har sendt notifikasjon for forsendelse med " + getIdsForLogging())
 				.bean(dokdistStatusUpdater)
-				.log(LoggingLevel.INFO, log, "qdist010 har sendt varsel og oppdatert status=EKSPEDERT i dokdistDb for forsendelse med " + getIdsForLogging());
+				.log(LoggingLevel.INFO, log, "qdist010 har sendt varsel og oppdatert forsendelseStatus=EKSPEDERT og varselStatus=OPPRETTET i dokdistDb for forsendelse med " + getIdsForLogging());
 	}
 
 	public static String getIdsForLogging() {
@@ -116,7 +107,6 @@ public class Qdist010Route extends RouteBuilder {
 				"http://nav.no/melding/virksomhet/varselMedHandling/v1/varselMedHandling",
 				"varselMedHandling");
 	}
-
 
 	public DataFormat setupDokumentHenvendelseFormat() {
 		return getJaxbDataFormatForNonRoot(Dokumenthenvendelse.class.getPackage().getName(),

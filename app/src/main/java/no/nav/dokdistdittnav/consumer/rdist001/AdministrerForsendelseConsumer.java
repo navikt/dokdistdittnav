@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -28,6 +27,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.inject.Inject;
 import java.time.Duration;
+
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.PUT;
 
 /**
  * @author Sigurd Midttun, Visma Consulting.
@@ -57,7 +59,7 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 		try {
 			HttpEntity entity = new HttpEntity<>(createHeaders());
 			HentForsendelseResponseTo forsendelse =
-					restTemplate.exchange(this.administrerforsendelseV1Url + "/" + forsendelseId, HttpMethod.GET, entity, HentForsendelseResponseTo.class)
+					restTemplate.exchange(this.administrerforsendelseV1Url + "/" + forsendelseId, GET, entity, HentForsendelseResponseTo.class)
 					.getBody();
 
 			if (forsendelse.getArkivInformasjon() == null) {
@@ -77,14 +79,15 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 	@Override
 	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = RetryConstants.DELAY_SHORT, multiplier = RetryConstants.MULTIPLIER_SHORT))
 	@Monitor(value = "dok_consumer", extraTags = {"process", "oppdaterForsendelseStatus"}, histogram = true)
-	public void oppdaterForsendelseStatus(String forsendelseId, String forsendelseStatus) {
+	public void oppdaterForsendelseStatus(String forsendelseId, String forsendelseStatus, String varselStatus) {
 		try {
 			HttpEntity entity = new HttpEntity<>(createHeaders());
 			String uri = UriComponentsBuilder.fromHttpUrl(administrerforsendelseV1Url)
 					.queryParam("forsendelseId", forsendelseId)
 					.queryParam("forsendelseStatus", forsendelseStatus)
+					.queryParam("varselStatus", varselStatus)
 					.toUriString();
-			restTemplate.exchange(uri, HttpMethod.PUT, entity, Object.class);
+			restTemplate.exchange(uri, PUT, entity, Object.class);
 		} catch (HttpClientErrorException e) {
 			throw new Rdist001OppdaterForsendelseStatusFunctionalException(String.format("Kall mot rdist001 - oppdaterForsendelseStatus feilet funksjonelt med statusKode=%s, feilmelding=%s", e
 					.getStatusCode(), e.getMessage()), e);
@@ -100,7 +103,7 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 	public HentPostDestinasjonResponseTo hentPostDestinasjon(String landkode) {
 		try {
 			HttpEntity entity = new HttpEntity<>(createHeaders());
-			return restTemplate.exchange(administrerforsendelseV1Url + "/hentpostdestinasjon/" + landkode, HttpMethod.GET, entity, HentPostDestinasjonResponseTo.class)
+			return restTemplate.exchange(administrerforsendelseV1Url + "/hentpostdestinasjon/" + landkode, GET, entity, HentPostDestinasjonResponseTo.class)
 					.getBody();
 		} catch (HttpClientErrorException e) {
 			throw new Rdist001GetPostDestinasjonFunctionalException(String.format("Kall mot rdist001 - GetPostDestinasjon feilet funksjonelt med statusKode=%s, feilmelding=%s", e

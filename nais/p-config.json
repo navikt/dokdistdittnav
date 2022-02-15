@@ -12,6 +12,7 @@
 	"VARSELPRODUKSJON_BEST_VARSEL_M_HANDLING_QUEUENAME": "QA.P_VARSELPRODUKSJON.BEST_VARSEL_M_HANDLING",
 	"SRVDOKDISTDITTNAV": "/serviceuser/data/prod/srvdokdistdittnav",
 	"NAMESPACE": "teamdokumenthandtering",
+	"KAFKA_POOL": "nav-prod",
 	"MIN_REPLICAS": "1",
 	"MAX_REPLICAS": "4",
 	"INGRESSES": [

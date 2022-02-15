@@ -4,6 +4,7 @@
   "forsendelseStatus": "OVERSENDT",
   "tema": "FS22",
   "forsendelseTittel": "forsendelseTittel",
+  "distribusjonstype": "VIKTIG",
   "mottaker": {
     "mottakerId": "mottakerId",
     "mottakerNavn": "mottakerNavn",

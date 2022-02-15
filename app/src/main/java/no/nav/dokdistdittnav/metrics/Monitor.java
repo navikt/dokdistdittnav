@@ -33,4 +33,10 @@ public @interface Monitor {
 	boolean histogram() default false;
 
 	String description() default "";
+
+	boolean createErrorMetric() default false;
+
+	Class<? extends Throwable>[] errorMetricExclude() default {};
+
+	Class<? extends Throwable>[] errorMetricInclude() default {};
 }
