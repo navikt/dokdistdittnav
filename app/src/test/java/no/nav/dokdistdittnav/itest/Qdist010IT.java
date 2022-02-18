@@ -1,24 +1,13 @@
 package no.nav.dokdistdittnav.itest;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
-import no.nav.dokdistdittnav.Application;
-import no.nav.dokdistdittnav.itest.config.CustomAvroDeserializer;
-import no.nav.dokdistdittnav.itest.config.KafkaTestConfig;
+import no.nav.dokdistdittnav.itest.config.AbstractKafkaBrokerTest;
 import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.http.HttpHeaders;
-import org.apache.http.entity.ContentType;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cache.CacheManager;
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.inject.Inject;
 import javax.jms.JMSException;
@@ -36,10 +25,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static no.nav.dokdistdittnav.config.cache.LokalCacheConfig.TKAT020_CACHE;
-import static no.nav.dokdistdittnav.config.cache.LokalCacheConfig.TKAT021_CACHE;
 import static no.nav.dokdistdittnav.constants.RetryConstants.MAX_ATTEMPTS_SHORT;
 import static no.nav.dokdistdittnav.testUtils.classpathToString;
 import static org.awaitility.Awaitility.await;
@@ -53,18 +39,10 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 /**
  * @author Joakim Bjørnstad, Jbit AS
  */
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = {Application.class, CustomAvroDeserializer.class},
-		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import({KafkaTestConfig.class})
-@AutoConfigureWireMock(port = 0)
-@ActiveProfiles("itest")
-class Qdist010IT {
+class Qdist010IT extends AbstractKafkaBrokerTest {
 
 	private static final String FORSENDELSE_ID = "33333";
-	private static final String DOKUMENTTYPE_ID_HOVEDDOK = "dokumenttypeIdHoveddok";
-	private static final String VARSEL_TYPE_ID = "DittNAV_000004";
-	private static final String FORSENDELSE_PATH = "/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT"+"&varselStatus=OPPRETTET";
+	private static final String FORSENDELSE_PATH = "/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT" + "&varselStatus=OPPRETTET";
 	private static String CALL_ID;
 
 	@Inject
@@ -79,13 +57,9 @@ class Qdist010IT {
 	@Inject
 	private Queue backoutQueue;
 
-	@Inject
-	public CacheManager cacheManager;
-
 	@BeforeEach
 	public void setupBefore() {
 		CALL_ID = UUID.randomUUID().toString();
-
 		WireMock.reset();
 		WireMock.resetAllRequests();
 		WireMock.removeAllMappings();
@@ -95,7 +69,41 @@ class Qdist010IT {
 	void shouldProcessForsendelse() throws Exception {
 		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
 				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(classpathToString("__files/rjoark001/getForsendelse_withAdresse-happy.json").replace("insertCallIdHere", CALL_ID))));
+				.withBody(classpathToString("__files/rdist001/getForsendelse_withAdresse-happy.json").replace("insertCallIdHere", CALL_ID))));
+		stubFor(put(FORSENDELSE_PATH)
+				.willReturn(aResponse().withStatus(HttpStatus.OK.value())));
+
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
+
+		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+			verify(1, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
+		});
+
+		verifyAllStubs(1);
+	}
+
+	@Test
+	void oppretteOppgaveWhenForsendelseDistribusjonTypeIsVedtak() throws Exception {
+		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
+				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
+				.withBody(classpathToString("__files/rdist001/forsendelse_distribusjontype_vedtak.json").replace("insertCallIdHere", CALL_ID))));
+		stubFor(put(FORSENDELSE_PATH)
+				.willReturn(aResponse().withStatus(HttpStatus.OK.value())));
+
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
+
+		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+			verify(1, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
+		});
+	}
+
+	@Test
+	void sendBeskjedWhenForsendelseDistribusjonTypeIsNull() throws Exception {
+		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
+				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
+				.withBody(classpathToString("__files/rdist001/forsendelse_distribusjontype_null.json").replace("insertCallIdHere", CALL_ID))));
 		stubFor(put(FORSENDELSE_PATH)
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())));
 
@@ -105,24 +113,6 @@ class Qdist010IT {
 			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
 			verify(1, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
 		});
-
-		verifyAllStubs(1);
-	}
-
-	@Test
-	void shouldProcessForsendelseRepeterendeVarsel() throws Exception {
-		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
-				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(classpathToString("__files/rjoark001/getForsendelse_withAdresse-happy.json").replace("insertCallIdHere", CALL_ID))));
-		stubFor(put(FORSENDELSE_PATH)
-				.willReturn(aResponse().withStatus(HttpStatus.OK.value())));
-
-		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
-
-		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-		});
-
-		verifyAllStubs(1);
 	}
 
 	@Test
@@ -219,7 +209,7 @@ class Qdist010IT {
 	void shouldThrowRdist001HentForsendelseFunctionalExceptionUtenArkivInformasjon() throws Exception {
 		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
 				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(classpathToString("__files/rjoark001/getForsendelse_utenArkivInformasjon.json").replace("insertCallIdHere", CALL_ID))));
+				.withBody(classpathToString("__files/rdist001/getForsendelse_utenArkivInformasjon.json").replace("insertCallIdHere", CALL_ID))));
 
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
@@ -237,7 +227,7 @@ class Qdist010IT {
 	void shouldThrowInvalidForsendelseStatusException() throws Exception {
 		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
 				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(classpathToString("__files/rjoark001/getForsendelse_oversendtForsendelseStatus.json").replace("insertCallIdHere", CALL_ID))));
+				.withBody(classpathToString("__files/rdist001/getForsendelse_oversendtForsendelseStatus.json").replace("insertCallIdHere", CALL_ID))));
 
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
@@ -255,9 +245,7 @@ class Qdist010IT {
 	void shouldThrowTkat020FunctionalException() throws Exception {
 		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
 				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(classpathToString("__files/rjoark001/getForsendelse_withAdresse-happy.json").replace("insertCallIdHere", CALL_ID))));
-		stubFor(get(urlMatching("/dokumenttypeinfo/" + DOKUMENTTYPE_ID_HOVEDDOK))
-				.willReturn(aResponse().withStatus(HttpStatus.NOT_FOUND.value())));
+				.withBody(classpathToString("__files/rdist001/getForsendelse_withAdresse-happy.json").replace("insertCallIdHere", CALL_ID))));
 
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
@@ -268,17 +256,13 @@ class Qdist010IT {
 		});
 
 		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
-		verify(0, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")));
 	}
 
 	@Test
 	void shouldThrowTkat020FunctionalExceptionUtenDokumentProduksjonsInfo() throws Exception {
 		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
 				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(classpathToString("__files/rjoark001/getForsendelse_withAdresse-happy.json").replace("insertCallIdHere", CALL_ID))));
-		stubFor(get(urlMatching("/dokumenttypeinfo/" + DOKUMENTTYPE_ID_HOVEDDOK)).willReturn(aResponse().withStatus(HttpStatus.OK.value())
-				.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
-				.withBodyFile("dokumentinfov4/tkat020-utenDokumentProduksjonsInfo.json")));
+				.withBody(classpathToString("__files/rdist001/getForsendelse_withAdresse-happy.json").replace("insertCallIdHere", CALL_ID))));
 
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
@@ -289,14 +273,13 @@ class Qdist010IT {
 		});
 
 		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
-		verify(0, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")));
 	}
 
 	@Test
 	void shouldThrowRdist001OppdaterForsendelseStatusFunctionalException() throws Exception {
 		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
 				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(classpathToString("__files/rjoark001/getForsendelse_withAdresse-happy.json").replace("insertCallIdHere", CALL_ID))));
+				.withBody(classpathToString("__files/rdist001/getForsendelse_withAdresse-happy.json").replace("insertCallIdHere", CALL_ID))));
 		stubFor(put("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")
 				.willReturn(aResponse().withStatus(HttpStatus.NOT_FOUND.value())));
 
@@ -315,8 +298,8 @@ class Qdist010IT {
 	void shouldThrowRdist001OppdaterForsendelseStatusTechnicalException() throws Exception {
 		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
 				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(classpathToString("__files/rjoark001/getForsendelse_withAdresse-happy.json").replace("insertCallIdHere", CALL_ID))));
-		stubFor(put("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")
+				.withBody(classpathToString("__files/rdist001/getForsendelse_withAdresse-happy.json").replace("insertCallIdHere", CALL_ID))));
+		stubFor(put(FORSENDELSE_PATH)
 				.willReturn(aResponse().withStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())));
 
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
@@ -328,7 +311,7 @@ class Qdist010IT {
 		});
 
 		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
-		verify(MAX_ATTEMPTS_SHORT, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")));
+		verify(MAX_ATTEMPTS_SHORT, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
 	}
 
 	private void sendStringMessage(Queue queue, final String message) {
@@ -369,21 +352,9 @@ class Qdist010IT {
 
 	private void verifyAllStubs(int count) {
 		verify(count, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
-		verify(count, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")));
+		verify(count, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
 	}
 
-	private String henvendelseReplace(String henvendelse) {
-		return henvendelse.replaceAll("\r", "").replaceAll("\t", "")
-				.replaceFirst("(?<=ferdigstiltDato>).+(?=</ferdigstiltDato)", "")
-				.replaceFirst("(?<=varselbestillingId>).+(?=</varselbestillingId)", "");
-	}
-
-	private String varselReplace(String varsel) {
-		// value elementer med bindestrek (-) dekker FerdigstiltDato og VarselbestillingsId, som genereres per kall
-		return varsel.replaceAll("\r", "").replaceAll("\t", "")
-				.replaceFirst("(?<=varselbestillingId>).+(?=</varselbestillingId)", "")
-				.replaceAll("(?<=value>).*-.*(?=</value)", "");
-	}
 }
 
 

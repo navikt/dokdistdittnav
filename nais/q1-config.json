@@ -1,6 +1,7 @@
 {
-	"DOKUMENTTYPEINFO_V4_URL": "https://app-q1.adeo.no/dokkat/rest/dokumenttypeinfo/v4",
-	"VARSELINFO_V1_URL": "https://app-q1.adeo.no/dokkat/rest/varselinfo/v1",
+	"BRUKERNOTIFIKASJON_TOPICBESKJED": "aapen-brukernotifikasjon-nyBeskjed-v1",
+	"BRUKERNOTIFIKASJON_TOPICOPPGAVE": "aapen-brukernotifikasjon-nyOppgave-v1",
+	"BRUKERNOTIFIKASJON_URL": "https://person.dev.nav.no/mine-saker/tema/",
 	"ADMINISTRERFORSENDELSE_V1_URL": "https://app-q1.adeo.no/dokdist/rest/v1/administrerforsendelse",
 	"DOKDISTDITTNAV_CHANNEL_NAME": "Q1_DOKDISTDITTNAV",
 	"MQGATEWAY01_HOSTNAME": "b27apvl219.preprod.local",
@@ -8,8 +9,6 @@
 	"MQGATEWAY01_NAME": "MQLS01",
 	"DOKDISTDITTNAV_QDIST010_FUNK_FEIL_QUEUENAME": "QA.Q1_DOKDISTDITTNAV.QDIST010_FUNK_FEIL",
 	"DOKDISTDITTNAV_QDIST010_DIST_DITT_NAV_QUEUENAME": "QA.Q1_DOKDISTDITTNAV.QDIST010_DIST_DITT_NAV",
-	"HENVENDELSE_DOKUMENT_HENVENDELSE_QUEUENAME": "QA.Q1_HENVENDELSE_DOKUMENT.HENVENDELSE",
-	"VARSELPRODUKSJON_BEST_VARSEL_M_HANDLING_QUEUENAME": "QA.Q1_VARSELPRODUKSJON.BEST_VARSEL_M_HANDLING",
 	"SRVDOKDISTDITTNAV": "/serviceuser/data/dev/srvdokdistdittnav",
 	"NAMESPACE": "teamdokumenthandtering",
 	"KAFKA_POOL": "nav-dev",

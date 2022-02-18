@@ -46,11 +46,6 @@
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
         </dependency>
-        <!--Storage S3-->
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-s3</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.springframework.retry</groupId>
             <artifactId>spring-retry</artifactId>
@@ -105,27 +100,8 @@
         </dependency>
         <!--Tjenestegrensesnitt-->
         <dependency>
-            <groupId>no.nav.dokkat</groupId>
-            <artifactId>dokkat-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.dokkat</groupId>
-            <artifactId>dokkat-schemas</artifactId>
-        </dependency>
-        <dependency>
             <groupId>no.nav.meldinger.virksomhet</groupId>
             <artifactId>melding-virksomhet-dokdistfordeling</artifactId>
-        </dependency>
-        <!--Tjenestespesifikasjoner-->
-        <dependency>
-            <groupId>no.nav.meldinger.virksomhet</groupId>
-            <artifactId>nav-virksomhet-opprettDokumenthenvendelse-v1-meldingsdefinisjon</artifactId>
-            <classifier>jaxb</classifier>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.meldinger.virksomhet</groupId>
-            <artifactId>nav-virksomhet-varselMedHandling-v1-meldingsdefinisjon</artifactId>
-            <classifier>jaxb</classifier>
         </dependency>
         <dependency>
             <groupId>io.github.resilience4j</groupId>
@@ -163,6 +139,11 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-contract-wiremock</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

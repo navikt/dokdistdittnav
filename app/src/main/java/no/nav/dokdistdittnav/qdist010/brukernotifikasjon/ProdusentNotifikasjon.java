@@ -1,4 +1,4 @@
-package no.nav.dokdistdittnav.brukernotifikasjon;
+package no.nav.dokdistdittnav.qdist010.brukernotifikasjon;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.brukernotifikasjon.schemas.internal.BeskjedIntern;
@@ -11,8 +11,6 @@ import no.nav.dokdistdittnav.consumer.rdist001.DistribusjonsTypeKode;
 import no.nav.dokdistdittnav.consumer.rdist001.HentForsendelseResponseTo;
 import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKanal;
 import org.apache.camel.Handler;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.security.auth.SecurityProtocol;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -46,15 +44,15 @@ public class ProdusentNotifikasjon {
 		HentForsendelseResponseTo hentForsendelseResponse = administrerForsendelse.hentForsendelse(forsendelseId);
 		NokkelIntern nokkelIntern = brukerNotifikasjonMapper.mapNokkelIntern(forsendelseId, serviceuser.getUsername(), hentForsendelseResponse);
 
-		OppgaveIntern oppgaveIntern = brukerNotifikasjonMapper.oppretteOppgave(hentForsendelseResponse);
 		if (erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype())) {
+			OppgaveIntern oppgaveIntern = brukerNotifikasjonMapper.oppretteOppgave(brukernotifikasjonTopic.getUrl(), hentForsendelseResponse);
 			log.info("Oppretter varseling oppgave med eventId/forsendelseId={}", forsendelseId);
 			kafkaEventProducer.publish(brukernotifikasjonTopic.getTopicoppgave(), nokkelIntern, oppgaveIntern);
 			log.info("Oppgave opprettet fra system={} med eventId/forsendelseId={}.", serviceuser.getUsername(), forsendelseId);
 		}
 
-		if (erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype())) {
-			BeskjedIntern beskjedIntern = brukerNotifikasjonMapper.mapBeskjedIntern(hentForsendelseResponse);
+		if (!erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype())) {
+			BeskjedIntern beskjedIntern = brukerNotifikasjonMapper.mapBeskjedIntern(brukernotifikasjonTopic.getUrl(), hentForsendelseResponse);
 			kafkaEventProducer.publish(brukernotifikasjonTopic.getTopicbeskjed(), nokkelIntern, beskjedIntern);
 			log.info("Beskjed sendt fra system={} med eventId/forsendelseId={} til Brukernotifikasjon", serviceuser.getUsername(), forsendelseId);
 		}

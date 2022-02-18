@@ -26,12 +26,7 @@
         <javax.inject.version>1</javax.inject.version>
         <logstash-logback-encoder.version>6.6</logstash-logback-encoder.version>
         <resilience4j.version>1.7.1</resilience4j.version>
-        <aws-java-sdk-s3.version>1.11.1034</aws-java-sdk-s3.version>
-        <dokkat.version>11.0.6</dokkat.version>
         <wmq.version>9.2.2.0</wmq.version>
-        <nav-virksomhet-opprettDokumenthenvendelse-v1.version>1.0.2
-        </nav-virksomhet-opprettDokumenthenvendelse-v1.version>
-        <nav-virksomhet-varselMedHandling-v1.version>1.0.0</nav-virksomhet-varselMedHandling-v1.version>
         <melding-virksomhet-dokdistfordeling.version>2.0.4</melding-virksomhet-dokdistfordeling.version>
         <jaxb2-basics-runtime.version>1.11.1</jaxb2-basics-runtime.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
@@ -40,7 +35,6 @@
         <activemq.version>5.16.2</activemq.version>
         <spring-cloud-contract-wiremock.version>3.0.2</spring-cloud-contract-wiremock.version>
         <awaitility.version>4.1.0</awaitility.version>
-        <junit5.mockito.version>3.9.0</junit5.mockito.version>
         <commons-io.version>2.8.0</commons-io.version>
         <maven-toolchains-plugin.version>3.0.0</maven-toolchains-plugin.version>
         <maven-plugin.version>3.0.0-M5</maven-plugin.version>
@@ -118,11 +112,6 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>com.amazonaws</groupId>
-                <artifactId>aws-java-sdk-s3</artifactId>
-                <version>${aws-java-sdk-s3.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.jvnet.jaxb2_commons</groupId>
                 <artifactId>jaxb2-basics-runtime</artifactId>
                 <version>${jaxb2-basics-runtime.version}</version>
@@ -138,31 +127,9 @@
                 <version>${activemq.version}</version>
             </dependency>
             <dependency>
-                <groupId>no.nav.dokkat</groupId>
-                <artifactId>dokkat-api</artifactId>
-                <version>${dokkat.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.dokkat</groupId>
-                <artifactId>dokkat-schemas</artifactId>
-                <version>${dokkat.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>no.nav.meldinger.virksomhet</groupId>
                 <artifactId>melding-virksomhet-dokdistfordeling</artifactId>
                 <version>${melding-virksomhet-dokdistfordeling.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.meldinger.virksomhet</groupId>
-                <artifactId>nav-virksomhet-opprettDokumenthenvendelse-v1-meldingsdefinisjon</artifactId>
-                <version>${nav-virksomhet-opprettDokumenthenvendelse-v1.version}</version>
-                <classifier>jaxb</classifier>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.meldinger.virksomhet</groupId>
-                <artifactId>nav-virksomhet-varselMedHandling-v1-meldingsdefinisjon</artifactId>
-                <version>${nav-virksomhet-varselMedHandling-v1.version}</version>
-                <classifier>jaxb</classifier>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -175,12 +142,7 @@
                 <version>${lombok.version}</version>
                 <scope>provided</scope>
             </dependency>
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-junit-jupiter</artifactId>
-                <version>${junit5.mockito.version}</version>
-                <scope>test</scope>
-            </dependency>
+
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-contract-wiremock</artifactId>

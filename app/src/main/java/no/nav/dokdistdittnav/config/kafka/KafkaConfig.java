@@ -14,6 +14,11 @@ import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.ProducerListener;
 import org.springframework.kafka.support.converter.RecordMessageConverter;
 
+import javax.inject.Inject;
+import java.util.Map;
+
+import static org.apache.kafka.common.security.auth.SecurityProtocol.SSL;
+
 @Slf4j
 @Profile("nais")
 @EnableConfigurationProperties(KafkaProperties.class)
@@ -22,6 +27,7 @@ public class KafkaConfig {
 
 	private final KafkaProperties properties;
 
+	@Inject
 	public KafkaConfig(KafkaProperties properties) {
 		this.properties = properties;
 	}
@@ -31,13 +37,14 @@ public class KafkaConfig {
 		KafkaTemplate<Object, Object> kafkaTemplate = new KafkaTemplate(kafkaProducerFactory);
 		messageConverter.ifUnique(kafkaTemplate::setMessageConverter);
 		kafkaTemplate.setProducerListener(kafkaProducerListener);
-		kafkaTemplate.setDefaultTopic(this.properties.getTemplate().getDefaultTopic());
 		return kafkaTemplate;
 	}
 
 
 	@Bean
 	public ProducerFactory<?, ?> kafkaProducerFactory(ObjectProvider<DefaultKafkaProducerFactoryCustomizer> customizers) {
+		Map<String, Object> kafkaProperties = this.properties.buildProducerProperties();
+		kafkaProperties.put("security.protocol", SSL.name);
 		DefaultKafkaProducerFactory<?, ?> factory = new DefaultKafkaProducerFactory(this.properties.buildProducerProperties());
 		String transactionIdPrefix = this.properties.getProducer().getTransactionIdPrefix();
 		if (transactionIdPrefix != null) {

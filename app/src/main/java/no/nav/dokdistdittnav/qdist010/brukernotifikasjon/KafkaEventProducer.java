@@ -1,12 +1,10 @@
-package no.nav.dokdistdittnav.brukernotifikasjon;
+package no.nav.dokdistdittnav.qdist010.brukernotifikasjon;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistdittnav.exception.technical.KafkaTechnicalException;
 import no.nav.dokdistdittnav.metrics.Monitor;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.errors.TopicAuthorizationException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.KafkaException;
 import org.springframework.kafka.core.KafkaProducerException;
 import org.springframework.kafka.core.KafkaTemplate;
