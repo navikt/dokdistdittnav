@@ -18,23 +18,24 @@
     </parent>
 
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
+
         <brukernotifikasjon.version>1.2022.01.20-12.20-9c37cb170dc9</brukernotifikasjon.version>
         <confluent.version>7.0.1</confluent.version>
         <avro.version>1.11.0</avro.version>
         <camel.version>3.14.0</camel.version>
+
         <javax.inject.version>1</javax.inject.version>
-        <logstash-logback-encoder.version>7.0</logstash-logback-encoder.version>
+        <logstash-logback-encoder.version>7.0.1</logstash-logback-encoder.version>
         <resilience4j.version>1.7.1</resilience4j.version>
-        <wmq.version>9.2.2.0</wmq.version>
-        <melding-virksomhet-dokdistfordeling.version>2.0.4</melding-virksomhet-dokdistfordeling.version>
-        <commons-lang3.version>3.12.0</commons-lang3.version>
+        <wmq.version>9.2.4.0</wmq.version>
         <lombok.version>1.18.22</lombok.version>
-        <rxjava.version>2.2.21</rxjava.version>
         <activemq.version>5.16.2</activemq.version>
         <spring-cloud-contract-wiremock.version>3.1.0</spring-cloud-contract-wiremock.version>
-        <awaitility.version>4.1.0</awaitility.version>
         <commons-io.version>2.11.0</commons-io.version>
+
+        <melding-virksomhet-dokdistfordeling.version>2.0.4</melding-virksomhet-dokdistfordeling.version>
+
         <maven-toolchains-plugin.version>3.0.0</maven-toolchains-plugin.version>
         <maven-plugin.version>3.0.0-M5</maven-plugin.version>
     </properties>
@@ -75,18 +76,8 @@
             </dependency>
             <dependency>
                 <groupId>io.github.resilience4j</groupId>
-                <artifactId>resilience4j-timelimiter</artifactId>
+                <artifactId>resilience4j-spring-boot2</artifactId>
                 <version>${resilience4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.resilience4j</groupId>
-                <artifactId>resilience4j-circuitbreaker</artifactId>
-                <version>${resilience4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.reactivex.rxjava2</groupId>
-                <artifactId>rxjava</artifactId>
-                <version>${rxjava.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.camel.springboot</groupId>
@@ -110,11 +101,7 @@
                 <artifactId>melding-virksomhet-dokdistfordeling</artifactId>
                 <version>${melding-virksomhet-dokdistfordeling.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>${commons-lang3.version}</version>
-            </dependency>
+
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
@@ -138,12 +125,6 @@
                 <groupId>org.apache.activemq</groupId>
                 <artifactId>activemq-broker</artifactId>
                 <version>${activemq.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.awaitility</groupId>
-                <artifactId>awaitility</artifactId>
-                <version>${awaitility.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
@@ -181,7 +162,7 @@
                 <configuration>
                     <toolchains>
                         <jdk>
-                            <version>11</version>
+                            <version>17</version>
                             <vendor>openjdk</vendor>
                         </jdk>
                     </toolchains>
