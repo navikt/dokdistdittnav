@@ -7,7 +7,7 @@ metadata:
     team: teamdokumenthandtering
 spec:
   kafka:
-    pool: { { KAFKA_POOL } }
+    pool: {{ KAFKA_POOL }}
   env:
     - name: BRUKERNOTIFIKASJON_TOPICBESKJED
       value: {{ BRUKERNOTIFIKASJON_TOPICBESKJED }}
