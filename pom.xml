@@ -24,18 +24,17 @@
         <avro.version>1.11.0</avro.version>
         <camel.version>3.14.0</camel.version>
         <javax.inject.version>1</javax.inject.version>
-        <logstash-logback-encoder.version>6.6</logstash-logback-encoder.version>
+        <logstash-logback-encoder.version>7.0</logstash-logback-encoder.version>
         <resilience4j.version>1.7.1</resilience4j.version>
         <wmq.version>9.2.2.0</wmq.version>
         <melding-virksomhet-dokdistfordeling.version>2.0.4</melding-virksomhet-dokdistfordeling.version>
-        <jaxb2-basics-runtime.version>1.11.1</jaxb2-basics-runtime.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
-        <lombok.version>1.18.20</lombok.version>
+        <lombok.version>1.18.22</lombok.version>
         <rxjava.version>2.2.21</rxjava.version>
         <activemq.version>5.16.2</activemq.version>
-        <spring-cloud-contract-wiremock.version>3.0.2</spring-cloud-contract-wiremock.version>
+        <spring-cloud-contract-wiremock.version>3.1.0</spring-cloud-contract-wiremock.version>
         <awaitility.version>4.1.0</awaitility.version>
-        <commons-io.version>2.8.0</commons-io.version>
+        <commons-io.version>2.11.0</commons-io.version>
         <maven-toolchains-plugin.version>3.0.0</maven-toolchains-plugin.version>
         <maven-plugin.version>3.0.0-M5</maven-plugin.version>
     </properties>
@@ -76,21 +75,6 @@
             </dependency>
             <dependency>
                 <groupId>io.github.resilience4j</groupId>
-                <artifactId>resilience4j-spring-boot</artifactId>
-                <version>${resilience4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.resilience4j</groupId>
-                <artifactId>resilience4j-metrics</artifactId>
-                <version>${resilience4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.resilience4j</groupId>
-                <artifactId>resilience4j-prometheus</artifactId>
-                <version>${resilience4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.resilience4j</groupId>
                 <artifactId>resilience4j-timelimiter</artifactId>
                 <version>${resilience4j.version}</version>
             </dependency>
@@ -110,11 +94,6 @@
                 <version>${camel.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.jvnet.jaxb2_commons</groupId>
-                <artifactId>jaxb2-basics-runtime</artifactId>
-                <version>${jaxb2-basics-runtime.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.ibm.mq</groupId>
