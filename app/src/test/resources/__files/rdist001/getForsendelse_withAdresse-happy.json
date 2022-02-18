@@ -2,9 +2,9 @@
   "bestillingsId": "insertCallIdHere",
   "modus": "T",
   "forsendelseStatus": "KLAR_FOR_DIST",
-  "tema": "FS22",
+  "tema": "DAG",
   "forsendelseTittel": "forsendelseTittel",
-  "distribusjonstype": "VEDTAK",
+  "distribusjonstype": "VIKTIG",
   "mottaker": {
     "mottakerId": "mottakerId",
     "mottakerNavn": "mottakerNavn",
@@ -18,20 +18,26 @@
     "poststed": "poststed",
     "landkode": "NO"
   },
+  "arkivInformasjon": {
+    "arkivId": "123"
+  },
   "dokumenter": [
     {
       "tilknyttetSom": "HOVEDDOKUMENT",
       "dokumentObjektReferanse": "dokumentObjektReferanseHoveddok",
+      "arkivDokumentInfoId": "arkivDokumentInfoId1",
       "dokumenttypeId": "dokumenttypeIdHoveddok"
     },
     {
       "tilknyttetSom": "VEDLEGG",
       "dokumentObjektReferanse": "dokumentObjektReferanseVedlegg1",
+      "arkivDokumentInfoId": "arkivDokumentInfoId2",
       "dokumenttypeId": "dokumenttypeId2Vedlegg1"
     },
     {
       "tilknyttetSom": "VEDLEGG",
       "dokumentObjektReferanse": "dokumentObjektReferanseVedlegg2",
+      "arkivDokumentInfoId": "arkivDokumentInfoId3",
       "dokumenttypeId": "dokumenttypeIdVedlegg2"
     }
   ]
