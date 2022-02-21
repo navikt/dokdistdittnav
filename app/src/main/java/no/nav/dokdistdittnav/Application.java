@@ -3,7 +3,6 @@ package no.nav.dokdistdittnav;
 import no.nav.dokdistdittnav.config.alias.BrukernotifikasjonTopic;
 import no.nav.dokdistdittnav.config.alias.MqGatewayAlias;
 import no.nav.dokdistdittnav.config.alias.ServiceuserAlias;
-import no.nav.dokdistdittnav.config.kafka.KafkaConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -12,13 +11,13 @@ import org.springframework.retry.annotation.EnableRetry;
 
 @SpringBootApplication
 @EnableRetry
-@Import({KafkaConfig.class})
+@Import({CoreConfig.class})
 @EnableConfigurationProperties({
-        ServiceuserAlias.class,
-        BrukernotifikasjonTopic.class,
-        MqGatewayAlias.class})
+		ServiceuserAlias.class,
+		BrukernotifikasjonTopic.class,
+		MqGatewayAlias.class})
 public class Application {
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
-    }
+	public static void main(String[] args) {
+		SpringApplication.run(Application.class, args);
+	}
 }
