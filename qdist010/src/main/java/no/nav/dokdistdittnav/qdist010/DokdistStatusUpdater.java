@@ -26,5 +26,4 @@ public class DokdistStatusUpdater {
 		final String forsendelseId = exchange.getProperty(PROPERTY_FORSENDELSE_ID, String.class);
 		administrerForsendelse.oppdaterForsendelseStatus(forsendelseId, FORSENDELSE_STATUS_EKSPEDERT, VARSEL_STATUS_OPPRETTET);
 	}
-
 }

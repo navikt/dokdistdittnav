@@ -36,7 +36,5 @@ public @interface Monitor {
 
 	boolean createErrorMetric() default false;
 
-	Class<? extends Throwable>[] errorMetricExclude() default {};
-
 	Class<? extends Throwable>[] errorMetricInclude() default {};
 }
