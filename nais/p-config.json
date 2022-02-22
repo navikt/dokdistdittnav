@@ -1,6 +1,6 @@
 {
-	"BRUKERNOTIFIKASJON_TOPICBESKJED": "aapen-brukernotifikasjon-beskjed-v1",
-	"BRUKERNOTIFIKASJON_TOPICOPPGAVE": "aapen-brukernotifikasjon-oppgave-v1",
+	"BRUKERNOTIFIKASJON_TOPICBESKJED": "min-side.privat-brukernotifikasjon-beskjed-v1",
+	"BRUKERNOTIFIKASJON_TOPICOPPGAVE": "min-side.privat-brukernotifikasjon-oppgave-v1",
 	"BRUKERNOTIFIKASJON_URL": "https://person.nav.no/mine-saker/tema/",
 	"ADMINISTRERFORSENDELSE_V1_URL": "https://app.adeo.no/dokdist/rest/v1/administrerforsendelse",
 	"DOKDISTDITTNAV_CHANNEL_NAME": "P_DOKDISTDITTNAV",
