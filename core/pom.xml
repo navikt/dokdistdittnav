@@ -18,7 +18,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.github.navikt</groupId>
-			<artifactId>brukernotifikasjon-schemas-internal</artifactId>
+			<artifactId>brukernotifikasjon-schemas</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.confluent</groupId>
