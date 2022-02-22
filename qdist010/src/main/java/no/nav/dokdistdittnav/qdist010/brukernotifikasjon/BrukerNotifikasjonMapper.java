@@ -23,6 +23,7 @@ import static no.nav.dokdistdittnav.qdist010.util.Qdist010FunctionalUtils.classp
 
 public class BrukerNotifikasjonMapper {
 
+	private static final String NAMESPACE = "teamdokumenthandtering";
 	private static final String APP_NAVN = "dokdistdittnav";
 	private static final String VEDTAK_PATH = "__files/vedtak_epostvarseltekst.html";
 	private static final String VIKTIG_PATH = "__files/viktig_epostvarseltekst.html";
@@ -36,7 +37,7 @@ public class BrukerNotifikasjonMapper {
 				.setEventId(hentForsendelseResponse.getBestillingsId())
 				.setGrupperingsId(forsendelseId)
 				.setFodselsnummer(getMottakerId(hentForsendelseResponse))
-				.setNamespace("")
+				.setNamespace(NAMESPACE)
 				.setAppnavn(APP_NAVN)
 				.build();
 	}
