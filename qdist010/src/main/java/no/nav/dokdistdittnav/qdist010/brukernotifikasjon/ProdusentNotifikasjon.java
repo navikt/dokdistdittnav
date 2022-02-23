@@ -1,9 +1,9 @@
 package no.nav.dokdistdittnav.qdist010.brukernotifikasjon;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.brukernotifikasjon.schemas.internal.BeskjedIntern;
-import no.nav.brukernotifikasjon.schemas.internal.NokkelIntern;
-import no.nav.brukernotifikasjon.schemas.internal.OppgaveIntern;
+import no.nav.brukernotifikasjon.schemas.input.BeskjedInput;
+import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
+import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
 import no.nav.dokdistdittnav.config.alias.BrukernotifikasjonTopic;
 import no.nav.dokdistdittnav.config.alias.ServiceuserAlias;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
@@ -42,17 +42,17 @@ public class ProdusentNotifikasjon {
 	public void oppretteOppgaveEllerBeskjed(DistribuerTilKanal distribuerTilKanal) {
 		String forsendelseId = distribuerTilKanal.getForsendelseId();
 		HentForsendelseResponseTo hentForsendelseResponse = administrerForsendelse.hentForsendelse(forsendelseId);
-		NokkelIntern nokkelIntern = brukerNotifikasjonMapper.mapNokkelIntern(forsendelseId, serviceuser.getUsername(), hentForsendelseResponse);
+		NokkelInput nokkelIntern = brukerNotifikasjonMapper.mapNokkelIntern(forsendelseId, serviceuser.getUsername(), hentForsendelseResponse);
 
 		if (erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype())) {
-			OppgaveIntern oppgaveIntern = brukerNotifikasjonMapper.oppretteOppgave(brukernotifikasjonTopic.getUrl(), hentForsendelseResponse);
+			OppgaveInput oppgaveIntern = brukerNotifikasjonMapper.oppretteOppgave(brukernotifikasjonTopic.getUrl(), hentForsendelseResponse);
 			log.info("Oppretter varseling oppgave med eventId/forsendelseId={}", forsendelseId);
 			kafkaEventProducer.publish(brukernotifikasjonTopic.getTopicoppgave(), nokkelIntern, oppgaveIntern);
 			log.info("Oppgave opprettet fra system={} med eventId/forsendelseId={}.", serviceuser.getUsername(), forsendelseId);
 		}
 
 		if (!erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype())) {
-			BeskjedIntern beskjedIntern = brukerNotifikasjonMapper.mapBeskjedIntern(brukernotifikasjonTopic.getUrl(), hentForsendelseResponse);
+			BeskjedInput beskjedIntern = brukerNotifikasjonMapper.mapBeskjedIntern(brukernotifikasjonTopic.getUrl(), hentForsendelseResponse);
 			kafkaEventProducer.publish(brukernotifikasjonTopic.getTopicbeskjed(), nokkelIntern, beskjedIntern);
 			log.info("Beskjed sendt fra system={} med eventId/forsendelseId={} til Brukernotifikasjon", serviceuser.getUsername(), forsendelseId);
 		}
