@@ -32,6 +32,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.inject.Inject;
 import java.time.Duration;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.http.HttpMethod.GET;
 
 /**
@@ -86,10 +87,7 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 	public void oppdaterForsendelseStatus(String forsendelseId, String forsendelseStatus, String varselStatus) {
 		try {
 			HttpEntity entity = new HttpEntity<>(createHeaders());
-			String uri = UriComponentsBuilder.fromHttpUrl(administrerforsendelseV1Url)
-					.queryParam("forsendelseId", forsendelseId)
-					.queryParam("forsendelseStatus", forsendelseStatus)
-					.queryParam("varselStatus", varselStatus)
+			String uri = uriBuilder(forsendelseId, forsendelseStatus, varselStatus)
 					.toUriString();
 			restTemplate.exchange(uri, HttpMethod.PUT, entity, Object.class);
 		} catch (HttpClientErrorException e) {
@@ -121,6 +119,13 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 		} catch (HttpServerErrorException e) {
 			throw new Rdist001OppdaterForsendelseStatusTechnicalException(String.format("Kall mot rdist001 - finnFrosendelse feilet teknisk med statusCode=%s,feilmelding=%s", e.getStatusCode(), e.getMessage()), e);
 		}
+	}
+
+	private UriComponentsBuilder uriBuilder(String forsendelseId, String forsendelseStatus, String varselStatus) {
+		UriComponentsBuilder uri = UriComponentsBuilder.fromHttpUrl(administrerforsendelseV1Url)
+				.queryParam("forsendelseId", forsendelseId);
+		return isBlank(forsendelseStatus) ? uri.queryParam("varselStatus", varselStatus) :
+				uri.queryParam("forsendelseStatus", forsendelseStatus).queryParam("varselStatus", varselStatus);
 	}
 
 	private HttpHeaders createHeaders() {

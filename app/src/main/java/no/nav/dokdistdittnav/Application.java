@@ -1,6 +1,6 @@
 package no.nav.dokdistdittnav;
 
-import no.nav.dokdistdittnav.config.alias.KafkaTopic;
+import no.nav.dokdistdittnav.config.alias.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.config.alias.MqGatewayAlias;
 import no.nav.dokdistdittnav.config.alias.ServiceuserAlias;
 import org.springframework.boot.SpringApplication;
@@ -14,7 +14,7 @@ import org.springframework.retry.annotation.EnableRetry;
 @Import({CoreConfig.class})
 @EnableConfigurationProperties({
 		ServiceuserAlias.class,
-		KafkaTopic.class,
+		DokdistdittnavProperties.class,
 		MqGatewayAlias.class})
 public class Application {
 	public static void main(String[] args) {

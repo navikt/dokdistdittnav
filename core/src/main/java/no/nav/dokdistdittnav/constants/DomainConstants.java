@@ -9,8 +9,7 @@ public class DomainConstants {
 
 	public static final String SERVICE_ID = "qdist010";
 	public static final String FORSENDELSE_STATUS_EKSPEDERT = "EKSPEDERT";
-	public static final String DITTNAV_KANAL = "DITTNAV";
-	public static final String VARSEL_STATUS_OPPRETTET = "OPPRETTET";
+	public static final String KANAL_DITTNAV = "DITTNAV";
 	public static final String HOVEDDOKUMENT = "HOVEDDOKUMENT";
 
 	public static final String VEDTAK_TEKST = "Du har fått et vedtak som gjelder %s. Les vedtaket i mine saker.";
