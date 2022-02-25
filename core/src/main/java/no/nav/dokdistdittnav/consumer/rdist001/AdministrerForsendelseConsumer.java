@@ -1,8 +1,12 @@
 package no.nav.dokdistdittnav.consumer.rdist001;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistdittnav.config.alias.ServiceuserAlias;
 import no.nav.dokdistdittnav.constants.MdcConstants;
 import no.nav.dokdistdittnav.constants.RetryConstants;
+import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
 import no.nav.dokdistdittnav.exception.functional.Rdist001HentForsendelseFunctionalException;
 import no.nav.dokdistdittnav.exception.functional.Rdist001OppdaterForsendelseStatusFunctionalException;
 import no.nav.dokdistdittnav.exception.technical.AbstractDokdistdittnavTechnicalException;
@@ -16,6 +20,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
@@ -27,9 +32,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.inject.Inject;
 import java.time.Duration;
 
+import static org.springframework.http.HttpMethod.GET;
+
 /**
  * @author Sigurd Midttun, Visma Consulting.
  */
+@Slf4j
 @Component
 public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 
@@ -90,6 +98,28 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 		} catch (HttpServerErrorException e) {
 			throw new Rdist001OppdaterForsendelseStatusTechnicalException(String.format("Kall mot rdist001 - oppdaterForsendelseStatus feilet teknisk med statusKode=%s, feilmelding=%s", e
 					.getStatusCode(), e.getMessage()), e);
+		}
+	}
+
+	@Override
+	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = RetryConstants.DELAY_SHORT, multiplier = RetryConstants.MULTIPLIER_SHORT))
+	@Monitor(value = "dok_consumer", extraTags = {"process", "finnForsendelse"}, histogram = true)
+	public FinnForsendelseResponseTo finnForsendelse(final FinnForsendelseRequestTo finnForsendelseRequestTo) {
+		String uri = UriComponentsBuilder.fromHttpUrl(administrerforsendelseV1Url)
+				.path("/finnforsendelse")
+				.queryParam(finnForsendelseRequestTo.getOppslagsNoekkel(), finnForsendelseRequestTo.getVerdi())
+				.toUriString();
+		try {
+			HttpEntity entity = new HttpEntity<>(createHeaders());
+			log.info("Mottatt kall til å finne forsendelse med {}={}", finnForsendelseRequestTo.getOppslagsNoekkel(), finnForsendelseRequestTo.getVerdi());
+			ResponseEntity<FinnForsendelseResponseTo> response = restTemplate.exchange(uri, GET, entity, FinnForsendelseResponseTo.class);
+			return response.getBody();
+		} catch (HttpClientErrorException e) {
+			throw new Rdist001OppdaterForsendelseStatusFunctionalException(String.format("Kall mot rdist001 - finnFrosendelse feilet med statusCode=%s, feilmelding=%s", e.getStatusCode(), e.getMessage()),
+					e);
+
+		} catch (HttpServerErrorException e) {
+			throw new Rdist001OppdaterForsendelseStatusTechnicalException(String.format("Kall mot rdist001 - finnFrosendelse feilet teknisk med statusCode=%s,feilmelding=%s", e.getStatusCode(), e.getMessage()), e);
 		}
 	}
 

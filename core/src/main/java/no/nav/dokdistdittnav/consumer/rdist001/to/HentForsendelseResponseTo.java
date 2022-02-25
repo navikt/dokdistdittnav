@@ -1,8 +1,10 @@
-package no.nav.dokdistdittnav.consumer.rdist001;
+package no.nav.dokdistdittnav.consumer.rdist001.to;
 
 import lombok.Builder;
 import lombok.Data;
 import lombok.Value;
+import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode;
+import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonstidspunktKode;
 
 import java.util.List;
 
@@ -14,6 +16,7 @@ import java.util.List;
 public class HentForsendelseResponseTo {
 	private final String bestillingsId;
 	private final String forsendelseStatus;
+	private final String distribusjonKanal;
 	private final String modus;
 	private final String tema;
 	private final String forsendelseTittel;

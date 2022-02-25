@@ -1,4 +1,4 @@
-package no.nav.dokdistdittnav.qdist010.util;
+package no.nav.dokdistdittnav.kafka;
 
 import lombok.SneakyThrows;
 import org.apache.commons.compress.utils.IOUtils;
@@ -13,8 +13,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * @author Sigurd Midttun, Visma Consulting.
  */
-public final class Qdist010FunctionalUtils {
-	private Qdist010FunctionalUtils() {
+public final class FunctionalUtils {
+	private FunctionalUtils() {
 	}
 
 	@SneakyThrows
