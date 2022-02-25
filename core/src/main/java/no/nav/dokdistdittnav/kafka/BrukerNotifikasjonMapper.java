@@ -1,10 +1,11 @@
-package no.nav.dokdistdittnav.qdist010.brukernotifikasjon;
+package no.nav.dokdistdittnav.kafka;
 
 import no.nav.brukernotifikasjon.schemas.input.BeskjedInput;
+import no.nav.brukernotifikasjon.schemas.input.DoneInput;
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
-import no.nav.dokdistdittnav.consumer.rdist001.DistribusjonsTypeKode;
-import no.nav.dokdistdittnav.consumer.rdist001.HentForsendelseResponseTo;
+import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode;
+import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
 
 import java.time.ZoneId;
 
@@ -18,8 +19,8 @@ import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_VEDTAK_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_VIKTIG_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.VEDTAK_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.VIKTIG_TEKST;
-import static no.nav.dokdistdittnav.consumer.rdist001.DistribusjonsTypeKode.VEDTAK;
-import static no.nav.dokdistdittnav.qdist010.util.Qdist010FunctionalUtils.classpathToString;
+import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VEDTAK;
+import static no.nav.dokdistdittnav.kafka.FunctionalUtils.classpathToString;
 
 public class BrukerNotifikasjonMapper {
 
@@ -32,7 +33,7 @@ public class BrukerNotifikasjonMapper {
 	private static final String VIKTIG_TITTEL = "Brev fra NAV";
 	private static final String BESKJED_TITTEL = "Melding fra NAV";
 
-	public NokkelInput mapNokkelIntern(String forsendelseId, String serviceUsername, HentForsendelseResponseTo hentForsendelseResponse) {
+	public NokkelInput mapNokkelIntern(String forsendelseId, HentForsendelseResponseTo hentForsendelseResponse) {
 		return NokkelInput.newBuilder()
 				.setEventId(hentForsendelseResponse.getBestillingsId())
 				.setGrupperingsId(forsendelseId)
@@ -63,6 +64,12 @@ public class BrukerNotifikasjonMapper {
 				.setEpostVarslingstekst(mapEpostVarslingsteks(hentForsendelseResponse.getDistribusjonstype()))
 				.setEpostVarslingstittel(VEDTAK.equals(hentForsendelseResponse.getDistribusjonstype()) ? VEDTAK_TITTEL : VIKTIG_TITTEL)
 				.setSmsVarslingstekst(getSmsTekst(hentForsendelseResponse))
+				.build();
+	}
+
+	public DoneInput mapDoneInput() {
+		return DoneInput.newBuilder()
+				.setTidspunkt(now(ZoneId.of("UTC")).toEpochSecond())
 				.build();
 	}
 

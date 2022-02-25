@@ -2,12 +2,15 @@ package no.nav.dokdistdittnav.config.kafka;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.autoconfigure.kafka.DefaultKafkaConsumerFactoryCustomizer;
 import org.springframework.boot.autoconfigure.kafka.DefaultKafkaProducerFactoryCustomizer;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
@@ -40,7 +43,6 @@ public class KafkaConfig {
 		return kafkaTemplate;
 	}
 
-
 	@Bean
 	public ProducerFactory<?, ?> kafkaProducerFactory(ObjectProvider<DefaultKafkaProducerFactoryCustomizer> customizers) {
 		Map<String, Object> kafkaProperties = this.properties.buildProducerProperties();
@@ -56,4 +58,15 @@ public class KafkaConfig {
 		});
 		return factory;
 	}
+
+	@Bean
+	public ConsumerFactory<?, ?> kafkaConsumerFactory(ObjectProvider<DefaultKafkaConsumerFactoryCustomizer> customizers) {
+		Map<String, Object> consumerProperties = this.properties.buildConsumerProperties();
+		DefaultKafkaConsumerFactory<Object, Object> factory = new DefaultKafkaConsumerFactory(consumerProperties);
+		customizers.orderedStream().forEach((customizer) -> {
+			customizer.customize(factory);
+		});
+		return factory;
+	}
+
 }

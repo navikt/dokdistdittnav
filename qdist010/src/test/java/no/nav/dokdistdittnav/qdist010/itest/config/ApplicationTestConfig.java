@@ -1,23 +1,25 @@
 package no.nav.dokdistdittnav.qdist010.itest.config;
 
-
-import no.nav.dokdistdittnav.config.alias.BrukernotifikasjonTopic;
+import no.nav.dokdistdittnav.config.alias.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.config.alias.MqGatewayAlias;
 import no.nav.dokdistdittnav.config.alias.ServiceuserAlias;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
+import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.retry.annotation.EnableRetry;
 
-@Configuration
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+
 @Profile("itest")
 @EnableRetry
 @EnableConfigurationProperties({
 		ServiceuserAlias.class,
-		BrukernotifikasjonTopic.class,
+		DokdistdittnavProperties.class,
 		MqGatewayAlias.class
 })
 @Import({
@@ -25,7 +27,25 @@ import org.springframework.retry.annotation.EnableRetry;
 		KafkaTestConfig.class,
 		CustomAvroSerializer.class
 })
+@EmbeddedKafka(
+		partitions = 1,
+		controlledShutdown = true,
+		brokerProperties = {
+				"listeners=PLAINTEXT://127.0.0.1:60172",
+				"port=60172",
+				"offsets.topic.replication.factor=1",
+				"transaction.state.log.replication.factor=1",
+				"transaction.state.log.min.isr=1"
+		}
+)
 @EnableAutoConfiguration
 @ComponentScan(basePackages = "no.nav.dokdistdittnav")
-public class ApplicationTestConfig {
+@SpringBootTest(
+		classes = {
+				ApplicationTestConfig.class
+		},
+		webEnvironment = RANDOM_PORT
+)
+@AutoConfigureWireMock(port = 0)
+public abstract class ApplicationTestConfig {
 }
