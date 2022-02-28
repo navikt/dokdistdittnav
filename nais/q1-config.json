@@ -13,6 +13,7 @@
 	"DOKDISTDITTNAV_QDIST010_DIST_DITT_NAV_QUEUENAME": "QA.Q1_DOKDISTDITTNAV.QDIST010_DIST_DITT_NAV",
 	"SRVDOKDISTDITTNAV": "/serviceuser/data/dev/srvdokdistdittnav",
 	"NAMESPACE": "teamdokumenthandtering",
+	"APPNAVN": "dokdistdittnav",
 	"KAFKA_POOL": "nav-dev",
 	"MIN_REPLICAS": "1",
 	"MAX_REPLICAS": "2",

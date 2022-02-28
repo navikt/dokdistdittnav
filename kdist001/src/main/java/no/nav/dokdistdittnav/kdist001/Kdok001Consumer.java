@@ -27,8 +27,7 @@ public class Kdok001Consumer {
 
 	@KafkaListener(
 			topics = "${dokdistdittnav.topic.lestavmottaker}",
-			containerFactory = "kafkaListenerContainerFactory",
-			groupId = "dokdistdittnav-kdok001"
+			containerFactory = "kafkaListenerContainerFactory"
 	)
 	@Monitor(value = DOK_KDOK001_CONSUMER, createErrorMetric = true)
 	public void onMesage(final ConsumerRecord<String, Object> record) {
@@ -39,7 +38,7 @@ public class Kdok001Consumer {
 			log.info("Hentet hendelse med journalpostId={} fra topic={}", hoveddokumentLest.getJournalpostId(), record.topic());
 			ferdigprodusent.updateVarselStatus(hoveddokumentLest);
 		} catch (JsonProcessingException e) {
-			throw  new JsonParserTechnicalException("Kunne ikke deserialisere avienPayload med feilmelding:" + e.getMessage(), e);
+			throw new JsonParserTechnicalException("Kunne ikke deserialisere avienPayload med feilmelding:" + e.getMessage(), e);
 		}
 	}
 }
