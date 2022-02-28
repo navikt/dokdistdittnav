@@ -1,6 +1,5 @@
 package no.nav.dokdistdittnav.qdist010.itest;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
 import no.nav.dokdistdittnav.qdist010.itest.config.ApplicationTestConfig;
 import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.http.HttpHeaders;
@@ -60,9 +59,6 @@ class Qdist010IT extends ApplicationTestConfig {
 	@BeforeEach
 	public void setupBefore() {
 		CALL_ID = UUID.randomUUID().toString();
-		WireMock.reset();
-		WireMock.resetAllRequests();
-		WireMock.removeAllMappings();
 	}
 
 	@Test

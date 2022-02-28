@@ -32,6 +32,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.inject.Inject;
 import java.time.Duration;
 
+import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.http.HttpMethod.GET;
 
@@ -73,10 +74,10 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 
 			return forsendelse;
 		} catch (HttpClientErrorException e) {
-			throw new Rdist001HentForsendelseFunctionalException(String.format("Kall mot rdist001 - hentForsendelse feilet funksjonelt med statusKode=%s, feilmelding=%s", e
+			throw new Rdist001HentForsendelseFunctionalException(format("Kall mot rdist001 - hentForsendelse feilet funksjonelt med statusKode=%s, feilmelding=%s", e
 					.getStatusCode(), e.getMessage()), e);
 		} catch (HttpServerErrorException e) {
-			throw new Rdist001HentForsendelseTechnicalException(String.format("Kall mot rdist001 - hentForsendelse feilet teknisk med statusKode=%s, feilmelding=%s", e
+			throw new Rdist001HentForsendelseTechnicalException(format("Kall mot rdist001 - hentForsendelse feilet teknisk med statusKode=%s, feilmelding=%s", e
 					.getStatusCode(), e.getMessage()), e);
 		}
 	}
@@ -91,10 +92,10 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 					.toUriString();
 			restTemplate.exchange(uri, HttpMethod.PUT, entity, Object.class);
 		} catch (HttpClientErrorException e) {
-			throw new Rdist001OppdaterForsendelseStatusFunctionalException(String.format("Kall mot rdist001 - oppdaterForsendelseStatus feilet funksjonelt med statusKode=%s, feilmelding=%s", e
+			throw new Rdist001OppdaterForsendelseStatusFunctionalException(format("Kall mot rdist001 - oppdaterForsendelseStatus feilet funksjonelt med statusKode=%s, feilmelding=%s", e
 					.getStatusCode(), e.getMessage()), e);
 		} catch (HttpServerErrorException e) {
-			throw new Rdist001OppdaterForsendelseStatusTechnicalException(String.format("Kall mot rdist001 - oppdaterForsendelseStatus feilet teknisk med statusKode=%s, feilmelding=%s", e
+			throw new Rdist001OppdaterForsendelseStatusTechnicalException(format("Kall mot rdist001 - oppdaterForsendelseStatus feilet teknisk med statusKode=%s, feilmelding=%s", e
 					.getStatusCode(), e.getMessage()), e);
 		}
 	}
@@ -109,15 +110,15 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 				.toUriString();
 		try {
 			HttpEntity entity = new HttpEntity<>(createHeaders());
-			log.info("Mottatt kall til å finne forsendelse med {}={}", finnForsendelseRequestTo.getOppslagsNoekkel(), finnForsendelseRequestTo.getVerdi());
+			log.info("Mottatt kall for å finne forsendelse med {}={}", finnForsendelseRequestTo.getOppslagsNoekkel(), finnForsendelseRequestTo.getVerdi());
 			ResponseEntity<FinnForsendelseResponseTo> response = restTemplate.exchange(uri, GET, entity, FinnForsendelseResponseTo.class);
 			return response.getBody();
 		} catch (HttpClientErrorException e) {
-			throw new Rdist001OppdaterForsendelseStatusFunctionalException(String.format("Kall mot rdist001 - finnFrosendelse feilet med statusCode=%s, feilmelding=%s", e.getStatusCode(), e.getMessage()),
+			throw new Rdist001OppdaterForsendelseStatusFunctionalException(format("Kall mot rdist001 - finnForsendelse feilet med statusCode=%s, feilmelding=%s", e.getStatusCode(), e.getMessage()),
 					e);
 
 		} catch (HttpServerErrorException e) {
-			throw new Rdist001OppdaterForsendelseStatusTechnicalException(String.format("Kall mot rdist001 - finnFrosendelse feilet teknisk med statusCode=%s,feilmelding=%s", e.getStatusCode(), e.getMessage()), e);
+			throw new Rdist001OppdaterForsendelseStatusTechnicalException(format("Kall mot rdist001 - finnForsendelse feilet teknisk med statusCode=%s,feilmelding=%s", e.getStatusCode(), e.getMessage()), e);
 		}
 	}
 

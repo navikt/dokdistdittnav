@@ -6,7 +6,6 @@ import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.dokdistdittnav.kdist001.itest.config.ApplicationTestConfig;
 import no.nav.safselvbetjening.schemas.HoveddokumentLest;
 import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -42,14 +41,6 @@ public class Kdist001ITest extends ApplicationTestConfig {
 
 	@Autowired
 	private KafkaEventProducer kafkaEventProducer;
-
-
-	@BeforeEach
-	void setUp() {
-		WireMock.reset();
-		WireMock.resetAllRequests();
-		WireMock.removeAllMappings();
-	}
 
 	@Test
 	public void shouldReadMessageFromLestavmottakerTopicen() {
