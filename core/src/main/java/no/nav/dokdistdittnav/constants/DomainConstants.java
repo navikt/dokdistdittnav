@@ -12,6 +12,9 @@ public class DomainConstants {
 	public static final String KANAL_DITTNAV = "DITTNAV";
 	public static final String HOVEDDOKUMENT = "HOVEDDOKUMENT";
 
+	public static final String JOURNALPOST_ID = "journalpostId";
+	public static final String BESTILLING_ID = "bestillingsId";
+
 	public static final String VEDTAK_TEKST = "Du har fått et vedtak som gjelder %s. Les vedtaket i mine saker.";
 	public static final String SMS_VEDTAK_TEKST = "Hei! Du har fått et vedtak fra NAV. Logg inn på nav.no for å lese det. Vennlig hilsen NAV";
 

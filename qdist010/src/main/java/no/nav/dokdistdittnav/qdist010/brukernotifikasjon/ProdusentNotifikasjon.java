@@ -12,11 +12,14 @@ import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
 import no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKanal;
+import org.apache.camel.Exchange;
 import org.apache.camel.Handler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.nonNull;
+import static no.nav.dokdistdittnav.constants.DomainConstants.BESTILLING_ID;
+import static no.nav.dokdistdittnav.constants.DomainConstants.JOURNALPOST_ID;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VEDTAK;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VIKTIG;
 
@@ -41,10 +44,13 @@ public class ProdusentNotifikasjon {
 	}
 
 	@Handler
-	public void oppretteOppgaveEllerBeskjed(DistribuerTilKanal distribuerTilKanal) {
+	public void oppretteOppgaveEllerBeskjed(DistribuerTilKanal distribuerTilKanal, Exchange exchange) {
 		String forsendelseId = distribuerTilKanal.getForsendelseId();
 		HentForsendelseResponseTo hentForsendelseResponse = administrerForsendelse.hentForsendelse(forsendelseId);
 		NokkelInput nokkelIntern = brukerNotifikasjonMapper.mapNokkelIntern(forsendelseId, hentForsendelseResponse);
+
+		exchange.setProperty(JOURNALPOST_ID, hentForsendelseResponse.getArkivInformasjon().getArkivId());
+		exchange.setProperty(BESTILLING_ID, hentForsendelseResponse.getBestillingsId());
 
 		if (erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype())) {
 			OppgaveInput oppgaveIntern = brukerNotifikasjonMapper.oppretteOppgave(brukernotifikasjonTopic.getBrukernotifikasjon().getLink(), hentForsendelseResponse);
