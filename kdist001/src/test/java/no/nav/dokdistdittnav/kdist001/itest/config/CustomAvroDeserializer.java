@@ -16,7 +16,7 @@ public class CustomAvroDeserializer extends KafkaAvroDeserializer {
 	private static Map<String, Object> props() {
 		Map<String, Object> props = new HashMap<>();
 		props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
-		props.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "bogus");
+		props.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "kafkaurl");
 		return props;
 	}
 
