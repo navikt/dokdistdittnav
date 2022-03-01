@@ -7,7 +7,10 @@ import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
+import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
@@ -17,6 +20,7 @@ import org.springframework.kafka.support.converter.RecordMessageConverter;
 import javax.inject.Inject;
 import java.util.Map;
 
+import static java.time.Duration.ofSeconds;
 import static org.apache.kafka.common.security.auth.SecurityProtocol.SSL;
 
 @Slf4j
@@ -40,7 +44,6 @@ public class KafkaConfig {
 		return kafkaTemplate;
 	}
 
-
 	@Bean
 	public ProducerFactory<?, ?> kafkaProducerFactory(ObjectProvider<DefaultKafkaProducerFactoryCustomizer> customizers) {
 		Map<String, Object> kafkaProperties = this.properties.buildProducerProperties();
@@ -54,6 +57,19 @@ public class KafkaConfig {
 		customizers.orderedStream().forEach((customizer) -> {
 			customizer.customize(factory);
 		});
+		return factory;
+	}
+
+	@Bean("kafkaListenerContainerFactory")
+	@Primary
+	ConcurrentKafkaListenerContainerFactory<Object, Object> kafkaListenerFactory(
+			ConsumerFactory<Object, Object> kafkaConsumerFactory
+	) {
+		ConcurrentKafkaListenerContainerFactory<Object, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
+		factory.setConsumerFactory(kafkaConsumerFactory);
+		factory.getContainerProperties().setAuthExceptionRetryInterval(ofSeconds(10L));
+
+		factory.setConcurrency(3);
 		return factory;
 	}
 }

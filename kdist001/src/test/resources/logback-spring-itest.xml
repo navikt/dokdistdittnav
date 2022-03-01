@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="false" debug="false">
+	<springProfile name="itest">
+		<include resource="logback-local.xml"/>
+	</springProfile>
+</configuration>

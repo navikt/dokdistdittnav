@@ -1,4 +1,4 @@
-package no.nav.dokdistdittnav.qdist010.brukernotifikasjon;
+package no.nav.dokdistdittnav.kafka;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistdittnav.exception.technical.KafkaTechnicalException;
@@ -35,16 +35,20 @@ public class KafkaEventProducer {
 
 	@Monitor(createErrorMetric = true, errorMetricInclude = KafkaTechnicalException.class)
 	@Retryable(include = KafkaTechnicalException.class, maxAttempts = MAX_VALUE, backoff = @Backoff(delay = DELAY_LONG))
-	public void publish(String topic, Object event, Object value) {
+	public void publish(String topic, Object key, Object event) {
 		ProducerRecord<Object, Object> producerRecord = new ProducerRecord(
 				topic,
-				event,
-				value
+				null,
+				System.currentTimeMillis(),
+				key,
+				event
 		);
 
 		try {
 			SendResult<Object, Object> sendResult = kafkaTemplate.send(producerRecord).get();
-			log.info("Message stored on topic. topic={}",
+			log.info("Hendelse skrevet til topic. Timestamp={}, partition={}, topic={}",
+					sendResult.getRecordMetadata().timestamp(),
+					sendResult.getRecordMetadata().partition(),
 					sendResult.getRecordMetadata().topic()
 			);
 		} catch (ExecutionException executionException) {

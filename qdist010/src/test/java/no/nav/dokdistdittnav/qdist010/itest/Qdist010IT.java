@@ -1,17 +1,13 @@
 package no.nav.dokdistdittnav.qdist010.itest;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
 import no.nav.dokdistdittnav.qdist010.itest.config.ApplicationTestConfig;
 import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.ActiveProfiles;
 
 import javax.inject.Inject;
@@ -38,29 +34,11 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
-@SpringBootTest(
-		classes = {
-				ApplicationTestConfig.class
-		},
-		webEnvironment = RANDOM_PORT
-)
-@EmbeddedKafka(
-		partitions = 1,
-		controlledShutdown = true,
-		brokerProperties = {
-				"listeners=PLAINTEXT://127.0.0.1:60172",
-				"port=60172",
-				"offsets.topic.replication.factor=1",
-				"transaction.state.log.replication.factor=1",
-				"transaction.state.log.min.isr=1"
-		}
-)
-@AutoConfigureWireMock(port = 0)
+
 @ActiveProfiles("itest")
-class Qdist010IT {
+class Qdist010IT extends ApplicationTestConfig {
 
 	private static final String FORSENDELSE_ID = "33333";
 	private static final String FORSENDELSE_PATH = "/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT" + "&varselStatus=OPPRETTET";
@@ -81,9 +59,6 @@ class Qdist010IT {
 	@BeforeEach
 	public void setupBefore() {
 		CALL_ID = UUID.randomUUID().toString();
-		WireMock.reset();
-		WireMock.resetAllRequests();
-		WireMock.removeAllMappings();
 	}
 
 	@Test
@@ -130,7 +105,7 @@ class Qdist010IT {
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
-		await().atMost(100, TimeUnit.SECONDS).untilAsserted(() -> {
+		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
 			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
 			verify(1, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
 		});

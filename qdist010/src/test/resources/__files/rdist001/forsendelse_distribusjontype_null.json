@@ -1,12 +1,12 @@
 {
-  "bestillingsId": "insertCallIdHere",
+  "bestillingsId": "811c0c5d-e74c-491a-8b8c-d94075c822c3",
   "modus": "T",
   "forsendelseStatus": "KLAR_FOR_DIST",
   "tema": "DAG",
   "forsendelseTittel": "forsendelseTittel",
   "distribusjonstype": null,
   "mottaker": {
-    "mottakerId": "mottakerId",
+    "mottakerId": "12345678912",
     "mottakerNavn": "mottakerNavn",
     "mottakerType": "PERSON"
   },
