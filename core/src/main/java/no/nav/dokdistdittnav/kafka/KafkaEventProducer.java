@@ -46,7 +46,7 @@ public class KafkaEventProducer {
 
 		try {
 			SendResult<Object, Object> sendResult = kafkaTemplate.send(producerRecord).get();
-			log.info("Hendelse skrivet til topic. Timestamp={}, partition={}, topic={}",
+			log.info("Hendelse skrevet til topic. Timestamp={}, partition={}, topic={}",
 					sendResult.getRecordMetadata().timestamp(),
 					sendResult.getRecordMetadata().partition(),
 					sendResult.getRecordMetadata().topic()
