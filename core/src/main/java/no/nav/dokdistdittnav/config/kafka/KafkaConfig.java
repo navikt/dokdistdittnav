@@ -22,7 +22,6 @@ import java.util.Map;
 import static java.time.Duration.ofSeconds;
 import static org.apache.kafka.common.security.auth.SecurityProtocol.SSL;
 
-@EnableKafka
 @EnableConfigurationProperties(KafkaProperties.class)
 @Configuration
 public class KafkaConfig {
