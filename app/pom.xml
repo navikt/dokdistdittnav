@@ -21,6 +21,10 @@
             <groupId>no.nav.dokdistdittnav</groupId>
             <artifactId>qdist010</artifactId>
         </dependency>
+        <dependency>
+            <groupId>no.nav.dokdistdittnav</groupId>
+            <artifactId>kdist001</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
