@@ -1,6 +1,7 @@
 package no.nav.dokdistdittnav.kdist001;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.dokdistdittnav.config.alias.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
@@ -55,7 +56,8 @@ public class Ferdigprodusent {
 		}
 
 		if (nonNull(hentForsendelseResponse) && isValidForsendelse(hentForsendelseResponse, hoveddokumentLest)) {
-			kafkaEventProducer.publish(dokdistdittnavProperties.getBrukernotifikasjon().getTopicdone(), mapper.mapNokkelIntern(finnForsendelseResponse.getForsendelseId(), hentForsendelseResponse), mapper.mapDoneInput());
+			NokkelInput nokkelInput = mapper.mapNokkelIntern(finnForsendelseResponse.getForsendelseId(), dokdistdittnavProperties.getAppnavn(), hentForsendelseResponse);
+			kafkaEventProducer.publish(dokdistdittnavProperties.getBrukernotifikasjon().getTopicdone(), nokkelInput, mapper.mapDoneInput());
 			administrerForsendelse.oppdaterForsendelseStatus(finnForsendelseResponse.getForsendelseId(), null, FERDIGSTILT.name());
 			log.info("Oppdatert forsendelse med forsendelseId={} til varselStatus={}", finnForsendelseResponse.getForsendelseId(), FERDIGSTILT);
 		}

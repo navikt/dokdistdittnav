@@ -33,7 +33,6 @@ import static no.nav.dokdistdittnav.kafka.FunctionalUtils.classpathToString;
 public class BrukerNotifikasjonMapper {
 
 	private static final String NAMESPACE = "teamdokumenthandtering";
-	private static final String APP_NAVN = "dokdistdittnav";
 	private static final String VEDTAK_PATH = "__files/vedtak_epostvarseltekst.html";
 	private static final String VIKTIG_PATH = "__files/viktig_epostvarseltekst.html";
 	private static final String BESKJED_PATH = "__files/melding_epostvarseltekst.html";
@@ -43,13 +42,13 @@ public class BrukerNotifikasjonMapper {
 	private static final TimeZone DEFAULT_TIME_ZONE = TimeZone.getTimeZone("Europe/Oslo");
 	private static final Integer SIKKEREHETSNIVAA = 4;
 
-	public NokkelInput mapNokkelIntern(String forsendelseId, HentForsendelseResponseTo hentForsendelseResponse) {
+	public NokkelInput mapNokkelIntern(String forsendelseId, String appnavn, HentForsendelseResponseTo hentForsendelseResponse) {
 		return new NokkelInputBuilder()
 				.withEventId(hentForsendelseResponse.getBestillingsId())
 				.withGrupperingsId(forsendelseId)
 				.withFodselsnummer(getMottakerId(hentForsendelseResponse))
 				.withNamespace(NAMESPACE)
-				.withAppnavn(APP_NAVN)
+				.withAppnavn(appnavn)
 				.build();
 	}
 

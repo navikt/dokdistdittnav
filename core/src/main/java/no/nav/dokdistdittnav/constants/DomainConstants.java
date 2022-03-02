@@ -5,7 +5,8 @@ package no.nav.dokdistdittnav.constants;
  */
 public class DomainConstants {
 
-	public static final String DOK_KDOK001_CONSUMER = "dok_kdok011_lestavmottaker";
+	public static final String DOK_KDOK001_CONSUMER = "dok_kdok001_lestavmottaker";
+	public static final String DOK_KDOK002_CONSUMER = "dok_kdok002_status";
 
 	public static final String SERVICE_ID = "qdist010";
 	public static final String FORSENDELSE_STATUS_EKSPEDERT = "EKSPEDERT";

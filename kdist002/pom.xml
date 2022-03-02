@@ -20,6 +20,15 @@
 			<groupId>no.nav.teamdokumenthandtering</groupId>
 			<artifactId>teamdokumenthandtering-avro-schemas</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.github.navikt</groupId>
+			<artifactId>doknotifikasjon-schemas</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>no.nav.meldinger.virksomhet</groupId>
+			<artifactId>melding-virksomhet-dokdistfordeling</artifactId>
+		</dependency>
 		<!--test-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

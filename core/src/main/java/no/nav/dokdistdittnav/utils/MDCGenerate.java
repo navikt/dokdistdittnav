@@ -1,6 +1,5 @@
 package no.nav.dokdistdittnav.utils;
 
-import no.nav.dokdistdittnav.constants.MdcConstants;
 import org.slf4j.MDC;
 
 import java.util.UUID;
@@ -23,5 +22,6 @@ public class MDCGenerate {
 		}
 	}
 
-	private MDCGenerate(){}
+	private MDCGenerate() {
+	}
 }
