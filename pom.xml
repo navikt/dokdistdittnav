@@ -13,6 +13,7 @@
 		<module>core</module>
 		<module>qdist010</module>
 		<module>kdist001</module>
+		<module>kdist002</module>
 	</modules>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -75,6 +76,11 @@
 			<dependency>
 				<groupId>no.nav.dokdistdittnav</groupId>
 				<artifactId>kdist001</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>no.nav.dokdistdittnav</groupId>
+				<artifactId>kdist002</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
