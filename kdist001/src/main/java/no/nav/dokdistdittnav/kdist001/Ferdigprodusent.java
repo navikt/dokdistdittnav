@@ -2,7 +2,7 @@ package no.nav.dokdistdittnav.kdist001;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
-import no.nav.dokdistdittnav.config.alias.DokdistdittnavProperties;
+import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;

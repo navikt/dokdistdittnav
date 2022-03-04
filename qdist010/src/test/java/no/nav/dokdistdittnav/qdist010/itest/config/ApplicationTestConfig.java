@@ -1,8 +1,9 @@
 package no.nav.dokdistdittnav.qdist010.itest.config;
 
-import no.nav.dokdistdittnav.config.alias.DokdistdittnavProperties;
-import no.nav.dokdistdittnav.config.alias.MqGatewayAlias;
-import no.nav.dokdistdittnav.config.alias.ServiceuserAlias;
+import no.nav.dokdistdittnav.config.properties.AdministrerforsendelseApi;
+import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
+import no.nav.dokdistdittnav.config.properties.MqGatewayAlias;
+import no.nav.dokdistdittnav.config.properties.ServiceuserAlias;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,7 +21,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @EnableConfigurationProperties({
 		ServiceuserAlias.class,
 		DokdistdittnavProperties.class,
-		MqGatewayAlias.class
+		MqGatewayAlias.class,
+		AdministrerforsendelseApi.class
 })
 @Import({
 		JmsItestConfig.class,

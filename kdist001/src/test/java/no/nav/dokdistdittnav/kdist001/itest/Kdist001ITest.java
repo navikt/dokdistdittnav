@@ -6,6 +6,7 @@ import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.dokdistdittnav.kdist001.itest.config.ApplicationTestConfig;
 import no.nav.safselvbetjening.schemas.HoveddokumentLest;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -42,8 +43,11 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	@Autowired
 	private KafkaEventProducer kafkaEventProducer;
 
+
 	@Test
 	public void shouldReadMessageFromLestavmottakerTopicen() {
+		StringUtils.substringBefore("B-dokdistdittnav-16a80b3e-47a5-49ed-a02d-6b37c7261f17", 36);
+		StringUtils.substringAfter("B-dokdistdittnav-16a80b3e-47a5-49ed-a02d-6b37c7261f17", "dokdistdittnav-");
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json", FORSENDELSE_ID, OK.value());
 		stubPutOppdaterForsendelse(FERDIGSTILT.name(), FORSENDELSE_ID, OK.value());
@@ -55,7 +59,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 				.build();
 		putMessageOnKafkaTopic(hoveddokumentLest);
 
-		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
+		await().pollInterval(500, MILLISECONDS).atMost(20, SECONDS).untilAsserted(() -> {
 			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?journalpostId=" + JOURNALPOST_ID)));
 			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
 			verify(1, putRequestedFor(urlEqualTo(URL_OPPDATERFORSENDELSE)));

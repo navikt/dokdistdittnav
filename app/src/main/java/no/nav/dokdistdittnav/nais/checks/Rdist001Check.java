@@ -2,7 +2,7 @@ package no.nav.dokdistdittnav.nais.checks;
 
 
 import io.micrometer.core.instrument.MeterRegistry;
-import no.nav.dokdistdittnav.config.alias.ServiceuserAlias;
+import no.nav.dokdistdittnav.config.properties.ServiceuserAlias;
 import no.nav.dokdistdittnav.nais.selftest.DependencyType;
 import no.nav.dokdistdittnav.nais.selftest.AbstractDependencyCheck;
 import no.nav.dokdistdittnav.nais.selftest.ApplicationNotReadyException;

@@ -3,8 +3,8 @@ package no.nav.dokdistdittnav.config.jms;
 
 import com.ibm.mq.jms.MQConnectionFactory;
 import com.ibm.mq.jms.MQQueue;
-import no.nav.dokdistdittnav.config.alias.MqGatewayAlias;
-import no.nav.dokdistdittnav.config.alias.ServiceuserAlias;
+import no.nav.dokdistdittnav.config.properties.MqGatewayAlias;
+import no.nav.dokdistdittnav.config.properties.ServiceuserAlias;
 import org.apache.activemq.jms.pool.PooledConnectionFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

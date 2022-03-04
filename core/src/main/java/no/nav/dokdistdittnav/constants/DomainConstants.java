@@ -9,6 +9,7 @@ public class DomainConstants {
 	public static final String DOK_KDOK002_CONSUMER = "dok_kdok002_status";
 
 	public static final String SERVICE_ID = "qdist010";
+	public static final String KDIST002_ID = "kdist002";
 	public static final String FORSENDELSE_STATUS_EKSPEDERT = "EKSPEDERT";
 	public static final String KANAL_DITTNAV = "DITTNAV";
 	public static final String HOVEDDOKUMENT = "HOVEDDOKUMENT";

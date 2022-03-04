@@ -4,8 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.brukernotifikasjon.schemas.input.BeskjedInput;
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
-import no.nav.dokdistdittnav.config.alias.DokdistdittnavProperties;
-import no.nav.dokdistdittnav.config.alias.ServiceuserAlias;
+import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
+import no.nav.dokdistdittnav.config.properties.ServiceuserAlias;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
@@ -49,17 +49,19 @@ public class ProdusentNotifikasjon {
 		HentForsendelseResponseTo hentForsendelseResponse = administrerForsendelse.hentForsendelse(forsendelseId);
 		NokkelInput nokkelIntern = brukerNotifikasjonMapper.mapNokkelIntern(forsendelseId, properties.getAppnavn(), hentForsendelseResponse);
 
-		exchange.setProperty(JOURNALPOST_ID, hentForsendelseResponse.getArkivInformasjon().getArkivId());
+		if (isJournalpostIdNotNull(hentForsendelseResponse)) {
+			exchange.setProperty(JOURNALPOST_ID, hentForsendelseResponse.getArkivInformasjon().getArkivId());
+		}
 		exchange.setProperty(BESTILLING_ID, hentForsendelseResponse.getBestillingsId());
 
-		if (erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype())) {
+		if (erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype()) && isJournalpostIdNotNull(hentForsendelseResponse)) {
 			OppgaveInput oppgaveIntern = brukerNotifikasjonMapper.oppretteOppgave(properties.getBrukernotifikasjon().getLink(), hentForsendelseResponse);
 			log.info("Oppretter varseling oppgave med eventId/forsendelseId={}", forsendelseId);
 			kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicoppgave(), nokkelIntern, oppgaveIntern);
 			log.info("Oppgave opprettet fra system={} med eventId/forsendelseId={}.", serviceuser.getUsername(), forsendelseId);
 		}
 
-		if (!erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype())) {
+		if (!erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype()) && isJournalpostIdNotNull(hentForsendelseResponse)) {
 			BeskjedInput beskjedIntern = brukerNotifikasjonMapper.mapBeskjedIntern(properties.getBrukernotifikasjon().getLink(), hentForsendelseResponse);
 			kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicbeskjed(), nokkelIntern, beskjedIntern);
 			log.info("Beskjed sendt fra system={} med eventId/forsendelseId={} til Brukernotifikasjon", serviceuser.getUsername(), forsendelseId);
@@ -70,4 +72,7 @@ public class ProdusentNotifikasjon {
 		return nonNull(distribusjonsType) && ((VIKTIG.equals(distribusjonsType) || VEDTAK.equals(distribusjonsType)));
 	}
 
+	private boolean isJournalpostIdNotNull(HentForsendelseResponseTo hentForsendelseResponse) {
+		return hentForsendelseResponse.getArkivInformasjon() != null && hentForsendelseResponse.getArkivInformasjon().getArkivId() != null;
+	}
 }
