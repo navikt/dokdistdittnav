@@ -69,7 +69,7 @@ public class CamelKafkaProperties {
 				"&keySerializer=" + producer.getKeySerializer().getName() +
 				"&valueSerializer=" + producer.getValueSerializer().getName() +
 				"&retries=" + producer.getRetries() +
-				"&enableIdempotence=true" +
+				"&additionalProperties.enable.idempotence=true" +
 				"&additionalProperties.max.in.flight.requests.per.connection=1";
 	}
 
