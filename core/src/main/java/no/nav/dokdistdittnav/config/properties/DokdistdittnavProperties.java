@@ -40,6 +40,6 @@ public class DokdistdittnavProperties {
 	@Validated
 	public static class Doknotifikasjon {
 		@NotNull
-		private String status;
+		private String statustopic;
 	}
 }

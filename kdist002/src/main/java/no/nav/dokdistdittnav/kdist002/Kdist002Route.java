@@ -87,7 +87,7 @@ public class Kdist002Route extends RouteBuilder {
 				.log(LoggingLevel.WARN, log, "${exception}");
 
 
-		from(camelKafkaProperties.buildKafkaUrl(dittnavProperties.getDoknotifikasjon().getStatus(), camelKafkaProperties.kafkaConsumer()))
+		from(camelKafkaProperties.buildKafkaUrl(dittnavProperties.getDoknotifikasjon().getStatustopic(), camelKafkaProperties.kafkaConsumer()))
 				.id(DomainConstants.KDIST002_ID)
 				.process(exchange -> {
 					DefaultKafkaManualCommit kafkaManualCommit = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);

@@ -19,14 +19,14 @@ public class PersisterForsendelseMapper {
 	private static final String DOKUMENTTYPE_ID = "U000001";
 	private static final String HOVEDDOKUMENT = "HOVEDDOKUMENT";
 
-	public PersisterForsendelseRequestTo map(HentForsendelseResponseTo hentForsendelseResponse, String bestillingsId) {
+	public PersisterForsendelseRequestTo map(HentForsendelseResponseTo hentForsendelseResponse) {
 		if (hentForsendelseResponse == null) {
 			throw new IllegalArgumentException("HentForsendelseResponseTo kan ikke være null");
 		}
 		assertThatAllRequiredFieldsArePresent(hentForsendelseResponse);
 		AtomicReference<Integer> rekkefolge = new AtomicReference<>(2);
 		return PersisterForsendelseRequestTo.builder()
-				.bestillingsId(isBlank(bestillingsId) ? UUID.randomUUID().toString() : bestillingsId)
+				.bestillingsId(UUID.randomUUID().toString())
 				.distribusjonsKanal(DISTRIBUSJON_KANAL_PRINT)
 				.distribusjonstype(hentForsendelseResponse.getDistribusjonstype())
 				.distribusjonstidspunkt(hentForsendelseResponse.getDistribusjonstidspunkt())

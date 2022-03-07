@@ -119,9 +119,9 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 	@Override
 	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
 	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "persisterForsendelse"}, histogram = true)
-	public PersisterForsendelseResponseTo persisterForsendelse(final PersisterForsendelseRequestTo forsendelseRequestTo) {
+	public PersisterForsendelseResponseTo persisterForsendelse(final PersisterForsendelseRequestTo persisterForsendelseRequestTo) {
 		try {
-			HttpEntity<?> entity = new HttpEntity<>(forsendelseRequestTo, createHeaders());
+			HttpEntity<?> entity = new HttpEntity<>(persisterForsendelseRequestTo, createHeaders());
 			ResponseEntity<PersisterForsendelseResponseTo> response = restTemplate.exchange(administrerforsendelseV1Url, POST, entity, PersisterForsendelseResponseTo.class);
 			return response.getBody();
 
@@ -134,19 +134,19 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 
 	@Override
 	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
-	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "feilRegistrerForsendelse"}, histogram = true)
-	public void feilRegistrerForsendelse(FeilRegistrerForsendelseRequest feilRegistrerForsendelse) {
+	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "feilregistrerForsendelse"}, histogram = true)
+	public void feilregistrerForsendelse(FeilRegistrerForsendelseRequest feilregistrerForsendelse) {
 
 		try {
-			HttpEntity<?> entity = new HttpEntity<>(feilRegistrerForsendelse, createHeaders());
+			HttpEntity<?> entity = new HttpEntity<>(feilregistrerForsendelse, createHeaders());
 			restTemplate.exchange(administrerforsendelseV1Url + "/feilregistrerforsendelse", PUT, entity, Object.class);
 		} catch (HttpClientErrorException e) {
-			log.error("Kall mot rdist001 - feilet til å feilregistrer forsendelse med forsendelseId={}, feilmelding={}", feilRegistrerForsendelse.getForsendelseId(), e.getMessage());
-			throw new AbstractDokdistdittnavFunctionalException(format("Kall mot rdist001 - feilet til å opprette forsendelse med statusCode=%s, feilmelding=%s", e.getStatusCode(), e.getMessage()), e) {
+			log.error("Kall mot rdist001 - feilet til å feilregistrere forsendelse med forsendelseId={}, feilmelding={}", feilregistrerForsendelse.getForsendelseId(), e.getMessage());
+			throw new AbstractDokdistdittnavFunctionalException(format("Kall mot rdist001 - feilet til å feilregistrere forsendelse med statusCode=%s, feilmelding=%s", e.getStatusCode(), e.getMessage()), e) {
 			};
 		} catch (HttpServerErrorException e) {
-			log.error("Kall mot rdist001 - feilet til å feilregistrer forsendelse med forsendelseId={}, feilmelding={}", feilRegistrerForsendelse.getForsendelseId(), e.getMessage());
-			throw new AbstractDokdistdittnavTechnicalException(format("Kall mot rdist001 - feilet til å opprette forsendelse med statusCode=%s, feilmelding=%s", e.getStatusCode(), e.getMessage()), e) {
+			log.error("Kall mot rdist001 - feilet til å feilregistre forsendelse med forsendelseId={}, feilmelding={}", feilregistrerForsendelse.getForsendelseId(), e.getMessage());
+			throw new AbstractDokdistdittnavTechnicalException(format("Kall mot rdist001 - feilet til å feilregistrere forsendelse med statusCode=%s, feilmelding=%s", e.getStatusCode(), e.getMessage()), e) {
 			};
 		}
 	}
@@ -166,7 +166,7 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 
 	@Override
 	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
-	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "oppdaterKonversasjonsId"}, histogram = true)
+	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "oppdaterForsendelseAndVarselStatus"}, histogram = true)
 	public void oppdaterForsendelseAndVarselStatus(String forsendelseId, String forsendelseStatus, String varselStatus) {
 		String uri = UriComponentsBuilder.fromHttpUrl(administrerforsendelseV1Url)
 				.queryParam(FORSENDELSE_ID, forsendelseId)

@@ -10,12 +10,12 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PersisterForsendelseMapperTest {
 
-	private static final String BESTILLINGS_ID = UUID.randomUUID().toString();
 	private static final String OLD_BESTILLINGS_ID = UUID.randomUUID().toString();
 	private static final String BATCH_ID = "batchId";
 	private static final String BESTILLENDE_FAGSYSTEM = "bestillendeFagsystem";
@@ -46,9 +46,9 @@ class PersisterForsendelseMapperTest {
 
 	@Test
 	public void shouldMapForsendelser() {
-		PersisterForsendelseRequestTo request = mapper.map(createHentForsendelseResponse(), BESTILLINGS_ID);
+		PersisterForsendelseRequestTo request = mapper.map(createHentForsendelseResponse());
 
-		assertEquals(request.getBestillingsId(), BESTILLINGS_ID);
+		assertNotNull(request.getBestillingsId());
 		assertEquals(request.getForsendelseTittel(), FORSENDELSE_TITTEL);
 		assertEquals(request.getBatchId(), BATCH_ID);
 		assertEquals(request.getDokumentProdApp(), DOKUMENT_PROD_APP);
@@ -66,9 +66,9 @@ class PersisterForsendelseMapperTest {
 	public void shouldMapForsendelserWhenAdresseErNull() {
 		HentForsendelseResponseTo hentForsendelseResponse = createHentForsendelseResponse();
 		hentForsendelseResponse.setPostadresse(null);
-		PersisterForsendelseRequestTo request = mapper.map(hentForsendelseResponse, BESTILLINGS_ID);
+		PersisterForsendelseRequestTo request = mapper.map(hentForsendelseResponse);
 
-		assertEquals(request.getBestillingsId(), BESTILLINGS_ID);
+		assertNotNull(request.getBestillingsId());
 		assertEquals(request.getForsendelseTittel(), FORSENDELSE_TITTEL);
 		assertEquals(request.getBatchId(), BATCH_ID);
 		assertEquals(request.getDokumentProdApp(), DOKUMENT_PROD_APP);
@@ -84,7 +84,7 @@ class PersisterForsendelseMapperTest {
 
 	@Test
 	public void shouldThrowExceptionIfHentForsendelseResponseIsNull() {
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> mapper.map(null, BESTILLINGS_ID));
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> mapper.map(null));
 		assertEquals(exception.getMessage(), "HentForsendelseResponseTo kan ikke være null");
 	}
 
@@ -92,13 +92,13 @@ class PersisterForsendelseMapperTest {
 	public void shouldThrowExceptionIfTemaBlank() {
 		HentForsendelseResponseTo hentForsendelseResponse = createHentForsendelseResponse();
 		hentForsendelseResponse.setTema(null);
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> mapper.map( hentForsendelseResponse, null));
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> mapper.map(hentForsendelseResponse));
 		assertEquals(exception.getMessage(), "tema kan ikke være null");
 	}
 
 	@Test
 	public void shouldThrowExceptionIfMottakerIsNull() {
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> mapper.map(createHentForsendelseResponseWithMottakerNull(), BESTILLINGS_ID));
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> mapper.map(createHentForsendelseResponseWithMottakerNull()));
 		assertEquals(exception.getMessage(), "Mottaker kan ikke være null");
 	}
 

@@ -3,6 +3,7 @@ package no.nav.dokdistdittnav.kdist002;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
+import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FeilRegistrerForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
@@ -17,7 +18,6 @@ import org.apache.camel.Handler;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,7 +25,7 @@ import static java.lang.String.valueOf;
 import static no.nav.dokdistdittnav.constants.DomainConstants.BESTILLINGS_ID;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.KLAR_FOR_DIST;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatus.OPPRETTET;
-import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatus.FEILET;
+import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FEILET;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.assertNotBlank;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.assertNotNull;
 import static org.apache.commons.lang3.StringUtils.substring;
@@ -48,14 +48,14 @@ public class Kdist002Service {
 
 	@Handler
 	public DoneEventRequest sendForsendelse(DoknotifikasjonStatus doknotifikasjonStatus, Exchange exchange) {
-		log.info("Hentet doknotifikasjonstatus med bestillingsId={} og status={} fra topic={}.", doknotifikasjonStatus.getBestillingsId(), doknotifikasjonStatus.getStatus(), properties.getDoknotifikasjon().getStatus());
+		log.info("Hentet doknotifikasjonstatus med bestillingsId={} og status={} fra topic={}.", doknotifikasjonStatus.getBestillingsId(), doknotifikasjonStatus.getStatus(), properties.getDoknotifikasjon().getStatustopic());
 		if (!isDittnavAndFeilStatus(doknotifikasjonStatus)) {
 			return null;
 		} else {
 			String oldBestillingsId = extractDokdistBestillingsId(doknotifikasjonStatus.getBestillingsId());
 			FinnForsendelseResponseTo finnForsendelse = finnForsendelse(oldBestillingsId);
 			HentForsendelseResponseTo hentForsendelseResponse = administrerForsendelse.hentForsendelse(finnForsendelse.getForsendelseId());
-			return (isOpprettetVarselStatus(hentForsendelseResponse.getVarselStatus())) ?
+			return (isOpprettetVarselStatus(hentForsendelseResponse)) ?
 					createNewAndFeilRegistrerOldForsendelse(finnForsendelse.getForsendelseId(), hentForsendelseResponse, doknotifikasjonStatus) : null;
 		}
 	}
@@ -69,14 +69,15 @@ public class Kdist002Service {
 
 	private DoneEventRequest createNewAndFeilRegistrerOldForsendelse(String oldForsendelseId, HentForsendelseResponseTo hentForsendelseResponse, DoknotifikasjonStatus status) {
 		String newBestillingsId = UUID.randomUUID().toString();
-		PersisterForsendelseRequestTo request = persisterForsendelseMapper.map(hentForsendelseResponse, newBestillingsId);
-		PersisterForsendelseResponseTo forsendelseResponseTo = administrerForsendelse.persisterForsendelse(request);
-		validateOppdaterForsendelse(forsendelseResponseTo);
+		PersisterForsendelseRequestTo request = persisterForsendelseMapper.map(hentForsendelseResponse);
+		PersisterForsendelseResponseTo persisterForsendelseResponse = administrerForsendelse.persisterForsendelse(request);
+		validateOppdaterForsendelse(persisterForsendelseResponse);
+		log.info("Opprettet ny forsendelse med forsendelseId={} i dokdist databasen.", persisterForsendelseResponse.getForsendelseId());
 		createFeilRegistrerForsendelse(oldForsendelseId, request, status);
-		log.info("Forsendelsen med forsendelseId={} feilregistrerte i dokdist databasen.", oldForsendelseId);
-		administrerForsendelse.oppdaterForsendelseStatus(valueOf(forsendelseResponseTo.getForsendelseId()), KLAR_FOR_DIST.name());
+		log.info("Forsendelsen med forsendelseId={} er feilregistrert i dokdist databasen.", oldForsendelseId);
+		administrerForsendelse.oppdaterForsendelseStatus(valueOf(persisterForsendelseResponse.getForsendelseId()), KLAR_FOR_DIST.name());
 		return DoneEventRequest.builder()
-				.forsendelseId(valueOf(forsendelseResponseTo.getForsendelseId()))
+				.forsendelseId(valueOf(persisterForsendelseResponse.getForsendelseId()))
 				.bestillingsId(newBestillingsId)
 				.mottakerId(getMottakerId(hentForsendelseResponse))
 				.build();
@@ -84,7 +85,7 @@ public class Kdist002Service {
 
 	private void createFeilRegistrerForsendelse(String forsendelseId, PersisterForsendelseRequestTo request, DoknotifikasjonStatus status) {
 
-		administrerForsendelse.feilRegistrerForsendelse(FeilRegistrerForsendelseRequest.builder()
+		administrerForsendelse.feilregistrerForsendelse(FeilRegistrerForsendelseRequest.builder()
 				.forsendelseId(forsendelseId)
 				.type(VARSLINGSFEIL)
 				.tidspunkt(LocalDateTime.now())
@@ -106,8 +107,9 @@ public class Kdist002Service {
 		return properties.getAppnavn().equals(doknotifikasjonStatus.getBestillerId()) && FEILET.name().equals(doknotifikasjonStatus.getStatus());
 	}
 
-	private boolean isOpprettetVarselStatus(String varselStatus) {
-		return OPPRETTET.name().equals(varselStatus);
+	private boolean isOpprettetVarselStatus(HentForsendelseResponseTo hentForsendelseResponse) {
+		return OPPRETTET.name().equals(hentForsendelseResponse.getVarselStatus()) &&
+				!ForsendelseStatus.FEILET.name().equals(hentForsendelseResponse.getForsendelseStatus());
 	}
 
 	private void validateOppdaterForsendelse(PersisterForsendelseResponseTo request) {

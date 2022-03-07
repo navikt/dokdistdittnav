@@ -37,7 +37,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.KLAR_FOR_DIST;
-import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatus.FEILET;
+import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FEILET;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.http.HttpStatus.OK;
@@ -54,7 +54,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	private static final String BESTILLINGSID = "811c0c5d-e74c-491a-8b8c-d94075c822c3";
 	private static final String DOKNOTIFIKASJON_STATUS_TOPIC = "aapen-dok-notifikasjon-status";
 	private static final String MELDING = "Altinn feilet";
-	private static String CALL_ID = UUID.randomUUID().toString();
+	private static final String CALL_ID = UUID.randomUUID().toString();
 
 	@Autowired
 	private KafkaEventProducer kafkaEventProducer;

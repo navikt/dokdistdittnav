@@ -7,8 +7,6 @@ import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseResponseTo;
 
-import java.util.Optional;
-
 /**
  * @author Sigurd Midttun, Visma Consulting.
  */
@@ -26,5 +24,5 @@ public interface AdministrerForsendelse {
 
 	PersisterForsendelseResponseTo persisterForsendelse(final PersisterForsendelseRequestTo forsendelseRequestTo);
 
-	void feilRegistrerForsendelse(FeilRegistrerForsendelseRequest feilRegistrerForsendelse);
+	void feilregistrerForsendelse(FeilRegistrerForsendelseRequest feilRegistrerForsendelse);
 }
