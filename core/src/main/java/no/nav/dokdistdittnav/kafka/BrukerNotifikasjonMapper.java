@@ -17,6 +17,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.TimeZone;
 
 import static java.lang.String.format;
@@ -52,6 +53,16 @@ public class BrukerNotifikasjonMapper {
 				.build();
 	}
 
+	public NokkelInput mapNokkelForKdist002(DoneEventRequest doneEventRequest, String appnavn) {
+		return new NokkelInputBuilder()
+				.withEventId(doneEventRequest.getBestillingsId())
+				.withGrupperingsId(doneEventRequest.getForsendelseId())
+				.withFodselsnummer(doneEventRequest.getMottakerId())
+				.withNamespace(NAMESPACE)
+				.withAppnavn(appnavn)
+				.build();
+	}
+
 	public BeskjedInput mapBeskjedIntern(String url, HentForsendelseResponseTo hentForsendelseResponse) {
 		return new BeskjedInputBuilder()
 				.withTidspunkt(LocalDateTime.now(DEFAULT_TIME_ZONE.toZoneId()))
@@ -80,7 +91,7 @@ public class BrukerNotifikasjonMapper {
 
 	public DoneInput mapDoneInput() {
 		return new DoneInputBuilder()
-				.withTidspunkt(LocalDateTime.now(DEFAULT_TIME_ZONE.toZoneId()))
+				.withTidspunkt(LocalDateTime.now(ZoneOffset.UTC))
 				.build();
 	}
 
@@ -90,7 +101,7 @@ public class BrukerNotifikasjonMapper {
 				return format(VEDTAK_TEKST, hentForsendelseResponse.getForsendelseTittel());
 			case VIKTIG:
 				return format(VIKTIG_TEKST, hentForsendelseResponse.getForsendelseTittel());
-			case ANNET:
+			case  ANNET:
 				break;
 		}
 		return null;

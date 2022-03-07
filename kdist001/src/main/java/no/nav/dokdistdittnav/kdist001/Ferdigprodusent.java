@@ -58,7 +58,7 @@ public class Ferdigprodusent {
 		if (nonNull(hentForsendelseResponse) && isValidForsendelse(hentForsendelseResponse, hoveddokumentLest)) {
 			NokkelInput nokkelInput = mapper.mapNokkelIntern(finnForsendelseResponse.getForsendelseId(), dokdistdittnavProperties.getAppnavn(), hentForsendelseResponse);
 			kafkaEventProducer.publish(dokdistdittnavProperties.getBrukernotifikasjon().getTopicdone(), nokkelInput, mapper.mapDoneInput());
-			administrerForsendelse.oppdaterForsendelseStatus(finnForsendelseResponse.getForsendelseId(), null, FERDIGSTILT.name());
+			administrerForsendelse.oppdaterVarselStatus(finnForsendelseResponse.getForsendelseId(), FERDIGSTILT.name());
 			log.info("Oppdatert forsendelse med forsendelseId={} til varselStatus={}", finnForsendelseResponse.getForsendelseId(), FERDIGSTILT);
 		}
 

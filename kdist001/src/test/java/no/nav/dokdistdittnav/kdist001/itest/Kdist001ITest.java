@@ -46,8 +46,6 @@ public class Kdist001ITest extends ApplicationTestConfig {
 
 	@Test
 	public void shouldReadMessageFromLestavmottakerTopicen() {
-		StringUtils.substringBefore("B-dokdistdittnav-16a80b3e-47a5-49ed-a02d-6b37c7261f17", 36);
-		StringUtils.substringAfter("B-dokdistdittnav-16a80b3e-47a5-49ed-a02d-6b37c7261f17", "dokdistdittnav-");
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json", FORSENDELSE_ID, OK.value());
 		stubPutOppdaterForsendelse(FERDIGSTILT.name(), FORSENDELSE_ID, OK.value());

@@ -1,4 +1,4 @@
-package no.nav.dokdistdittnav.config.alias;
+package no.nav.dokdistdittnav.config.properties;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

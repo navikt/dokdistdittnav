@@ -1,10 +1,8 @@
 package no.nav.dokdistdittnav.kdist001.itest.config;
 
-
-import no.nav.dokdistdittnav.config.properties.AdministrerforsendelseApi;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.config.properties.MqGatewayAlias;
-import no.nav.dokdistdittnav.config.properties.ServiceuserAlias;
+import no.nav.dokdistdittnav.config.properties.DokdistDittnavServiceuser;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,10 +18,9 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @Profile("itest")
 @EnableRetry
 @EnableConfigurationProperties({
-		ServiceuserAlias.class,
+		DokdistDittnavServiceuser.class,
 		DokdistdittnavProperties.class,
-		MqGatewayAlias.class,
-		AdministrerforsendelseApi.class
+		MqGatewayAlias.class
 })
 @Import({
 		JmsItestConfig.class,

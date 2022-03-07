@@ -2,7 +2,7 @@ package no.nav.dokdistdittnav.nais.checks;
 
 
 import io.micrometer.core.instrument.MeterRegistry;
-import no.nav.dokdistdittnav.config.properties.ServiceuserAlias;
+import no.nav.dokdistdittnav.config.properties.DokdistDittnavServiceuser;
 import no.nav.dokdistdittnav.nais.selftest.DependencyType;
 import no.nav.dokdistdittnav.nais.selftest.AbstractDependencyCheck;
 import no.nav.dokdistdittnav.nais.selftest.ApplicationNotReadyException;
@@ -27,13 +27,13 @@ public class Rdist001Check extends AbstractDependencyCheck {
 	public Rdist001Check(MeterRegistry meterRegistry,
 						 @Value("${administrerforsendelse.v1.url}") String administrerforsendelseV1Url,
 						 RestTemplateBuilder restTemplateBuilder,
-						 final ServiceuserAlias serviceuserAlias) {
+						 final DokdistDittnavServiceuser dokdistDittnavServiceuser) {
 		super(DependencyType.REST, "rdist001", administrerforsendelseV1Url, Importance.WARNING, meterRegistry);
 		this.restTemplate = restTemplateBuilder
 				.rootUri(administrerforsendelseV1Url)
 				.setReadTimeout(Duration.ofSeconds(20))
 				.setConnectTimeout(Duration.ofSeconds(5))
-				.basicAuthentication(serviceuserAlias.getUsername(), serviceuserAlias.getPassword())
+				.basicAuthentication(dokdistDittnavServiceuser.getUsername(), dokdistDittnavServiceuser.getPassword())
 				.build();
 	}
 
