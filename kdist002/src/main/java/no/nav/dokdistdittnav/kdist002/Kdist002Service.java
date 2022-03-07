@@ -48,6 +48,7 @@ public class Kdist002Service {
 
 	@Handler
 	public DoneEventRequest sendForsendelse(DoknotifikasjonStatus doknotifikasjonStatus, Exchange exchange) {
+		log.info("Hentet doknotifikasjonstatus med bestillingsId={} og status={} fra topic={}.", doknotifikasjonStatus.getBestillingsId(), doknotifikasjonStatus.getStatus(), properties.getDoknotifikasjon().getStatus());
 		if (!isDittnavAndFeilStatus(doknotifikasjonStatus)) {
 			return null;
 		} else {
@@ -58,7 +59,6 @@ public class Kdist002Service {
 					createNewAndFeilRegistrerOldForsendelse(finnForsendelse.getForsendelseId(), hentForsendelseResponse, doknotifikasjonStatus) : null;
 		}
 	}
-
 
 	private FinnForsendelseResponseTo finnForsendelse(String bestillingsId) {
 		return administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
@@ -95,7 +95,6 @@ public class Kdist002Service {
 
 	private String getMottakerId(HentForsendelseResponseTo hentForsendelseResponseTo) {
 		return Optional.ofNullable(hentForsendelseResponseTo.getMottaker())
-				.filter(Objects::nonNull)
 				.map(HentForsendelseResponseTo.MottakerTo::getMottakerId).orElseThrow(() -> new IllegalArgumentException("MottakerId kan ikke være null"));
 	}
 
