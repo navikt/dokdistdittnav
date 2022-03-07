@@ -84,7 +84,6 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 			if (isNull(forsendelse) && isNull(forsendelse.getArkivInformasjon())) {
 				throw new Rdist001HentForsendelseFunctionalException("Kall mot rdist001 - hentForsendelse returnerte forsendelse uten ArkivInformasjon");
 			}
-
 			return forsendelse;
 		} catch (HttpClientErrorException e) {
 			throw new Rdist001HentForsendelseFunctionalException(format("Kall mot rdist001 - hentForsendelse feilet funksjonelt med statusKode=%s, feilmelding=%s", e
