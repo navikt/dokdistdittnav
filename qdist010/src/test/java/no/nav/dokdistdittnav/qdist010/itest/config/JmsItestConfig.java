@@ -1,6 +1,7 @@
 package no.nav.dokdistdittnav.qdist010.itest.config;
 
 
+import com.ibm.mq.jms.MQQueue;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.RedeliveryPolicy;
 import org.apache.activemq.broker.BrokerService;
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
 import javax.jms.Queue;
 
 /**
@@ -29,6 +31,11 @@ public class JmsItestConfig {
 	@Bean
 	public Queue qdist010FunksjonellFeil(@Value("${dokdistdittnav_qdist010_funk_feil.queuename}") String qdist010FunksjonellFeil) {
 		return new ActiveMQQueue(qdist010FunksjonellFeil);
+	}
+
+	@Bean
+	public Queue qdist009(@Value("${dokdistsentralprint_qdist009_dist_s_print.queuename}") String qdist009QueueName) throws JMSException {
+		return new MQQueue(qdist009QueueName);
 	}
 
 	@Bean

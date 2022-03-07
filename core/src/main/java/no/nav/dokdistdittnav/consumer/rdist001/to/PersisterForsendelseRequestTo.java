@@ -22,8 +22,8 @@ public class PersisterForsendelseRequestTo {
 	private ArkivInformasjonTo arkivInformasjon;
 	private PostadresseTo postadresse;
 	private List<DokumentTo> dokumenter;
-	private String distribusjonstype;
-	private String distribusjonstidspunkt;
+	private DistribusjonsTypeKode distribusjonstype;
+	private DistribusjonstidspunktKode distribusjonstidspunkt;
 	private final String varselStatus;
 
 	@Data

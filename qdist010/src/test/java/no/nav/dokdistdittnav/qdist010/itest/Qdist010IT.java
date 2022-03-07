@@ -216,7 +216,7 @@ class Qdist010IT extends ApplicationTestConfig {
 		});
 
 		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
-		verify(1, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
+		verify(0, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
 	}
 
 	@Test
@@ -307,7 +307,7 @@ class Qdist010IT extends ApplicationTestConfig {
 		});
 
 		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
-		verify(1, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
+		verify(3, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
 	}
 
 	private void sendStringMessage(Queue queue, final String message) {

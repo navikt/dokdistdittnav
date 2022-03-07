@@ -14,20 +14,23 @@ import java.util.List;
 @Data
 @Builder
 public class HentForsendelseResponseTo {
-	private final String bestillingsId;
-	private final String forsendelseStatus;
-	private final String distribusjonKanal;
-	private final String modus;
-	private final String tema;
-	private final String forsendelseTittel;
-	private final MottakerTo mottaker;
-	private final ArkivInformasjonTo arkivInformasjon;
-	private final PostadresseTo postadresse;
-	private final List<DokumentTo> dokumenter;
+	private String bestillingsId;
+	private String konversasjonId;
+	private String bestillendeFagsystem;
+	private String modus;
+	private String forsendelseStatus;
+	private String distribusjonKanal;
+	private String tema;
+	private String forsendelseTittel;
+	private String batchId;
+	private String dokumentProdApp;
+	private MottakerTo mottaker;
+	private ArkivInformasjonTo arkivInformasjon;
+	private PostadresseTo postadresse;
+	private List<DokumentTo> dokumenter;
 	private DistribusjonsTypeKode distribusjonstype;
 	private DistribusjonstidspunktKode distribusjonstidspunkt;
 	private final String varselStatus;
-
 
 	@Data
 	@Builder
@@ -40,6 +43,7 @@ public class HentForsendelseResponseTo {
 	@Data
 	@Builder
 	public static class ArkivInformasjonTo {
+		private String arkivSystem;
 		private final String arkivId;
 	}
 
