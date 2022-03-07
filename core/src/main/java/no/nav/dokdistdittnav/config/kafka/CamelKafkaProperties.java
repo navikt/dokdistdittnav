@@ -55,6 +55,7 @@ public class CamelKafkaProperties {
 				"&heartbeatIntervalMs=" + consumer.getHeartbeatInterval().toMillis() +
 				"&autoOffsetReset=" + consumer.getAutoOffsetReset() +
 				"&autoCommitEnable=" + consumer.getEnableAutoCommit() +
+				"&heartbeatIntervalMs" + "" + consumer.getHeartbeatInterval() +
 				// custom
 				"&allowManualCommit=true" +
 				"&bridgeErrorHandler=true" +
