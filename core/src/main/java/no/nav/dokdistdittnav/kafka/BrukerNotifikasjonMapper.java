@@ -29,7 +29,7 @@ import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_VIKTIG_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.VEDTAK_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.VIKTIG_TEKST;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VEDTAK;
-import static no.nav.dokdistdittnav.kafka.FunctionalUtils.classpathToString;
+import static no.nav.dokdistdittnav.utils.DokdistUtils.classpathToString;
 
 public class BrukerNotifikasjonMapper {
 

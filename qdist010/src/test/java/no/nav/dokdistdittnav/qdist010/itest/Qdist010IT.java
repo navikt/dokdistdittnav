@@ -216,7 +216,6 @@ class Qdist010IT extends ApplicationTestConfig {
 		});
 
 		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
-		verify(0, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
 	}
 
 	@Test
