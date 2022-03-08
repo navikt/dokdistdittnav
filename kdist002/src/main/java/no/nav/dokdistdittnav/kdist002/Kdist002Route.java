@@ -3,7 +3,6 @@ package no.nav.dokdistdittnav.kdist002;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistdittnav.config.kafka.CamelKafkaProperties;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
-import no.nav.dokdistdittnav.constants.DomainConstants;
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
 import no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper;
 import no.nav.dokdistdittnav.kafka.DoneEventRequest;
@@ -25,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 
 import static no.nav.dokdistdittnav.constants.DomainConstants.BESTILLINGS_ID;
 import static no.nav.dokdistdittnav.constants.DomainConstants.FORSENDELSE_ID;
+import static no.nav.dokdistdittnav.constants.DomainConstants.KDIST002_ID;
 import static org.apache.camel.ExchangePattern.InOnly;
 import static org.apache.camel.LoggingLevel.INFO;
 import static org.apache.camel.component.kafka.KafkaConstants.MANUAL_COMMIT;
@@ -89,13 +89,12 @@ public class Kdist002Route extends RouteBuilder {
 
 
 		from(camelKafkaProperties.buildKafkaUrl(dittnavProperties.getDoknotifikasjon().getStatustopic(), camelKafkaProperties.kafkaConsumer()))
-				.id(DomainConstants.KDIST002_ID)
-				.process(new MDCProcessor())
+				.id(KDIST002_ID)
 				.process(exchange -> {
+					new MDCProcessor();
 					DefaultKafkaManualCommit kafkaManualCommit = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
 					log.info("Kdist002 mottatt record(topic={}, partition={}, offset={})",
 							kafkaManualCommit.getTopicName(), kafkaManualCommit.getPartition().partition(), kafkaManualCommit.getRecordOffset());
-
 				})
 				.bean(kdist002Service)
 				.process(exchange -> {
