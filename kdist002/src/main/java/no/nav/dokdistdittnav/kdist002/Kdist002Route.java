@@ -7,6 +7,7 @@ import no.nav.dokdistdittnav.constants.DomainConstants;
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
 import no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper;
 import no.nav.dokdistdittnav.kafka.DoneEventRequest;
+import no.nav.dokdistdittnav.kdist002.metrics.MDCProcessor;
 import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKanal;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
@@ -89,6 +90,7 @@ public class Kdist002Route extends RouteBuilder {
 
 		from(camelKafkaProperties.buildKafkaUrl(dittnavProperties.getDoknotifikasjon().getStatustopic(), camelKafkaProperties.kafkaConsumer()))
 				.id(DomainConstants.KDIST002_ID)
+				.process(new MDCProcessor())
 				.process(exchange -> {
 					DefaultKafkaManualCommit kafkaManualCommit = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
 					log.info("Kdist002 mottatt record(topic={}, partition={}, offset={})",
