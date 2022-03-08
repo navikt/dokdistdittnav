@@ -110,7 +110,7 @@ public class Kdist002Route extends RouteBuilder {
 				})
 				.choice()
 				.when(simple("${body}").isNull())
-					.log(INFO, "Avslutet behandlingen")
+					.log(INFO, "Avsluttet behandlingen")
 					.endChoice()
 				.otherwise()
 					.multicast()
