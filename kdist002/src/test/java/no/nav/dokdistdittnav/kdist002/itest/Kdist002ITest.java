@@ -5,22 +5,18 @@ import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.dokdistdittnav.kdist002.itest.config.ApplicationTestConfig;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import org.apache.commons.io.IOUtils;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 import javax.inject.Inject;
 import javax.jms.Queue;
 import javax.xml.bind.JAXBElement;
 import java.io.InputStream;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -46,15 +42,12 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @ActiveProfiles("itest")
 public class Kdist002ITest extends ApplicationTestConfig {
 
-
-	private static final String JOURNALPOST_ID = "153781366";
 	private static final String FORSENDELSE_ID = "1720847";
 	private static final String NY_FORSENDELSE_ID = "33333";
 	private static final String DOKNOTIFIKASJON_BESTILLINGSID = "B-dokdistdittnav-811c0c5d-e74c-491a-8b8c-d94075c822c3";
 	private static final String BESTILLINGSID = "811c0c5d-e74c-491a-8b8c-d94075c822c3";
 	private static final String DOKNOTIFIKASJON_STATUS_TOPIC = "aapen-dok-notifikasjon-status";
 	private static final String MELDING = "Altinn feilet";
-	private static final String CALL_ID = UUID.randomUUID().toString();
 
 	@Autowired
 	private KafkaEventProducer kafkaEventProducer;
@@ -64,9 +57,6 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 	@Inject
 	private JmsTemplate jmsTemplate;
-
-	@Inject
-	protected KafkaTemplate<Object, Object> kafkaTemplate;
 
 	@Test
 	public void shouldFeilRegistrerForsendelseOgOppdaterForsendelse() {
@@ -82,15 +72,39 @@ public class Kdist002ITest extends ApplicationTestConfig {
 			assertNotNull(message);
 		});
 
-		verifyAndCountDpiForsendelse(1, BESTILLINGSID, KLAR_FOR_DIST.name());
+		verifyAndCountForsendelse(BESTILLINGSID, KLAR_FOR_DIST.name());
 	}
 
-	private void verifyAndCountDpiForsendelse(int count, String bestillingsId, String forsendelseStatus) {
-		verify(count, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + bestillingsId)));
-		verify(count, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
-		verify(count, postRequestedFor(urlMatching("/administrerforsendelse")));
-		verify(count, putRequestedFor(urlMatching("/administrerforsendelse/feilregistrerforsendelse")));
-		verify(count, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + NY_FORSENDELSE_ID + "&forsendelseStatus=" + forsendelseStatus)));
+	@Test
+	public void shouldLogWhenVarselstatusIsNotEqualtOPPRETTET() {
+		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus());
+		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
+		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-forsendelsestatus-feilet.json", FORSENDELSE_ID, OK.value());
+
+		await().pollInterval(500, MILLISECONDS).atMost(20, SECONDS).untilAsserted(() -> {
+			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
+			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+		});
+	}
+
+	@Test
+	public void shouldLogAndAvsluttBehandlingHvisForsendelseStatusErFEILET() {
+		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus());
+		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
+		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-forsendelsestatus-feilet.json", FORSENDELSE_ID, OK.value());
+
+		await().pollInterval(500, MILLISECONDS).atMost(20, SECONDS).untilAsserted(() -> {
+			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
+			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+		});
+	}
+
+	private void verifyAndCountForsendelse(String bestillingsId, String forsendelseStatus) {
+		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + bestillingsId)));
+		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+		verify(1, postRequestedFor(urlMatching("/administrerforsendelse")));
+		verify(1, putRequestedFor(urlMatching("/administrerforsendelse/feilregistrerforsendelse")));
+		verify(1, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + NY_FORSENDELSE_ID + "&forsendelseStatus=" + forsendelseStatus)));
 	}
 
 	private void stubGetHentForsendelse(String responsebody, String forsendelseId, int httpStatusvalue) {
@@ -134,30 +148,11 @@ public class Kdist002ITest extends ApplicationTestConfig {
 		return (T) response;
 	}
 
-	private void putMessageOnKafkaTopic(String topicname, DoknotifikasjonStatus status) {
+	private void sendMessageToTopic(String topicname, DoknotifikasjonStatus status) {
 		kafkaEventProducer.publish(
 				topicname, "key",
 				status
 		);
-	}
-
-	void sendToTopic(ProducerRecord<Object, Object> record) {
-		try {
-			kafkaTemplate.execute(producer -> {
-				try {
-					producer.send(record).get();
-					return null;
-				} catch (InterruptedException | ExecutionException e) {
-					throw new RuntimeException("Failed to send", e);
-				}
-			});
-		} catch (Exception e) {
-			throw new RuntimeException("Failed to send Kafka message", e);
-		}
-	}
-
-	protected void sendMessageToTopic(String topicname, DoknotifikasjonStatus status) {
-		sendToTopic(new ProducerRecord<>(topicname, 0, "key", status));
 	}
 
 	public DoknotifikasjonStatus doknotifikasjonStatus() {

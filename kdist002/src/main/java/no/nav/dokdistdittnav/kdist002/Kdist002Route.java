@@ -105,15 +105,16 @@ public class Kdist002Route extends RouteBuilder {
 					}
 					if (manual != null) {
 						log.info("Kdist002, manual commit (topic={}, partition={}, offset={}, groupId={})", manual.getTopicName(), manual.getPartition().partition(), manual.getRecordOffset(), camelKafkaProperties.getGroupId());
-						manual.commitSync();
 					}
 				})
 				.choice()
-					.when(simple("${body}").isNotNull())
-						.multicast()
-							.to("direct:" + QDIST009)
-							.to("direct:" + DONE_EVENT)
-				.endChoice()
+				.when(simple("${body}").isNull())
+					.log(INFO, "Avslutet behandlingen")
+					.endChoice()
+				.otherwise()
+					.multicast()
+						.to("direct:" + QDIST009)
+						.to("direct:" + DONE_EVENT)
 				.end();
 
 		from("direct:" + QDIST009)

@@ -1,0 +1,38 @@
+{
+  "bestillingsId": "811c0c5d-e74c-491a-8b8c-d94075c822c3",
+  "konversasjonId":"37efbd4c-413d-4e2c-bbc5-257ef4a65a45",
+  "bestillendeFagsystem": "bestillendeFagsystem",
+  "batchId": "batchId",
+  "dokumentProdApp": "dokumentProdApp",
+  "modus": "T",
+  "forsendelseStatus": "FERDIGSTILT",
+  "distribusjonKanal": "DITTNAV",
+  "varselStatus": "OPPRETTET",
+  "tema":"FS22",
+  "forsendelseTittel": "Innkalling til informasjonsmoete",
+  "mottaker": {
+    "mottakerId": "22222222222",
+    "mottakerNavn": " ROLL ROLL",
+    "mottakerType":"PERSON"
+  },
+  "arkivInformasjon": {
+    "arkivSystem": "arkivSystem",
+    "arkivId": "911150216460000000000000075958"
+  },
+  "postadresse": {
+    "adresselinje1": "Adresslinje 1",
+    "adresselinje2": "Adresslinje 2",
+    "adresselinje3": "Adresslinje 3",
+    "postnummer": "1111",
+    "poststed": "Oslo",
+    "landkode": "NO"
+  },
+  "dokumenter": [
+    {
+      "tilknyttetSom": "HOVEDDOKUMENT",
+      "dokumentObjektReferanse": "testKey",
+      "arkivDokumentInfoId": "1234",
+      "dokumenttypeId": "1111111"
+    }
+  ]
+}
