@@ -81,7 +81,7 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 			HentForsendelseResponseTo forsendelse = restTemplate.exchange(this.administrerforsendelseV1Url + "/" + forsendelseId, HttpMethod.GET, entity, HentForsendelseResponseTo.class)
 							.getBody();
 
-			if (isNull(forsendelse) && isNull(forsendelse.getArkivInformasjon())) {
+			if (isNull(forsendelse) || isNull(forsendelse.getArkivInformasjon())) {
 				throw new Rdist001HentForsendelseFunctionalException("Kall mot rdist001 - hentForsendelse returnerte forsendelse uten ArkivInformasjon");
 			}
 			return forsendelse;
