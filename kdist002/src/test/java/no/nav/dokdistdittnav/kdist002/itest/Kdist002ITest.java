@@ -5,6 +5,7 @@ import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.dokdistdittnav.kdist002.itest.config.ApplicationTestConfig;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -40,6 +41,7 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @ActiveProfiles("itest")
+@Disabled
 public class Kdist002ITest extends ApplicationTestConfig {
 
 	private static final String FORSENDELSE_ID = "1720847";

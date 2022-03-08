@@ -135,8 +135,8 @@ public class Kdist002Route extends RouteBuilder {
 
 		from("direct:" + DONE_EVENT)
 				.id(DONE_EVENT)
-				.setExchangePattern(InOnly)
 				.process(exchange -> {
+					new MDCProcessor();
 					DoneEventRequest doneEventRequest = exchange.getIn().getBody(DoneEventRequest.class);
 					exchange.getIn().setHeader(KafkaConstants.KEY, mapper.mapNokkelForKdist002(doneEventRequest, dittnavProperties.getAppnavn()));
 					exchange.getIn().setBody(mapper.mapDoneInput());
