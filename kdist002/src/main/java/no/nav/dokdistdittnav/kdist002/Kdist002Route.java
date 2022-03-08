@@ -19,11 +19,11 @@ import org.springframework.stereotype.Component;
 
 import javax.jms.Queue;
 import javax.xml.bind.JAXBContext;
-
 import java.nio.charset.StandardCharsets;
 
-import static no.nav.dokdistdittnav.constants.DomainConstants.BESTILLINGS_ID;
-import static no.nav.dokdistdittnav.constants.DomainConstants.FORSENDELSE_ID;
+import static java.lang.String.format;
+import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
+import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDELSE_ID;
 import static no.nav.dokdistdittnav.constants.DomainConstants.KDIST002_ID;
 import static org.apache.camel.ExchangePattern.InOnly;
 import static org.apache.camel.LoggingLevel.INFO;
@@ -81,7 +81,7 @@ public class Kdist002Route extends RouteBuilder {
 				.process(exchange -> {
 					DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
 					if (manual != null) {
-						log.error("Kdist002 Funksjonell feil i record (topic={}, partition={}, offset={}, groupId={})", manual.getTopicName(), manual.getPartition().partition(), manual.getRecordOffset(), camelKafkaProperties.getGroupId());
+						log.error("Kdist002 Funksjonell feil i record" + defaultKafkaManualCommit(exchange));
 						manual.commitSync();
 					}
 				})
@@ -90,27 +90,26 @@ public class Kdist002Route extends RouteBuilder {
 
 		from(camelKafkaProperties.buildKafkaUrl(dittnavProperties.getDoknotifikasjon().getStatustopic(), camelKafkaProperties.kafkaConsumer()))
 				.id(KDIST002_ID)
+				.process(new MDCProcessor())
 				.process(exchange -> {
-					new MDCProcessor();
 					DefaultKafkaManualCommit kafkaManualCommit = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
-					log.info("Kdist002 mottatt record(topic={}, partition={}, offset={})",
-							kafkaManualCommit.getTopicName(), kafkaManualCommit.getPartition().partition(), kafkaManualCommit.getRecordOffset());
+					log.info("Kdist002 mottatt " + defaultKafkaManualCommit(exchange));
 				})
 				.bean(kdist002Service)
 				.process(exchange -> {
 					DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
 					DoneEventRequest doneEventRequest = exchange.getIn().getBody(DoneEventRequest.class);
 					if (doneEventRequest != null) {
-						exchange.setProperty(FORSENDELSE_ID, doneEventRequest.getForsendelseId());
-						exchange.setProperty(BESTILLINGS_ID, doneEventRequest.getBestillingsId());
+						exchange.setProperty(PROPERTY_FORSENDELSE_ID, doneEventRequest.getForsendelseId());
+						exchange.setProperty(PROPERTY_BESTILLINGS_ID, doneEventRequest.getBestillingsId());
 					}
 					if (manual != null) {
-						log.info("Kdist002, manual commit (topic={}, partition={}, offset={}, groupId={})", manual.getTopicName(), manual.getPartition().partition(), manual.getRecordOffset(), camelKafkaProperties.getGroupId());
+						log.info("Kdist002, manual commit " + defaultKafkaManualCommit(exchange));
 					}
 				})
 				.choice()
 				.when(simple("${body}").isNull())
-					.log(INFO, "Avslutet behandlingen")
+					.process(exchange -> log.info("Avsluttet behandlingen: " + defaultKafkaManualCommit(exchange)))
 					.endChoice()
 				.otherwise()
 					.multicast()
@@ -148,7 +147,12 @@ public class Kdist002Route extends RouteBuilder {
 	}
 
 	private static String getIdsForLogging() {
-		return "bestillingsId=${exchangeProperty." + BESTILLINGS_ID + "}, " +
-				"forsendelseId=${exchangeProperty." + FORSENDELSE_ID + "}";
+		return "bestillingsId=${exchangeProperty." + PROPERTY_BESTILLINGS_ID + "}, " +
+				"forsendelseId=${exchangeProperty." + PROPERTY_FORSENDELSE_ID + "}";
+	}
+
+	private String defaultKafkaManualCommit(Exchange exchange) {
+		DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
+		return format("(topic=%s, partition={%s, offset=%s, groupId=%s).", manual.getTopicName(), manual.getPartition().partition(), manual.getRecordOffset(), camelKafkaProperties.getGroupId());
 	}
 }

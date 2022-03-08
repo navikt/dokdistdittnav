@@ -5,7 +5,7 @@
   "batchId": "batchId",
   "dokumentProdApp": "dokumentProdApp",
   "modus": "T",
-  "forsendelseStatus": "KLAR_FOR_DIST",
+  "forsendelseStatus": "FEILET",
   "distribusjonKanal": "DITTNAV",
   "varselStatus": "FERDIGSTILT",
   "tema":"FS22",

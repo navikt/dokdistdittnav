@@ -137,7 +137,7 @@ class PersisterForsendelseMapperTest {
 				.dokumenter(createDokument()).build();
 	}
 
-	private HentForsendelseResponseTo createHentForsendelseResponse() {
+	public static HentForsendelseResponseTo createHentForsendelseResponse() {
 		return HentForsendelseResponseTo.builder()
 				.bestillingsId(OLD_BESTILLINGS_ID)
 				.tema(TEMA)
@@ -153,7 +153,7 @@ class PersisterForsendelseMapperTest {
 				.dokumenter(createDokument()).build();
 	}
 
-	private List<HentForsendelseResponseTo.DokumentTo> createDokument() {
+	private static List<HentForsendelseResponseTo.DokumentTo> createDokument() {
 
 		return Arrays.asList(
 				HentForsendelseResponseTo.DokumentTo.builder()
@@ -178,7 +178,7 @@ class PersisterForsendelseMapperTest {
 
 	}
 
-	private HentForsendelseResponseTo.PostadresseTo createPostadresse() {
+	private static HentForsendelseResponseTo.PostadresseTo createPostadresse() {
 		return HentForsendelseResponseTo.PostadresseTo.builder()
 				.adresselinje1(ADRESSELINJE_1)
 				.adresselinje2(ADRESSELINJE_2)
@@ -189,7 +189,7 @@ class PersisterForsendelseMapperTest {
 				.build();
 	}
 
-	private HentForsendelseResponseTo.MottakerTo createMottakerTo() {
+	private static HentForsendelseResponseTo.MottakerTo createMottakerTo() {
 		return HentForsendelseResponseTo.MottakerTo.builder()
 				.mottakerNavn(MOTTAKER_ID_NAVN)
 				.mottakerId(MOTTAKER_ID)

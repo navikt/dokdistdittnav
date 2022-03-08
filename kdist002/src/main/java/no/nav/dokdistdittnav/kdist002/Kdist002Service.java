@@ -13,7 +13,6 @@ import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseResponseTo
 import no.nav.dokdistdittnav.kafka.DoneEventRequest;
 import no.nav.dokdistdittnav.kdist002.mapper.PersisterForsendelseMapper;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
-import org.apache.camel.Exchange;
 import org.apache.camel.Handler;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static java.lang.String.valueOf;
-import static no.nav.dokdistdittnav.constants.DomainConstants.BESTILLINGS_ID;
+import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.KLAR_FOR_DIST;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatus.OPPRETTET;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FEILET;
@@ -47,13 +46,14 @@ public class Kdist002Service {
 	}
 
 	@Handler
-	public DoneEventRequest sendForsendelse(DoknotifikasjonStatus doknotifikasjonStatus, Exchange exchange) {
+	public DoneEventRequest sendForsendelse(DoknotifikasjonStatus doknotifikasjonStatus) {
 		log.info("Hentet doknotifikasjonstatus med bestillingsId={} og status={} fra topic={}.", doknotifikasjonStatus.getBestillingsId(), doknotifikasjonStatus.getStatus(), properties.getDoknotifikasjon().getStatustopic());
 		if (!isDittnavAndFeilStatus(doknotifikasjonStatus)) {
 			return null;
 		} else {
 			String oldBestillingsId = extractDokdistBestillingsId(doknotifikasjonStatus.getBestillingsId());
 			FinnForsendelseResponseTo finnForsendelse = finnForsendelse(oldBestillingsId);
+			validateFinnForsendelse(finnForsendelse);
 			HentForsendelseResponseTo hentForsendelseResponse = administrerForsendelse.hentForsendelse(finnForsendelse.getForsendelseId());
 			return (isOpprettetVarselStatus(hentForsendelseResponse)) ?
 					createNewAndFeilRegistrerOldForsendelse(finnForsendelse.getForsendelseId(), hentForsendelseResponse, doknotifikasjonStatus) : null;
@@ -62,7 +62,7 @@ public class Kdist002Service {
 
 	private FinnForsendelseResponseTo finnForsendelse(String bestillingsId) {
 		return administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
-				.oppslagsNoekkel(BESTILLINGS_ID)
+				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
 				.verdi(bestillingsId)
 				.build());
 	}
@@ -115,5 +115,10 @@ public class Kdist002Service {
 	private void validateOppdaterForsendelse(PersisterForsendelseResponseTo request) {
 		assertNotNull("PersisterForsendelseResponseTo", request);
 		assertNotBlank("PersisterForsendelseResponseTo.ForsendelseId", valueOf(request.getForsendelseId()));
+	}
+
+	private void validateFinnForsendelse(FinnForsendelseResponseTo finnForsendelseResponseTo) {
+		assertNotNull("finnForsendelseResponseTo", finnForsendelseResponseTo);
+		assertNotBlank("FinnForsendelseResponseTo.ForsendelseId", valueOf(finnForsendelseResponseTo.getForsendelseId()));
 	}
 }

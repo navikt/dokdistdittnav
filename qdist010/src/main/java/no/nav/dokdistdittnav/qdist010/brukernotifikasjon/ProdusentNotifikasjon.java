@@ -17,8 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.nonNull;
-import static no.nav.dokdistdittnav.constants.DomainConstants.BESTILLINGS_ID;
-import static no.nav.dokdistdittnav.constants.DomainConstants.JOURNALPOST_ID;
+import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
+import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_JOURNALPOST_ID;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VEDTAK;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VIKTIG;
 
@@ -48,9 +48,9 @@ public class ProdusentNotifikasjon {
 		NokkelInput nokkelIntern = brukerNotifikasjonMapper.mapNokkelIntern(forsendelseId, properties.getAppnavn(), hentForsendelseResponse);
 
 		if (isJournalpostIdNotNull(hentForsendelseResponse)) {
-			exchange.setProperty(JOURNALPOST_ID, hentForsendelseResponse.getArkivInformasjon().getArkivId());
+			exchange.setProperty(PROPERTY_JOURNALPOST_ID, hentForsendelseResponse.getArkivInformasjon().getArkivId());
 		}
-		exchange.setProperty(BESTILLINGS_ID, hentForsendelseResponse.getBestillingsId());
+		exchange.setProperty(PROPERTY_BESTILLINGS_ID, hentForsendelseResponse.getBestillingsId());
 
 		if (erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype()) && isJournalpostIdNotNull(hentForsendelseResponse)) {
 			OppgaveInput oppgaveIntern = brukerNotifikasjonMapper.oppretteOppgave(properties.getBrukernotifikasjon().getLink(), hentForsendelseResponse);

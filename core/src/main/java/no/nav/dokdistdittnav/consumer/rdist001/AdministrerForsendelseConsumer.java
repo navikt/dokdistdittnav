@@ -34,12 +34,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.inject.Inject;
 import java.time.Duration;
-import java.util.Objects;
 
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
-import static javax.servlet.RequestDispatcher.ERROR_MESSAGE;
-import static no.nav.dokdistdittnav.constants.DomainConstants.FORSENDELSE_ID;
+import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDELSE_ID;
 import static no.nav.dokdistdittnav.constants.MdcConstants.CALL_ID;
 import static no.nav.dokdistdittnav.constants.MdcConstants.DOK_CONSUMER;
 import static no.nav.dokdistdittnav.constants.MdcConstants.PROCESS;
@@ -48,7 +46,6 @@ import static no.nav.dokdistdittnav.constants.RetryConstants.MAX_ATTEMPTS_SHORT;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
-import static org.springframework.kafka.support.KafkaHeaders.EXCEPTION_MESSAGE;
 
 /**
  * @author Sigurd Midttun, Visma Consulting.
@@ -156,7 +153,7 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "oppdaterForsendelseStatus"}, histogram = true)
 	public void oppdaterForsendelseStatus(String forsendelseId, String forsendelseStatus) {
 		String uri = UriComponentsBuilder.fromHttpUrl(administrerforsendelseV1Url)
-				.queryParam(FORSENDELSE_ID, forsendelseId)
+				.queryParam(PROPERTY_FORSENDELSE_ID, forsendelseId)
 				.queryParam("forsendelseStatus", forsendelseStatus)
 				.toUriString();
 		log.info("Mottatt kall til å oppdatere forsendelse med forsendelseId={} til forsendelseStatus={}", forsendelseId, forsendelseStatus);
@@ -169,7 +166,7 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "oppdaterForsendelseAndVarselStatus"}, histogram = true)
 	public void oppdaterForsendelseAndVarselStatus(String forsendelseId, String forsendelseStatus, String varselStatus) {
 		String uri = UriComponentsBuilder.fromHttpUrl(administrerforsendelseV1Url)
-				.queryParam(FORSENDELSE_ID, forsendelseId)
+				.queryParam(PROPERTY_FORSENDELSE_ID, forsendelseId)
 				.queryParam("forsendelseStatus", forsendelseStatus)
 				.queryParam("varselStatus", varselStatus)
 				.toUriString();
@@ -183,7 +180,7 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "oppdaterVarselStatus"}, histogram = true)
 	public void oppdaterVarselStatus(String forsendelseId, String varselStatus) {
 		String uri = UriComponentsBuilder.fromHttpUrl(administrerforsendelseV1Url)
-				.queryParam(FORSENDELSE_ID, forsendelseId)
+				.queryParam(PROPERTY_FORSENDELSE_ID, forsendelseId)
 				.queryParam("varselStatus", varselStatus)
 				.toUriString();
 		log.info("Mottatt kall til å oppdatere forsendelse med forsendelseId={} til varselStatus={}", forsendelseId, varselStatus);
