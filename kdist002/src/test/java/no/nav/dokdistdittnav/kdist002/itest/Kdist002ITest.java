@@ -76,18 +76,6 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	}
 
 	@Test
-	public void shouldLogWhenVarselstatusIsNotEqualtOPPRETTET() {
-		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus());
-		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
-		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-forsendelsestatus-feilet.json", FORSENDELSE_ID, OK.value());
-
-		await().pollInterval(500, MILLISECONDS).atMost(20, SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
-			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
-		});
-	}
-
-	@Test
 	public void shouldLogAndAvsluttBehandlingHvisForsendelseStatusErFEILET() {
 		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus());
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
