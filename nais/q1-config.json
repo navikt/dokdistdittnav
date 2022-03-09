@@ -2,7 +2,7 @@
 	"DOKDISTDITTNAV_BRUKERNOTIFIKASJON_TOPICBESKJED": "min-side.aapen-brukernotifikasjon-beskjed-v1",
 	"DOKDISTDITTNAV_BRUKERNOTIFIKASJON_TOPICOPPGAVE": "min-side.aapen-brukernotifikasjon-oppgave-v1",
 	"DOKDISTDITTNAV_BRUKERNOTIFIKASJON_TOPICDONE": "min-side.aapen-brukernotifikasjon-done-v1",
-	"DOKDISTDITTNAV_BRUKERNOTIFIKASJON_STATUSTOPIC": "teamdokumenthandtering.aapen-dok-notifikasjon-status",
+	"DOKDISTDITTNAV_DOKNOTIFIKASJON_STATUSTOPIC": "teamdokumenthandtering.aapen-dok-notifikasjon-status",
 	"DOKDISTDITTNAV_TOPIC_LESTAVMOTTAKER": "teamdokumenthandtering.privat-dokdistdittnav-lestavmottaker-q1",
 	"DOKDISTDITTNAV_BRUKERNOTIFIKASJON_LINK": "https://person.dev.nav.no/mine-saker/tema/",
 	"ADMINISTRERFORSENDELSE_V1_URL": "https://app-q1.adeo.no/dokdist/rest/v1/administrerforsendelse",
