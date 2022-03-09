@@ -6,7 +6,7 @@ import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
 import no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper;
 import no.nav.dokdistdittnav.kafka.DoneEventRequest;
-import no.nav.dokdistdittnav.kdist002.metrics.MDCProcessor;
+import no.nav.dokdistdittnav.utils.MDCProcessor;
 import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKanal;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
@@ -91,27 +91,22 @@ public class Kdist002Route extends RouteBuilder {
 		from(camelKafkaProperties.buildKafkaUrl(dittnavProperties.getDoknotifikasjon().getStatustopic(), camelKafkaProperties.kafkaConsumer()))
 				.id(KDIST002_ID)
 				.process(new MDCProcessor())
-				.process(exchange -> {
-					DefaultKafkaManualCommit kafkaManualCommit = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
-					log.info("Kdist002 mottatt " + defaultKafkaManualCommit(exchange));
-				})
+				.process(exchange -> log.info("Kdist002 mottatt " + defaultKafkaManualCommit(exchange)))
 				.bean(kdist002Service)
-				.process(exchange -> {
-					DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
-					DoneEventRequest doneEventRequest = exchange.getIn().getBody(DoneEventRequest.class);
-					if (doneEventRequest != null) {
-						exchange.setProperty(PROPERTY_FORSENDELSE_ID, doneEventRequest.getForsendelseId());
-						exchange.setProperty(PROPERTY_BESTILLINGS_ID, doneEventRequest.getBestillingsId());
-					}
-					if (manual != null) {
-						log.info("Kdist002, manual commit " + defaultKafkaManualCommit(exchange));
-					}
-				})
 				.choice()
 				.when(simple("${body}").isNull())
 					.process(exchange -> log.info("Avsluttet behandlingen: " + defaultKafkaManualCommit(exchange)))
 					.endChoice()
 				.otherwise()
+					.process(exchange -> {
+						DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
+						DoneEventRequest doneEventRequest = exchange.getIn().getBody(DoneEventRequest.class);
+						exchange.setProperty(PROPERTY_FORSENDELSE_ID, doneEventRequest.getForsendelseId());
+						exchange.setProperty(PROPERTY_BESTILLINGS_ID, doneEventRequest.getBestillingsId());
+						if (manual != null) {
+							log.info("Kdist002, manual commit " + defaultKafkaManualCommit(exchange));
+						}
+					})
 					.multicast()
 						.to("direct:" + QDIST009)
 						.to("direct:" + DONE_EVENT)
@@ -119,7 +114,6 @@ public class Kdist002Route extends RouteBuilder {
 
 		from("direct:" + QDIST009)
 				.id(QDIST009)
-				.setExchangePattern(InOnly)
 				.process(exchange -> {
 					DoneEventRequest doneEventRequest = exchange.getIn().getBody(DoneEventRequest.class);
 					DistribuerTilKanal distribuerTilKanal = new DistribuerTilKanal();

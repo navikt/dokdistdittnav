@@ -43,13 +43,11 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	@Autowired
 	private KafkaEventProducer kafkaEventProducer;
 
-
 	@Test
 	public void shouldReadMessageFromLestavmottakerTopicen() {
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json", FORSENDELSE_ID, OK.value());
 		stubPutOppdaterForsendelse(FERDIGSTILT.name(), FORSENDELSE_ID, OK.value());
-
 
 		HoveddokumentLest hoveddokumentLest = HoveddokumentLest.newBuilder()
 				.setDokumentInfoId(DOKUMENTINFO_ID)
@@ -57,7 +55,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 				.build();
 		putMessageOnKafkaTopic(hoveddokumentLest);
 
-		await().pollInterval(500, MILLISECONDS).atMost(20, SECONDS).untilAsserted(() -> {
+		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
 			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?journalpostId=" + JOURNALPOST_ID)));
 			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
 			verify(1, putRequestedFor(urlEqualTo(URL_OPPDATERFORSENDELSE)));
@@ -118,6 +116,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 				.willReturn(aResponse().withStatus(httpStatusvalue)));
 
 	}
+
 	private void putMessageOnKafkaTopic(HoveddokumentLest hoveddokumentLest) {
 		kafkaEventProducer.publish(
 				"privat-dokdistdittnav-lestavmottaker", "key",

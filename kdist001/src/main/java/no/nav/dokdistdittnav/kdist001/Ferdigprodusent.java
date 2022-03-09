@@ -10,6 +10,7 @@ import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
 import no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.safselvbetjening.schemas.HoveddokumentLest;
+import org.apache.camel.Handler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -42,7 +43,9 @@ public class Ferdigprodusent {
 		this.mapper = new BrukerNotifikasjonMapper();
 	}
 
+	@Handler
 	public void updateVarselStatus(HoveddokumentLest hoveddokumentLest) {
+		log.info("Mottatt hoveddokumentLest med journalpostId={}, dokumentInfoId={}.", hoveddokumentLest.getJournalpostId(), hoveddokumentLest.getJournalpostId());
 
 		FinnForsendelseResponseTo finnForsendelseResponse = administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
 				.oppslagsNoekkel(JOURNALPOSTID)
@@ -50,6 +53,7 @@ public class Ferdigprodusent {
 				.build());
 
 		HentForsendelseResponseTo hentForsendelseResponse = administrerForsendelse.hentForsendelse(requireNonNull(finnForsendelseResponse.getForsendelseId(), format("Fant ikke forsendelse med journalpostId=%s", hoveddokumentLest.getJournalpostId())));
+		log.info("Hentet forsendelse med forsendelseId={} og bestillingsId={} fra dokdist databasen.", finnForsendelseResponse.getForsendelseId(), hentForsendelseResponse.getBestillingsId());
 
 		if (isNull(hentForsendelseResponse.getDokumenter()) || !isHovedDokument(hentForsendelseResponse, hoveddokumentLest)) {
 			log.error("Fant ikke forsendelse med forsendelseId={}", finnForsendelseResponse.getForsendelseId());

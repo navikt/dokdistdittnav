@@ -5,9 +5,9 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Handler;
 import org.springframework.stereotype.Component;
 
+import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDELSE_ID;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.EKSPEDERT;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatus.OPPRETTET;
-import static no.nav.dokdistdittnav.qdist010.Qdist010Route.PROPERTY_FORSENDELSE_ID;
 
 /**
  * @author Sigurd Midttun, Visma Consulting.
