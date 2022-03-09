@@ -22,12 +22,13 @@ import javax.xml.bind.JAXBContext;
 import java.nio.charset.StandardCharsets;
 
 import static java.lang.String.format;
+import static no.nav.dokdistdittnav.constants.DomainConstants.KDIST002_ID;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDELSE_ID;
-import static no.nav.dokdistdittnav.constants.DomainConstants.KDIST002_ID;
-import static org.apache.camel.ExchangePattern.InOnly;
+import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FEILET;
 import static org.apache.camel.LoggingLevel.INFO;
 import static org.apache.camel.component.kafka.KafkaConstants.MANUAL_COMMIT;
+import static org.apache.camel.support.builder.PredicateBuilder.or;
 
 @Slf4j
 @Component
@@ -35,12 +36,15 @@ public class Kdist002Route extends RouteBuilder {
 
 	private static final String QDIST009 = "qdist009";
 	private static final String DONE_EVENT = "doknotifikasjon_done";
+	private static final String COMMIT_MELDING = "Kdist002, manual commit ";
+	private static final String ERROR_MELDING = "Kdist002 Funksjonell feil i record";
+	private static final String END_MELDING = "Avsluttet behandlingen: ";
 
 	private final CamelKafkaProperties camelKafkaProperties;
 	private final Kdist002Service kdist002Service;
 	private final DokdistdittnavProperties dittnavProperties;
 	private final Queue qdist009;
-	private final BrukerNotifikasjonMapper mapper;
+	private final BrukerNotifikasjonMapper brukerNotifikasjonMapper;
 	private final DoneEventProducer doneEventProducer;
 
 	@Autowired
@@ -50,7 +54,7 @@ public class Kdist002Route extends RouteBuilder {
 		this.kdist002Service = kdist002Service;
 		this.dittnavProperties = dittnavProperties;
 		this.qdist009 = qdist009;
-		this.mapper = new BrukerNotifikasjonMapper();
+		this.brukerNotifikasjonMapper = new BrukerNotifikasjonMapper();
 		this.doneEventProducer = doneEventProducer;
 	}
 
@@ -78,36 +82,33 @@ public class Kdist002Route extends RouteBuilder {
 				.logExhaustedMessageHistory(false)
 				.logStackTrace(false)
 				.logRetryAttempted(false)
-				.process(exchange -> {
-					DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
-					if (manual != null) {
-						log.error("Kdist002 Funksjonell feil i record" + defaultKafkaManualCommit(exchange));
-						manual.commitSync();
-					}
-				})
+				.process(exchange -> defaultKafkaManualCommit(exchange, ERROR_MELDING))
 				.log(LoggingLevel.WARN, log, "${exception}");
 
 
 		from(camelKafkaProperties.buildKafkaUrl(dittnavProperties.getDoknotifikasjon().getStatustopic(), camelKafkaProperties.kafkaConsumer()))
 				.id(KDIST002_ID)
 				.process(new MDCProcessor())
-				.process(exchange -> log.info("Kdist002 mottatt " + defaultKafkaManualCommit(exchange)))
-				.bean(kdist002Service)
+				.process(exchange -> log.info("Kdist002 mottatt " + createLoggingFraHeader(exchange)))
 				.choice()
-				.when(simple("${body}").isNull())
-					.process(exchange -> log.info("Avsluttet behandlingen: " + defaultKafkaManualCommit(exchange)))
+				.when(or(simple("${body.bestillerId}").isNotEqualTo(dittnavProperties.getAppnavn()),
+						simple("${body.status}").isNotEqualTo(FEILET.name())))
+					.process(exchange -> defaultKafkaManualCommit(exchange, END_MELDING))
 					.endChoice()
 				.otherwise()
-					.process(exchange -> {
-						DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
-						DoneEventRequest doneEventRequest = exchange.getIn().getBody(DoneEventRequest.class);
-						exchange.setProperty(PROPERTY_FORSENDELSE_ID, doneEventRequest.getForsendelseId());
-						exchange.setProperty(PROPERTY_BESTILLINGS_ID, doneEventRequest.getBestillingsId());
-						if (manual != null) {
-							log.info("Kdist002, manual commit " + defaultKafkaManualCommit(exchange));
-						}
-					})
-					.multicast()
+				.bean(kdist002Service)
+					.choice()
+					.when(simple("${body}").isNull())
+						.process(exchange -> defaultKafkaManualCommit(exchange, END_MELDING))
+						.endChoice()
+					.otherwise()
+						.process(exchange -> {
+							DoneEventRequest doneEventRequest = exchange.getIn().getBody(DoneEventRequest.class);
+							exchange.setProperty(PROPERTY_FORSENDELSE_ID, doneEventRequest.getForsendelseId());
+							exchange.setProperty(PROPERTY_BESTILLINGS_ID, doneEventRequest.getBestillingsId());
+							defaultKafkaManualCommit(exchange, COMMIT_MELDING);
+						})
+						.multicast().parallelProcessing()
 						.to("direct:" + QDIST009)
 						.to("direct:" + DONE_EVENT)
 				.end();
@@ -131,8 +132,8 @@ public class Kdist002Route extends RouteBuilder {
 				.process(exchange -> {
 					new MDCProcessor();
 					DoneEventRequest doneEventRequest = exchange.getIn().getBody(DoneEventRequest.class);
-					exchange.getIn().setHeader(KafkaConstants.KEY, mapper.mapNokkelForKdist002(doneEventRequest, dittnavProperties.getAppnavn()));
-					exchange.getIn().setBody(mapper.mapDoneInput());
+					exchange.getIn().setHeader(KafkaConstants.KEY, brukerNotifikasjonMapper.mapNokkelForKdist002(doneEventRequest, dittnavProperties.getAppnavn()));
+					exchange.getIn().setBody(brukerNotifikasjonMapper.mapDoneInput());
 				})
 				.to(camelKafkaProperties.buildKafkaUrl(dittnavProperties.getBrukernotifikasjon().getTopicdone(),
 						camelKafkaProperties.kafkaProducer()))
@@ -145,8 +146,20 @@ public class Kdist002Route extends RouteBuilder {
 				"forsendelseId=${exchangeProperty." + PROPERTY_FORSENDELSE_ID + "}";
 	}
 
-	private String defaultKafkaManualCommit(Exchange exchange) {
-		DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
-		return format("(topic=%s, partition={%s, offset=%s, groupId=%s).", manual.getTopicName(), manual.getPartition().partition(), manual.getRecordOffset(), camelKafkaProperties.getGroupId());
+	private void defaultKafkaManualCommit(Exchange exchange, String melding) {
+		DefaultKafkaManualCommit manualCommit = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
+		if (manualCommit != null) {
+			log.info("Kdist002, manual commit " + createLogging(manualCommit));
+			manualCommit.commitSync();
+		}
+	}
+
+	private String createLoggingFraHeader(Exchange exchange) {
+		DefaultKafkaManualCommit manualCommit = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
+		return createLogging(manualCommit);
+	}
+
+	private String createLogging(DefaultKafkaManualCommit manualCommit) {
+		return format("(topic=%s, partition={%s, offset=%s, groupId=%s).", manualCommit.getTopicName(), manualCommit.getPartition().partition(), manualCommit.getRecordOffset(), camelKafkaProperties.getGroupId());
 	}
 }

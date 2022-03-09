@@ -26,6 +26,7 @@ import static no.nav.dokdistdittnav.kdist002.TestUtils.hentForsendelseResponseTo
 import static no.nav.dokdistdittnav.kdist002.TestUtils.hentForsendelseResponseWithForsendelseStatusFeilet;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FEILET;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.INFO;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -71,22 +72,6 @@ class Kdist002ServiceTest {
 	}
 
 	@Test
-	public void shouldLogAndAvsluttBehandlingenWhenBestillerIdIsNotDokdistdittnav() {
-		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseTo());
-		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
-				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
-				.verdi(BESTILLINGSID)
-				.build())).thenReturn(finnForsendelseResponseTo());
-		when(administrerForsendelse.persisterForsendelse(any(PersisterForsendelseRequestTo.class))).thenReturn(PersisterForsendelseResponseTo.builder()
-				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
-				.build());
-
-		DoneEventRequest doneEventRequest = kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDPI, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID));
-
-		assertNull(doneEventRequest);
-	}
-
-	@Test
 	public void shouldLogAndAvsluttBehandlingenWhenNotifikasjonStatusErNotFeilet() {
 		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseTo());
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
@@ -97,9 +82,9 @@ class Kdist002ServiceTest {
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
 
-		DoneEventRequest doneEventRequest = kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDITTNAV, INFO.name(), DOKNOTIFIKASJON_BESTILLINGSID));
+		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDITTNAV, INFO.name(), DOKNOTIFIKASJON_BESTILLINGSID)));
 
-		assertNull(doneEventRequest);
+		assertNotNull(doneEventRequest);
 	}
 
 	@Test
@@ -113,9 +98,9 @@ class Kdist002ServiceTest {
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
 
-		DoneEventRequest doneEventRequest = kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDPI, INFO.name(), DOKNOTIFIKASJON_BESTILLINGSID));
+		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDPI, INFO.name(), DOKNOTIFIKASJON_BESTILLINGSID)));
 
-		assertNull(doneEventRequest);
+		assertNotNull(doneEventRequest);
 	}
 
 	@Test

@@ -24,7 +24,6 @@ import static java.lang.String.valueOf;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.KLAR_FOR_DIST;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatus.OPPRETTET;
-import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FEILET;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.assertNotBlank;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.assertNotNull;
 import static org.apache.commons.lang3.StringUtils.substring;
@@ -48,16 +47,12 @@ public class Kdist002Service {
 	@Handler
 	public DoneEventRequest sendForsendelse(DoknotifikasjonStatus doknotifikasjonStatus) {
 		log.info("Hentet doknotifikasjonstatus med bestillingsId={} og status={} fra topic={}.", doknotifikasjonStatus.getBestillingsId(), doknotifikasjonStatus.getStatus(), properties.getDoknotifikasjon().getStatustopic());
-		if (!isDittnavAndFeilStatus(doknotifikasjonStatus)) {
-			return null;
-		} else {
-			String oldBestillingsId = extractDokdistBestillingsId(doknotifikasjonStatus.getBestillingsId());
-			FinnForsendelseResponseTo finnForsendelse = finnForsendelse(oldBestillingsId);
-			validateFinnForsendelse(finnForsendelse);
-			HentForsendelseResponseTo hentForsendelseResponse = administrerForsendelse.hentForsendelse(finnForsendelse.getForsendelseId());
-			return (isOpprettetVarselStatus(hentForsendelseResponse)) ?
-					createNewAndFeilRegistrerOldForsendelse(finnForsendelse.getForsendelseId(), hentForsendelseResponse, doknotifikasjonStatus) : null;
-		}
+		String oldBestillingsId = extractDokdistBestillingsId(doknotifikasjonStatus.getBestillingsId());
+		FinnForsendelseResponseTo finnForsendelse = finnForsendelse(oldBestillingsId);
+		validateFinnForsendelse(finnForsendelse);
+		HentForsendelseResponseTo hentForsendelseResponse = administrerForsendelse.hentForsendelse(finnForsendelse.getForsendelseId());
+		return (isOpprettetVarselStatus(hentForsendelseResponse)) ?
+				createNewAndFeilRegistrerOldForsendelse(finnForsendelse.getForsendelseId(), hentForsendelseResponse, doknotifikasjonStatus) : null;
 	}
 
 	private FinnForsendelseResponseTo finnForsendelse(String bestillingsId) {
@@ -73,7 +68,7 @@ public class Kdist002Service {
 		PersisterForsendelseResponseTo persisterForsendelseResponse = administrerForsendelse.persisterForsendelse(request);
 		validateOppdaterForsendelse(persisterForsendelseResponse);
 		log.info("Opprettet ny forsendelse med forsendelseId={} i dokdist databasen.", persisterForsendelseResponse.getForsendelseId());
-		createFeilRegistrerForsendelse(oldForsendelseId, request, status);
+		feilregistrerForsendelse(oldForsendelseId, request, status);
 		log.info("Forsendelsen med forsendelseId={} er feilregistrert i dokdist databasen.", oldForsendelseId);
 		administrerForsendelse.oppdaterForsendelseStatus(valueOf(persisterForsendelseResponse.getForsendelseId()), KLAR_FOR_DIST.name());
 		return DoneEventRequest.builder()
@@ -83,7 +78,7 @@ public class Kdist002Service {
 				.build();
 	}
 
-	private void createFeilRegistrerForsendelse(String forsendelseId, PersisterForsendelseRequestTo request, DoknotifikasjonStatus status) {
+	private void feilregistrerForsendelse(String forsendelseId, PersisterForsendelseRequestTo request, DoknotifikasjonStatus status) {
 
 		administrerForsendelse.feilregistrerForsendelse(FeilRegistrerForsendelseRequest.builder()
 				.forsendelseId(forsendelseId)
@@ -101,10 +96,6 @@ public class Kdist002Service {
 
 	private String extractDokdistBestillingsId(String doknotifikasjonBestillingsId) {
 		return substring(doknotifikasjonBestillingsId, doknotifikasjonBestillingsId.length() - 36);
-	}
-
-	private boolean isDittnavAndFeilStatus(DoknotifikasjonStatus doknotifikasjonStatus) {
-		return properties.getAppnavn().equals(doknotifikasjonStatus.getBestillerId()) && FEILET.name().equals(doknotifikasjonStatus.getStatus());
 	}
 
 	private boolean isOpprettetVarselStatus(HentForsendelseResponseTo hentForsendelseResponse) {
