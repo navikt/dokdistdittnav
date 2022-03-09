@@ -141,7 +141,7 @@ public class BrukerNotifikasjonMapper {
 	private URL mapLink(String url, HentForsendelseResponseTo hentForsendelseResponse) {
 		try {
 			URI uri = UriComponentsBuilder.fromHttpUrl(url)
-					.path(hentForsendelseResponse.getTema() + "#" + hentForsendelseResponse.getArkivInformasjon().getArkivId())
+					.path(hentForsendelseResponse.getTema() + "/" + hentForsendelseResponse.getArkivInformasjon().getArkivId())
 					.build().toUri();
 
 			return uri.toURL();
