@@ -104,7 +104,7 @@ public class Kdist002Service {
 	}
 
 	private boolean isDittnavAndFeilStatus(DoknotifikasjonStatus doknotifikasjonStatus) {
-		return properties.getAppnavn().equals(doknotifikasjonStatus.getBestillerId()) && FEILET.name().equals(doknotifikasjonStatus.getStatus());
+		return properties.getAppnavn().equals(doknotifikasjonStatus.getBestillerId()) || FEILET.name().equals(doknotifikasjonStatus.getStatus());
 	}
 
 	private boolean isOpprettetVarselStatus(HentForsendelseResponseTo hentForsendelseResponse) {
