@@ -17,6 +17,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.TimeZone;
 
 import static java.lang.String.format;
@@ -28,12 +29,11 @@ import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_VIKTIG_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.VEDTAK_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.VIKTIG_TEKST;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VEDTAK;
-import static no.nav.dokdistdittnav.kafka.FunctionalUtils.classpathToString;
+import static no.nav.dokdistdittnav.utils.DokdistUtils.classpathToString;
 
 public class BrukerNotifikasjonMapper {
 
 	private static final String NAMESPACE = "teamdokumenthandtering";
-	private static final String APP_NAVN = "dokdistdittnav";
 	private static final String VEDTAK_PATH = "__files/vedtak_epostvarseltekst.html";
 	private static final String VIKTIG_PATH = "__files/viktig_epostvarseltekst.html";
 	private static final String BESKJED_PATH = "__files/melding_epostvarseltekst.html";
@@ -43,13 +43,23 @@ public class BrukerNotifikasjonMapper {
 	private static final TimeZone DEFAULT_TIME_ZONE = TimeZone.getTimeZone("Europe/Oslo");
 	private static final Integer SIKKEREHETSNIVAA = 4;
 
-	public NokkelInput mapNokkelIntern(String forsendelseId, HentForsendelseResponseTo hentForsendelseResponse) {
+	public NokkelInput mapNokkelIntern(String forsendelseId, String appnavn, HentForsendelseResponseTo hentForsendelseResponse) {
 		return new NokkelInputBuilder()
 				.withEventId(hentForsendelseResponse.getBestillingsId())
 				.withGrupperingsId(forsendelseId)
 				.withFodselsnummer(getMottakerId(hentForsendelseResponse))
 				.withNamespace(NAMESPACE)
-				.withAppnavn(APP_NAVN)
+				.withAppnavn(appnavn)
+				.build();
+	}
+
+	public NokkelInput mapNokkelForKdist002(DoneEventRequest doneEventRequest, String appnavn) {
+		return new NokkelInputBuilder()
+				.withEventId(doneEventRequest.getBestillingsId())
+				.withGrupperingsId(doneEventRequest.getForsendelseId())
+				.withFodselsnummer(doneEventRequest.getMottakerId())
+				.withNamespace(NAMESPACE)
+				.withAppnavn(appnavn)
 				.build();
 	}
 
@@ -81,7 +91,7 @@ public class BrukerNotifikasjonMapper {
 
 	public DoneInput mapDoneInput() {
 		return new DoneInputBuilder()
-				.withTidspunkt(LocalDateTime.now(DEFAULT_TIME_ZONE.toZoneId()))
+				.withTidspunkt(LocalDateTime.now(ZoneOffset.UTC))
 				.build();
 	}
 
@@ -91,7 +101,7 @@ public class BrukerNotifikasjonMapper {
 				return format(VEDTAK_TEKST, hentForsendelseResponse.getForsendelseTittel());
 			case VIKTIG:
 				return format(VIKTIG_TEKST, hentForsendelseResponse.getForsendelseTittel());
-			case ANNET:
+			case  ANNET:
 				break;
 		}
 		return null;
@@ -131,7 +141,7 @@ public class BrukerNotifikasjonMapper {
 	private URL mapLink(String url, HentForsendelseResponseTo hentForsendelseResponse) {
 		try {
 			URI uri = UriComponentsBuilder.fromHttpUrl(url)
-					.path(hentForsendelseResponse.getTema() + "#" + hentForsendelseResponse.getArkivInformasjon().getArkivId())
+					.path(hentForsendelseResponse.getTema() + "/" + hentForsendelseResponse.getArkivInformasjon().getArkivId())
 					.build().toUri();
 
 			return uri.toURL();

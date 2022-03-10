@@ -3,8 +3,8 @@ package no.nav.dokdistdittnav.config.jms;
 
 import com.ibm.mq.jms.MQConnectionFactory;
 import com.ibm.mq.jms.MQQueue;
-import no.nav.dokdistdittnav.config.alias.MqGatewayAlias;
-import no.nav.dokdistdittnav.config.alias.ServiceuserAlias;
+import no.nav.dokdistdittnav.config.properties.MqGatewayAlias;
+import no.nav.dokdistdittnav.config.properties.DokdistDittnavServiceuser;
 import org.apache.activemq.jms.pool.PooledConnectionFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -41,15 +41,20 @@ public class JmsConfig {
 	}
 
 	@Bean
+	public Queue qdist009(@Value("${dokdistsentralprint_qdist009_dist_s_print.queuename}") String qdist009QueueName) throws JMSException {
+		return new MQQueue(qdist009QueueName);
+	}
+
+	@Bean
 	public ConnectionFactory wmqConnectionFactory(final MqGatewayAlias mqGatewayAlias,
 												  final @Value("${dokdistdittnav_channel.name}") String channelName,
-												  final ServiceuserAlias serviceuserAlias) throws JMSException {
-		return createConnectionFactory(mqGatewayAlias, channelName, serviceuserAlias);
+												  final DokdistDittnavServiceuser dokdistDittnavServiceuser) throws JMSException {
+		return createConnectionFactory(mqGatewayAlias, channelName, dokdistDittnavServiceuser);
 	}
 
 	private PooledConnectionFactory createConnectionFactory(final MqGatewayAlias mqGatewayAlias,
 															final String channelName,
-															final ServiceuserAlias serviceuserAlias) throws JMSException {
+															final DokdistDittnavServiceuser dokdistDittnavServiceuser) throws JMSException {
 		MQConnectionFactory connectionFactory = new MQConnectionFactory();
 		connectionFactory.setHostName(mqGatewayAlias.getHostname());
 		connectionFactory.setPort(mqGatewayAlias.getPort());
@@ -63,8 +68,8 @@ public class JmsConfig {
 		adapter.setTargetConnectionFactory(connectionFactory);
 
 		// Konfigurasjon for IBM MQ broker med TLS og autorisasjon med serviceuser mot onpremise Active Directory.
-		adapter.setUsername(serviceuserAlias.getUsername());
-		adapter.setPassword(serviceuserAlias.getPassword());
+		adapter.setUsername(dokdistDittnavServiceuser.getUsername());
+		adapter.setPassword(dokdistDittnavServiceuser.getPassword());
 
 		PooledConnectionFactory pooledFactory = new PooledConnectionFactory();
 		pooledFactory.setConnectionFactory(adapter);

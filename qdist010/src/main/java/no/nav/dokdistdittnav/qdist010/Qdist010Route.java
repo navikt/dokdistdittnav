@@ -15,9 +15,13 @@ import javax.jms.Queue;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
+import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
+import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDELSE_ID;
+import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_JOURNALPOST_ID;
 import static no.nav.dokdistdittnav.constants.DomainConstants.SERVICE_ID;
 import static org.apache.camel.ExchangePattern.InOnly;
 import static org.apache.camel.LoggingLevel.ERROR;
+import static org.apache.camel.LoggingLevel.INFO;
 
 
 /**
@@ -25,10 +29,6 @@ import static org.apache.camel.LoggingLevel.ERROR;
  */
 @Component
 public class Qdist010Route extends RouteBuilder {
-
-	static final String PROPERTY_BESTILLINGS_ID = "bestillingsId";
-	static final String PROPERTY_FORSENDELSE_ID = "forsendelseId";
-	static final String PROPERTY_JOURNALPOST_ID = "journalpostId";
 
 	private final ProdusentNotifikasjon produsentNotifikasjon;
 	private final DokdistStatusUpdater dokdistStatusUpdater;
@@ -69,7 +69,7 @@ public class Qdist010Route extends RouteBuilder {
 				.setExchangePattern(InOnly)
 				.routePolicy(qdist010MetricsRoutePolicy)
 				.process(new IdsProcessor())
-				.log(LoggingLevel.INFO, log, "qdist010 har mottatt forsendelse med forsendelseId=${exchangeProperty." + PROPERTY_FORSENDELSE_ID + "}")
+				.log(INFO, log, "qdist010 har mottatt forsendelse med forsendelseId=${exchangeProperty." + PROPERTY_FORSENDELSE_ID + "}")
 				.to("validator:no/nav/meldinger/virksomhet/dokdistfordeling/xsd/qdist008/out/distribuertilkanal.xsd")
 				.unmarshal(new JaxbDataFormat(JAXBContext.newInstance(DistribuerTilKanal.class)))
 				.process(exchange -> {
@@ -77,9 +77,9 @@ public class Qdist010Route extends RouteBuilder {
 					exchange.setProperty(PROPERTY_FORSENDELSE_ID, distribuerTilKanal.getForsendelseId());
 				})
 				.bean(produsentNotifikasjon)
-				.log(LoggingLevel.INFO, log, "qdist010 har sendt notifikasjon for forsendelse med " + getIdsForLogging())
+				.log(INFO, log, "qdist010 har sendt notifikasjon for forsendelse med " + getIdsForLogging())
 				.bean(dokdistStatusUpdater)
-				.log(LoggingLevel.INFO, log, "qdist010 har sendt varsel og oppdatert forsendelseStatus=EKSPEDERT og varselStatus=OPPRETTET i dokdistDb for forsendelse med " + getIdsForLogging());
+				.log(INFO, log, "qdist010 har sendt varsel og oppdatert forsendelseStatus=EKSPEDERT og varselStatus=OPPRETTET i dokdistDb for forsendelse med " + getIdsForLogging());
 	}
 
 	public static String getIdsForLogging() {

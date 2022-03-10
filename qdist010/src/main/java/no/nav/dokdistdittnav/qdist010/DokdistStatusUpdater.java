@@ -5,9 +5,9 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Handler;
 import org.springframework.stereotype.Component;
 
-import static no.nav.dokdistdittnav.constants.DomainConstants.FORSENDELSE_STATUS_EKSPEDERT;
+import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDELSE_ID;
+import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.EKSPEDERT;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatus.OPPRETTET;
-import static no.nav.dokdistdittnav.qdist010.Qdist010Route.PROPERTY_FORSENDELSE_ID;
 
 /**
  * @author Sigurd Midttun, Visma Consulting.
@@ -24,6 +24,6 @@ public class DokdistStatusUpdater {
 	@Handler
 	public void doUpdate(Exchange exchange) {
 		final String forsendelseId = exchange.getProperty(PROPERTY_FORSENDELSE_ID, String.class);
-		administrerForsendelse.oppdaterForsendelseStatus(forsendelseId, FORSENDELSE_STATUS_EKSPEDERT, OPPRETTET.name());
+		administrerForsendelse.oppdaterForsendelseAndVarselStatus(forsendelseId, EKSPEDERT.name(), OPPRETTET.name());
 	}
 }

@@ -6,6 +6,7 @@ import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.dokdistdittnav.kdist001.itest.config.ApplicationTestConfig;
 import no.nav.safselvbetjening.schemas.HoveddokumentLest;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -47,7 +48,6 @@ public class Kdist001ITest extends ApplicationTestConfig {
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json", FORSENDELSE_ID, OK.value());
 		stubPutOppdaterForsendelse(FERDIGSTILT.name(), FORSENDELSE_ID, OK.value());
-
 
 		HoveddokumentLest hoveddokumentLest = HoveddokumentLest.newBuilder()
 				.setDokumentInfoId(DOKUMENTINFO_ID)
@@ -116,6 +116,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 				.willReturn(aResponse().withStatus(httpStatusvalue)));
 
 	}
+
 	private void putMessageOnKafkaTopic(HoveddokumentLest hoveddokumentLest) {
 		kafkaEventProducer.publish(
 				"privat-dokdistdittnav-lestavmottaker", "key",

@@ -1,4 +1,4 @@
-package no.nav.dokdistdittnav.config.alias;
+package no.nav.dokdistdittnav.config.properties;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -11,8 +11,10 @@ import javax.validation.constraints.NotNull;
 @ConfigurationProperties(prefix = "dokdistdittnav")
 public class DokdistdittnavProperties {
 
+	private String appnavn;
 	private final Topic topic = new Topic();
 	private final Brukernotifikasjon brukernotifikasjon = new Brukernotifikasjon();
+	private final Doknotifikasjon doknotifikasjon = new Doknotifikasjon();
 
 	@Data
 	@Validated
@@ -32,5 +34,12 @@ public class DokdistdittnavProperties {
 		private String topicdone;
 		@NotNull
 		private String link;
+	}
+
+	@Data
+	@Validated
+	public static class Doknotifikasjon {
+		@NotNull
+		private String statustopic;
 	}
 }

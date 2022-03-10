@@ -1,4 +1,4 @@
-package no.nav.dokdistdittnav.config.alias;
+package no.nav.dokdistdittnav.config.properties;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -16,7 +16,7 @@ import javax.validation.constraints.NotEmpty;
 @ToString
 @ConfigurationProperties("serviceuser")
 @Validated
-public class ServiceuserAlias {
+public class DokdistDittnavServiceuser {
 	@NotEmpty
 	private String username;
 	@NotEmpty

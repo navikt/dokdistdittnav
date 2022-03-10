@@ -5,15 +5,16 @@ package no.nav.dokdistdittnav.constants;
  */
 public class DomainConstants {
 
-	public static final String DOK_KDOK001_CONSUMER = "dok_kdok011_lestavmottaker";
-
 	public static final String SERVICE_ID = "qdist010";
+	public static final String KDIST002_ID = "kdist002";
+	public static final String KDIST001_ID = "kdist001";
 	public static final String FORSENDELSE_STATUS_EKSPEDERT = "EKSPEDERT";
 	public static final String KANAL_DITTNAV = "DITTNAV";
 	public static final String HOVEDDOKUMENT = "HOVEDDOKUMENT";
 
-	public static final String JOURNALPOST_ID = "journalpostId";
-	public static final String BESTILLING_ID = "bestillingsId";
+	public static final String PROPERTY_JOURNALPOST_ID = "journalpostId";
+	public static final String PROPERTY_BESTILLINGS_ID = "bestillingsId";
+	public static final String PROPERTY_FORSENDELSE_ID = "forsendelseId";
 
 	public static final String VEDTAK_TEKST = "Du har fått et vedtak som gjelder %s. Les vedtaket i mine saker.";
 	public static final String SMS_VEDTAK_TEKST = "Hei! Du har fått et vedtak fra NAV. Logg inn på nav.no for å lese det. Vennlig hilsen NAV";

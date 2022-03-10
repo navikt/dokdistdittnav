@@ -1,7 +1,8 @@
 package no.nav.dokdistdittnav.kdist001;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.dokdistdittnav.config.alias.DokdistdittnavProperties;
+import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
+import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
@@ -9,8 +10,11 @@ import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
 import no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.safselvbetjening.schemas.HoveddokumentLest;
+import org.apache.camel.Handler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Objects;
 
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
@@ -41,23 +45,30 @@ public class Ferdigprodusent {
 		this.mapper = new BrukerNotifikasjonMapper();
 	}
 
+	@Handler
 	public void updateVarselStatus(HoveddokumentLest hoveddokumentLest) {
+		log.info("Mottatt hoveddokumentLest med journalpostId={}, dokumentInfoId={}.", hoveddokumentLest.getJournalpostId(), hoveddokumentLest.getJournalpostId());
 
 		FinnForsendelseResponseTo finnForsendelseResponse = administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
 				.oppslagsNoekkel(JOURNALPOSTID)
 				.verdi(hoveddokumentLest.getJournalpostId())
 				.build());
 
-		HentForsendelseResponseTo hentForsendelseResponse = administrerForsendelse.hentForsendelse(requireNonNull(finnForsendelseResponse.getForsendelseId(), format("Fant ikke forsendelse med journalpostId=%s", hoveddokumentLest.getJournalpostId())));
+		if (nonNull(finnForsendelseResponse) && nonNull(finnForsendelseResponse.getForsendelseId())) {
 
-		if (isNull(hentForsendelseResponse.getDokumenter()) || !isHovedDokument(hentForsendelseResponse, hoveddokumentLest)) {
-			log.error("Fant ikke forsendelse med forsendelseId={}", finnForsendelseResponse.getForsendelseId());
-		}
+			HentForsendelseResponseTo hentForsendelseResponse = administrerForsendelse.hentForsendelse(requireNonNull(finnForsendelseResponse.getForsendelseId(), format("Fant ikke forsendelse med journalpostId=%s", hoveddokumentLest.getJournalpostId())));
+			log.info("Hentet forsendelse med forsendelseId={} og bestillingsId={} fra dokdist databasen.", finnForsendelseResponse.getForsendelseId(), hentForsendelseResponse.getBestillingsId());
 
-		if (nonNull(hentForsendelseResponse) && isValidForsendelse(hentForsendelseResponse, hoveddokumentLest)) {
-			kafkaEventProducer.publish(dokdistdittnavProperties.getBrukernotifikasjon().getTopicdone(), mapper.mapNokkelIntern(finnForsendelseResponse.getForsendelseId(), hentForsendelseResponse), mapper.mapDoneInput());
-			administrerForsendelse.oppdaterForsendelseStatus(finnForsendelseResponse.getForsendelseId(), null, FERDIGSTILT.name());
-			log.info("Oppdatert forsendelse med forsendelseId={} til varselStatus={}", finnForsendelseResponse.getForsendelseId(), FERDIGSTILT);
+			if (isNull(hentForsendelseResponse.getDokumenter()) || !isHovedDokument(hentForsendelseResponse, hoveddokumentLest)) {
+				log.warn("Fant ikke forsendelse med forsendelseId={}", finnForsendelseResponse.getForsendelseId());
+			}
+
+			if (nonNull(hentForsendelseResponse) && isValidForsendelse(hentForsendelseResponse, hoveddokumentLest)) {
+				NokkelInput nokkelInput = mapper.mapNokkelIntern(finnForsendelseResponse.getForsendelseId(), dokdistdittnavProperties.getAppnavn(), hentForsendelseResponse);
+				kafkaEventProducer.publish(dokdistdittnavProperties.getBrukernotifikasjon().getTopicdone(), nokkelInput, mapper.mapDoneInput());
+				administrerForsendelse.oppdaterVarselStatus(finnForsendelseResponse.getForsendelseId(), FERDIGSTILT.name());
+				log.info("Oppdatert forsendelse med forsendelseId={} til varselStatus={}", finnForsendelseResponse.getForsendelseId(), FERDIGSTILT);
+			}
 		}
 
 	}
