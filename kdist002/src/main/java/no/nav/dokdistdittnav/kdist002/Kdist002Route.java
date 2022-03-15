@@ -45,17 +45,15 @@ public class Kdist002Route extends RouteBuilder {
 	private final DokdistdittnavProperties dittnavProperties;
 	private final Queue qdist009;
 	private final BrukerNotifikasjonMapper brukerNotifikasjonMapper;
-	private final DoneEventProducer doneEventProducer;
 
 	@Autowired
 	public Kdist002Route(CamelKafkaProperties camelKafkaProperties, Kdist002Service kdist002Service,
-						 DokdistdittnavProperties dittnavProperties, Queue qdist009, DoneEventProducer doneEventProducer) {
+						 DokdistdittnavProperties dittnavProperties, Queue qdist009) {
 		this.camelKafkaProperties = camelKafkaProperties;
 		this.kdist002Service = kdist002Service;
 		this.dittnavProperties = dittnavProperties;
 		this.qdist009 = qdist009;
 		this.brukerNotifikasjonMapper = new BrukerNotifikasjonMapper();
-		this.doneEventProducer = doneEventProducer;
 	}
 
 	@Override
@@ -106,12 +104,12 @@ public class Kdist002Route extends RouteBuilder {
 							DoneEventRequest doneEventRequest = exchange.getIn().getBody(DoneEventRequest.class);
 							exchange.setProperty(PROPERTY_FORSENDELSE_ID, doneEventRequest.getForsendelseId());
 							exchange.setProperty(PROPERTY_BESTILLINGS_ID, doneEventRequest.getBestillingsId());
-							defaultKafkaManualCommit(exchange, COMMIT_MELDING);
 						})
-						.multicast().parallelProcessing()
+						.multicast()
 						.to("direct:" + QDIST009)
 						.to("direct:" + DONE_EVENT)
-				.end();
+				.end()
+				.process(exchange -> defaultKafkaManualCommit(exchange, COMMIT_MELDING));
 
 		from("direct:" + QDIST009)
 				.id(QDIST009)
