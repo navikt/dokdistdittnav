@@ -17,6 +17,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.TimeZone;
 
@@ -65,7 +66,7 @@ public class BrukerNotifikasjonMapper {
 
 	public BeskjedInput mapBeskjedIntern(String url, HentForsendelseResponseTo hentForsendelseResponse) {
 		return new BeskjedInputBuilder()
-				.withTidspunkt(LocalDateTime.now(DEFAULT_TIME_ZONE.toZoneId()))
+				.withTidspunkt(LocalDateTime.now(ZoneId.of("UTC")))
 				.withTekst(format(BESKJED_TEKST, hentForsendelseResponse.getForsendelseTittel()))
 				.withLink(mapLink(url, hentForsendelseResponse))
 				.withEksternVarsling(true)
@@ -78,7 +79,7 @@ public class BrukerNotifikasjonMapper {
 
 	public OppgaveInput oppretteOppgave(String url, HentForsendelseResponseTo hentForsendelseResponse) {
 		return new OppgaveInputBuilder()
-				.withTidspunkt(LocalDateTime.now(DEFAULT_TIME_ZONE.toZoneId()))
+				.withTidspunkt(LocalDateTime.now(ZoneId.of("UTC")))
 				.withTekst(getTekst(hentForsendelseResponse))
 				.withLink(mapLink(url, hentForsendelseResponse))
 				.withEksternVarsling(true)
