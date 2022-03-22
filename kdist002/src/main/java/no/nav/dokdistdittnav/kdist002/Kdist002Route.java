@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistdittnav.config.kafka.CamelKafkaProperties;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
-import no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper;
 import no.nav.dokdistdittnav.kafka.DoneEventRequest;
 import no.nav.dokdistdittnav.utils.MDCProcessor;
 import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKanal;
@@ -12,7 +11,6 @@ import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.kafka.DefaultKafkaManualCommit;
-import org.apache.camel.component.kafka.KafkaConstants;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -44,16 +42,16 @@ public class Kdist002Route extends RouteBuilder {
 	private final Kdist002Service kdist002Service;
 	private final DokdistdittnavProperties dittnavProperties;
 	private final Queue qdist009;
-	private final BrukerNotifikasjonMapper brukerNotifikasjonMapper;
+	private final DoneEventProducer doneEventProducer;
 
 	@Autowired
 	public Kdist002Route(CamelKafkaProperties camelKafkaProperties, Kdist002Service kdist002Service,
-						 DokdistdittnavProperties dittnavProperties, Queue qdist009) {
+						 DokdistdittnavProperties dittnavProperties, Queue qdist009, DoneEventProducer doneEventProducer) {
 		this.camelKafkaProperties = camelKafkaProperties;
 		this.kdist002Service = kdist002Service;
 		this.dittnavProperties = dittnavProperties;
 		this.qdist009 = qdist009;
-		this.brukerNotifikasjonMapper = new BrukerNotifikasjonMapper();
+		this.doneEventProducer = doneEventProducer;
 	}
 
 	@Override
@@ -127,14 +125,7 @@ public class Kdist002Route extends RouteBuilder {
 
 		from("direct:" + DONE_EVENT)
 				.id(DONE_EVENT)
-				.process(exchange -> {
-					new MDCProcessor();
-					DoneEventRequest doneEventRequest = exchange.getIn().getBody(DoneEventRequest.class);
-					exchange.getIn().setHeader(KafkaConstants.KEY, brukerNotifikasjonMapper.mapNokkelForKdist002(doneEventRequest, dittnavProperties.getAppnavn()));
-					exchange.getIn().setBody(brukerNotifikasjonMapper.mapDoneInput());
-				})
-				.to(camelKafkaProperties.buildKafkaUrl(dittnavProperties.getBrukernotifikasjon().getTopicdone(),
-						camelKafkaProperties.kafkaProducer()))
+				.bean(doneEventProducer)
 				.log(INFO, "Kdist002 skrevet hendelse med " + getIdsForLogging() + " til topic=" + dittnavProperties.getBrukernotifikasjon().getTopicdone())
 				.end();
 	}

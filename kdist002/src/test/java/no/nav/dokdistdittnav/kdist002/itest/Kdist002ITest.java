@@ -121,7 +121,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-forsendelsestatus-feilet.json", FORSENDELSE_ID, OK.value());
 
-		await().pollInterval(50000, MILLISECONDS).atMost(100, SECONDS).untilAsserted(() -> {
+		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
 			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
 			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
 		});
