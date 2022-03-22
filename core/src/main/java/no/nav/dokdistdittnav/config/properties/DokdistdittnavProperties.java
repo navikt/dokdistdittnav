@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 @ConfigurationProperties(prefix = "dokdistdittnav")
 public class DokdistdittnavProperties {
 
+	private boolean autostartup;
 	private String appnavn;
 	private final Topic topic = new Topic();
 	private final Brukernotifikasjon brukernotifikasjon = new Brukernotifikasjon();

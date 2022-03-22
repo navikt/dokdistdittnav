@@ -72,3 +72,5 @@ spec:
     paths:
       - kvPath: {{ SRVDOKDISTDITTNAV }}
         mountPath: /var/run/secrets/nais.io/srvdokdistdittnav
+      - kvPath: {{ DOKDISTDITTNAV_VAULT }}
+        mountPath: "/var/run/secrets/nais.io/vault"

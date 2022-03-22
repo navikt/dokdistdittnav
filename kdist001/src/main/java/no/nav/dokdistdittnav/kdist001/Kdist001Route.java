@@ -67,11 +67,10 @@ public class Kdist001Route extends RouteBuilder {
 
 
 		from(camelKafkaProperties.buildKafkaUrl(dokdistdittnavProperties.getTopic().getLestavmottaker(), camelKafkaProperties.kafkaConsumer()))
+				.autoStartup(dokdistdittnavProperties.isAutostartup())
 				.id(KDIST001_ID)
 				.process(new MDCProcessor())
-				.process(exchange -> {
-					log.info("Kdist001 mottatt " + defaultKafkaManualCommit(exchange));
-				})
+				.process(exchange -> log.info("Kdist001 mottatt " + defaultKafkaManualCommit(exchange)))
 				.bean(ferdigprodusent)
 				.process(exchange -> {
 					DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
