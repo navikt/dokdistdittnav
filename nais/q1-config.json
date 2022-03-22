@@ -14,6 +14,7 @@
 	"DOKDISTDITTNAV_QDIST010_DIST_DITT_NAV_QUEUENAME": "QA.Q1_DOKDISTDITTNAV.QDIST010_DIST_DITT_NAV",
 	"DOKDISTSENTRALPRINT_QDIST009_DIST_S_PRINT_QUEUENAME": "QA.Q1_DOKDISTSENTRALPRINT.QDIST009_DIST_S_PRINT",
 	"SRVDOKDISTDITTNAV": "/serviceuser/data/dev/srvdokdistdittnav",
+	"DOKDISTDITTNAV_VAULT": "/kv/preprod/fss/dokdistdittnav/teamdokumenthandtering",
 	"NAMESPACE": "teamdokumenthandtering",
 	"APPNAVN": "dokdistdittnav",
 	"KAFKA_POOL": "nav-dev",
