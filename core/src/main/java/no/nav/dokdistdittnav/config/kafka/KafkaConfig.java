@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @EnableConfigurationProperties(KafkaProperties.class)
 @Configuration
@@ -13,7 +13,7 @@ public class KafkaConfig {
 
 	private final KafkaProperties properties;
 
-	@Inject
+	@Autowired
 	public KafkaConfig(KafkaProperties properties) {
 		this.properties = properties;
 	}

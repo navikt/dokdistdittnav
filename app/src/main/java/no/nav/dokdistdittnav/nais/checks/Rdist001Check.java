@@ -12,7 +12,8 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import javax.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.time.Duration;
 
 /**
@@ -23,7 +24,7 @@ public class Rdist001Check extends AbstractDependencyCheck {
 
 	private final RestTemplate restTemplate;
 
-	@Inject
+	@Autowired
 	public Rdist001Check(MeterRegistry meterRegistry,
 						 @Value("${administrerforsendelse.v1.url}") String administrerforsendelseV1Url,
 						 RestTemplateBuilder restTemplateBuilder,

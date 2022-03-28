@@ -30,7 +30,6 @@
 		<camel.version>3.14.0</camel.version>
 		<teamdokumenthandtering-avro-schemas.version>96ec5ebb</teamdokumenthandtering-avro-schemas.version>
 		<doknotifikasjon-schemas-version>1.2021.06.22-11.27-265ce1fe1ab4</doknotifikasjon-schemas-version>
-		<javax.inject.version>1</javax.inject.version>
 		<logstash-logback-encoder.version>7.0.1</logstash-logback-encoder.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
 		<wmq.version>9.2.4.0</wmq.version>
@@ -109,11 +108,6 @@
 				<groupId>org.apache.avro</groupId>
 				<artifactId>avro</artifactId>
 				<version>${avro.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>javax.inject</groupId>
-				<artifactId>javax.inject</artifactId>
-				<version>${javax.inject.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>net.logstash.logback</groupId>

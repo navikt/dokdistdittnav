@@ -17,6 +17,7 @@ import no.nav.dokdistdittnav.exception.technical.Rdist001HentForsendelseTechnica
 import no.nav.dokdistdittnav.exception.technical.Rdist001OppdaterForsendelseStatusTechnicalException;
 import no.nav.dokdistdittnav.metrics.Monitor;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -32,7 +33,6 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.inject.Inject;
 import java.time.Duration;
 
 import static java.lang.String.format;
@@ -57,7 +57,7 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 	private final String administrerforsendelseV1Url;
 	private final RestTemplate restTemplate;
 
-	@Inject
+	@Autowired
 	public AdministrerForsendelseConsumer(@Value("${administrerforsendelse.v1.url}") String administrerforsendelseV1Url,
 										  RestTemplateBuilder restTemplateBuilder,
 										  final DokdistDittnavServiceuser dittnavServiceuser) {
@@ -76,7 +76,7 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 		try {
 			HttpEntity<?> entity = new HttpEntity<>(createHeaders());
 			HentForsendelseResponseTo forsendelse = restTemplate.exchange(this.administrerforsendelseV1Url + "/" + forsendelseId, HttpMethod.GET, entity, HentForsendelseResponseTo.class)
-							.getBody();
+					.getBody();
 
 			if (isNull(forsendelse) || isNull(forsendelse.getArkivInformasjon())) {
 				throw new Rdist001HentForsendelseFunctionalException("Kall mot rdist001 - hentForsendelse returnerte forsendelse uten ArkivInformasjon");
