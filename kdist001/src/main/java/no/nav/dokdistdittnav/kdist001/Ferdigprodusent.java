@@ -44,7 +44,7 @@ public class Ferdigprodusent {
 
 	@Handler
 	public void updateVarselStatus(HoveddokumentLest hoveddokumentLest) {
-		log.info("Mottatt hoveddokumentLest med journalpostId={}, dokumentInfoId={}.", hoveddokumentLest.getJournalpostId(), hoveddokumentLest.getJournalpostId());
+		log.info("Mottatt hoveddokumentLest med journalpostId={}, dokumentInfoId={}.", hoveddokumentLest.getJournalpostId(), hoveddokumentLest.getDokumentInfoId());
 
 		FinnForsendelseResponseTo finnForsendelseResponse = administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
 				.oppslagsNoekkel(JOURNALPOSTID)
