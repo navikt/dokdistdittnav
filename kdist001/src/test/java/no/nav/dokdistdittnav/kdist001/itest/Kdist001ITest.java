@@ -6,7 +6,6 @@ import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.dokdistdittnav.kdist001.itest.config.ApplicationTestConfig;
 import no.nav.safselvbetjening.schemas.HoveddokumentLest;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -29,6 +28,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatus.FERDIGSTILT;
 import static org.awaitility.Awaitility.await;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.OK;
 
 @ActiveProfiles("itest")
@@ -90,6 +90,24 @@ public class Kdist001ITest extends ApplicationTestConfig {
 				.setJournalpostId(JOURNALPOST_ID)
 				.build();
 
+		putMessageOnKafkaTopic(hoveddokumentLest);
+
+		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
+			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?journalpostId=" + JOURNALPOST_ID)));
+			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+		});
+	}
+
+	@Test
+	public void hentForsendelseWithNullRekkefølgeThrowsException() {
+		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
+		stubGetHentForsendelse("__files/rdist001/hentForsendelse_rekkefølge_feil.json", FORSENDELSE_ID, INTERNAL_SERVER_ERROR.value());
+		stubPutOppdaterForsendelse(FERDIGSTILT.name(), FORSENDELSE_ID, OK.value());
+
+		HoveddokumentLest hoveddokumentLest = HoveddokumentLest.newBuilder()
+				.setDokumentInfoId(DOKUMENTINFO_ID)
+				.setJournalpostId(JOURNALPOST_ID)
+				.build();
 		putMessageOnKafkaTopic(hoveddokumentLest);
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
