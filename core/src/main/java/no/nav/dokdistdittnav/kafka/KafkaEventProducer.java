@@ -13,7 +13,8 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.concurrent.ExecutionException;
 
 import static java.lang.Integer.MAX_VALUE;
@@ -28,7 +29,7 @@ public class KafkaEventProducer {
 
 	private final KafkaTemplate<Object, Object> kafkaTemplate;
 
-	@Inject
+	@Autowired
 	KafkaEventProducer(@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") KafkaTemplate<Object, Object> kafkaTemplate) {
 		this.kafkaTemplate = kafkaTemplate;
 	}

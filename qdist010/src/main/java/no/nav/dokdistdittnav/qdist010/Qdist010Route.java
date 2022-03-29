@@ -10,7 +10,8 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import javax.jms.Queue;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -36,7 +37,7 @@ public class Qdist010Route extends RouteBuilder {
 	private final Queue qdist010FunksjonellFeil;
 	private final Qdist010MetricsRoutePolicy qdist010MetricsRoutePolicy;
 
-	@Inject
+	@Autowired
 	public Qdist010Route(ProdusentNotifikasjon produsentNotifikasjon,
 						 DokdistStatusUpdater dokdistStatusUpdater,
 						 Queue qdist010,

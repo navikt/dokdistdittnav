@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
-import javax.inject.Inject;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Queue;
@@ -47,13 +46,13 @@ class Qdist010IT extends ApplicationTestConfig {
 	@Autowired
 	private JmsTemplate jmsTemplate;
 
-	@Inject
+	@Autowired
 	private Queue qdist010;
 
-	@Inject
+	@Autowired
 	private Queue qdist010FunksjonellFeil;
 
-	@Inject
+	@Autowired
 	private Queue backoutQueue;
 
 	@BeforeEach

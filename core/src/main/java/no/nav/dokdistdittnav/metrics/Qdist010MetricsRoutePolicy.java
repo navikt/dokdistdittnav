@@ -9,7 +9,8 @@ import org.apache.camel.ValidationException;
 import org.apache.camel.support.RoutePolicySupport;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import javax.xml.bind.JAXBException;
 
 import static no.nav.dokdistdittnav.constants.DomainConstants.SERVICE_ID;
@@ -27,7 +28,7 @@ public class Qdist010MetricsRoutePolicy extends RoutePolicySupport {
 	private static final String QDIST010_PROCESS_TIMER_DESCRIPTION = "prosesseringstid for kall inn til qdist010";
 	private static final String QDIST010_EXCEPTION = "request_exception_total";
 
-	@Inject
+	@Autowired
 	public Qdist010MetricsRoutePolicy(MeterRegistry registry) {
 		this.registry = registry;
 	}

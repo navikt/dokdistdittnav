@@ -3,7 +3,6 @@ package no.nav.dokdistdittnav.kdist002.itest;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.dokdistdittnav.kdist002.itest.config.ApplicationTestConfig;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -11,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
-import javax.inject.Inject;
 import javax.jms.Queue;
 import javax.xml.bind.JAXBElement;
 
@@ -52,10 +50,10 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	@Autowired
 	private KafkaEventProducer kafkaEventProducer;
 
-	@Inject
+	@Autowired
 	private Queue qdist009;
 
-	@Inject
+	@Autowired
 	private JmsTemplate jmsTemplate;
 
 	@Test

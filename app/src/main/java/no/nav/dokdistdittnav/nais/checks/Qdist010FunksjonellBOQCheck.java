@@ -8,7 +8,8 @@ import no.nav.dokdistdittnav.nais.selftest.Importance;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import javax.jms.JMSException;
 import javax.jms.Queue;
 
@@ -18,7 +19,7 @@ public class Qdist010FunksjonellBOQCheck extends AbstractDependencyCheck {
 	private final Queue qdist010FunksjonellFeil;
 	private final JmsTemplate jmsTemplate;
 
-	@Inject
+	@Autowired
 	public Qdist010FunksjonellBOQCheck(MeterRegistry registry, Queue qdist010FunksjonellFeil, JmsTemplate jmsTemplate) throws JMSException {
 		super(DependencyType.QUEUE, "qdist010FunksjonellFeilQueue", qdist010FunksjonellFeil.getQueueName(), Importance.CRITICAL, registry);
 		this.qdist010FunksjonellFeil = qdist010FunksjonellFeil;
