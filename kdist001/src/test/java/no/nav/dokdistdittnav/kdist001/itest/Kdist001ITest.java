@@ -28,7 +28,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatus.FERDIGSTILT;
 import static org.awaitility.Awaitility.await;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 @ActiveProfiles("itest")
@@ -99,9 +99,9 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	}
 
 	@Test
-	public void hentForsendelseWithNullRekkefølgeThrowsException() {
+	public void hentForsendelseWithNullRekkefølgeReturnNoContent() {
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
-		stubGetHentForsendelse("__files/rdist001/hentForsendelse_rekkefølge_feil.json", FORSENDELSE_ID, INTERNAL_SERVER_ERROR.value());
+		stubGetHentForsendelse("__files/rdist001/hentForsendelse_rekkefølge_feil.json", FORSENDELSE_ID, NO_CONTENT.value());
 		stubPutOppdaterForsendelse(FERDIGSTILT.name(), FORSENDELSE_ID, OK.value());
 
 		HoveddokumentLest hoveddokumentLest = HoveddokumentLest.newBuilder()

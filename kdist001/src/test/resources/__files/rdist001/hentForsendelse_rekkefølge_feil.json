@@ -1,7 +1,0 @@
-{
-  "timestamp": "2022-03-28T20:17:54.831",
-  "status": 500,
-  "error": "Internal Server Error",
-  "message": "Kan ikke bestemme rekkefølge på returnerte dokumenter: Dokument med dokumentReferanseId har rekkefølge=null",
-  "path": "/rest/v1/administrerforsendelse/566577"
-}
