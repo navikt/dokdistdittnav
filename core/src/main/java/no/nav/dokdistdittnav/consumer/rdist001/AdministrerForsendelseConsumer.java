@@ -36,7 +36,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.time.Duration;
 
 import static java.lang.String.format;
-import static java.util.Objects.isNull;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDELSE_ID;
 import static no.nav.dokdistdittnav.constants.MdcConstants.CALL_ID;
 import static no.nav.dokdistdittnav.constants.MdcConstants.DOK_CONSUMER;
@@ -46,7 +45,6 @@ import static no.nav.dokdistdittnav.constants.RetryConstants.MAX_ATTEMPTS_SHORT;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 /**
  * @author Sigurd Midttun, Visma Consulting.
@@ -54,8 +52,7 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 @Slf4j
 @Component
 public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
-
-	private static final String REKKEFØLGE_FEILMELDING = "Dokument med dokumentReferanseId har rekkefølge=null";
+	
 	private final String administrerforsendelseV1Url;
 	private final RestTemplate restTemplate;
 
@@ -79,18 +76,11 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 			HttpEntity<?> entity = new HttpEntity<>(createHeaders());
 			HentForsendelseResponseTo forsendelse = restTemplate.exchange(this.administrerforsendelseV1Url + "/" + forsendelseId, HttpMethod.GET, entity, HentForsendelseResponseTo.class)
 					.getBody();
-
-			if (isNull(forsendelse) || isNull(forsendelse.getArkivInformasjon())) {
-				throw new Rdist001HentForsendelseFunctionalException("Kall mot rdist001 - hentForsendelse returnerte forsendelse uten ArkivInformasjon");
-			}
 			return forsendelse;
 		} catch (HttpClientErrorException e) {
 			throw new Rdist001HentForsendelseFunctionalException(format("Kall mot rdist001 - hentForsendelse feilet funksjonelt med statusKode=%s, feilmelding=%s", e
 					.getStatusCode(), e.getMessage()), e);
 		} catch (HttpServerErrorException e) {
-			if (INTERNAL_SERVER_ERROR.equals(e.getStatusCode()) && e.getMessage().contains(REKKEFØLGE_FEILMELDING)) {
-				return null;
-			}
 			throw new Rdist001HentForsendelseTechnicalException(format("Kall mot rdist001 - hentForsendelse feilet teknisk med statusKode=%s, feilmelding=%s", e
 					.getStatusCode(), e.getMessage()), e);
 		}
