@@ -45,7 +45,7 @@ public class ProdusentNotifikasjon {
 		this.administrerForsendelse = administrerForsendelse;
 		this.brukerNotifikasjonMapper = new BrukerNotifikasjonMapper();
 		this.properties = properties;
-		this.kjernetidStart = LocalTime.parse("10:00:00");
+		this.kjernetidStart = LocalTime.parse("07:00:00");
 		this.kjernetidSlutt = LocalTime.parse("23:00:00");
 	}
 
@@ -83,7 +83,7 @@ public class ProdusentNotifikasjon {
 
 	private boolean innenKjernetid(DistribusjonstidspunktKode distribusjonstidspunkt) {
 		if (distribusjonstidspunkt == null || distribusjonstidspunkt.equals(DistribusjonstidspunktKode.UMIDDELBART)) {
-			return false;
+			return true;
 		}
 		LocalTime tid = LocalTime.now();
 		return (tid.isAfter(kjernetidStart) && tid.isBefore(kjernetidSlutt));
