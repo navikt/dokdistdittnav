@@ -1,6 +1,7 @@
 package no.nav.dokdistdittnav.qdist010;
 
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
+import no.nav.dokdistdittnav.exception.functional.UtenforKjernetidFunctionalException;
 import no.nav.dokdistdittnav.metrics.Qdist010MetricsRoutePolicy;
 import no.nav.dokdistdittnav.qdist010.brukernotifikasjon.ProdusentNotifikasjon;
 import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKanal;
@@ -8,9 +9,8 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.ValidationException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
-import org.springframework.stereotype.Component;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.jms.Queue;
 import javax.xml.bind.JAXBContext;
@@ -59,6 +59,12 @@ public class Qdist010Route extends RouteBuilder {
 				.loggingLevel(ERROR));
 
 		onException(AbstractDokdistdittnavFunctionalException.class, JAXBException.class, ValidationException.class)
+				.handled(true)
+				.useOriginalMessage()
+				.log(LoggingLevel.WARN, log, "${exception}; " + getIdsForLogging())
+				.to("jms:" + qdist010FunksjonellFeil.getQueueName());
+
+		onException(UtenforKjernetidFunctionalException.class)
 				.handled(true)
 				.useOriginalMessage()
 				.log(LoggingLevel.WARN, log, "${exception}; " + getIdsForLogging())

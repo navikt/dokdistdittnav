@@ -7,7 +7,9 @@ import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode;
+import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonstidspunktKode;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
+import no.nav.dokdistdittnav.exception.functional.UtenforKjernetidFunctionalException;
 import no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKanal;
@@ -15,6 +17,9 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Handler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 import static java.util.Objects.nonNull;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
@@ -30,6 +35,9 @@ public class ProdusentNotifikasjon {
 	private final AdministrerForsendelse administrerForsendelse;
 	private final BrukerNotifikasjonMapper brukerNotifikasjonMapper;
 	private final DokdistdittnavProperties properties;
+	private final LocalTime kjernetidStart;
+	private final LocalTime kjernetidSlutt;
+	private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm");
 
 	@Autowired
 	public ProdusentNotifikasjon(KafkaEventProducer kafkaEventProducer, AdministrerForsendelse administrerForsendelse,
@@ -38,6 +46,8 @@ public class ProdusentNotifikasjon {
 		this.administrerForsendelse = administrerForsendelse;
 		this.brukerNotifikasjonMapper = new BrukerNotifikasjonMapper();
 		this.properties = properties;
+		this.kjernetidStart = LocalTime.parse("10:00", formatter);
+		this.kjernetidSlutt = LocalTime.parse("23:00", formatter);
 	}
 
 	@Handler
@@ -52,19 +62,32 @@ public class ProdusentNotifikasjon {
 		}
 		exchange.setProperty(PROPERTY_BESTILLINGS_ID, hentForsendelseResponse.getBestillingsId());
 
-		if (erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype()) && isJournalpostIdNotNull(hentForsendelseResponse)) {
-			OppgaveInput oppgaveIntern = brukerNotifikasjonMapper.oppretteOppgave(properties.getBrukernotifikasjon().getLink(), hentForsendelseResponse);
-			log.info("Opprettet eventType OPPGAVE med eventId/bestillingsId={}", hentForsendelseResponse.getBestillingsId());
-			kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicoppgave(), nokkelIntern, oppgaveIntern);
-			log.info("Oppgave med eventId/bestillingsId={} skrevet til topic={}", hentForsendelseResponse.getBestillingsId(), properties.getBrukernotifikasjon().getTopicoppgave());
-		}
+		if 	(!innenKjernetid(hentForsendelseResponse.getDistribusjonstidspunkt())){
+			log.info("Legger melding med distribusjonstidspunkt {} på vente-kø for eventId/bestillingsId={}", hentForsendelseResponse.getDistribusjonstidspunkt(), hentForsendelseResponse.getBestillingsId());
+			throw new UtenforKjernetidFunctionalException("Utenfor kjernetid, legges på ventekø");
+		} else {
+			if (erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype()) && isJournalpostIdNotNull(hentForsendelseResponse)) {
+				OppgaveInput oppgaveIntern = brukerNotifikasjonMapper.oppretteOppgave(properties.getBrukernotifikasjon().getLink(), hentForsendelseResponse);
+				log.info("Opprettet eventType OPPGAVE med eventId/bestillingsId={}", hentForsendelseResponse.getBestillingsId());
+				kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicoppgave(), nokkelIntern, oppgaveIntern);
+				log.info("Oppgave med eventId/bestillingsId={} skrevet til topic={}", hentForsendelseResponse.getBestillingsId(), properties.getBrukernotifikasjon().getTopicoppgave());
+			}
 
-		if (!erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype()) && isJournalpostIdNotNull(hentForsendelseResponse)) {
-			BeskjedInput beskjedIntern = brukerNotifikasjonMapper.mapBeskjedIntern(properties.getBrukernotifikasjon().getLink(), hentForsendelseResponse);
-			log.info("Opprettet eventType BESKJED med eventId/bestillingsId={}", hentForsendelseResponse.getBestillingsId());
-			kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicbeskjed(), nokkelIntern, beskjedIntern);
-			log.info("Beskjed med eventId/bestillingsId={} skrevet til topic={}", hentForsendelseResponse.getBestillingsId(), properties.getBrukernotifikasjon().getTopicbeskjed());
+			if (!erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype()) && isJournalpostIdNotNull(hentForsendelseResponse)) {
+				BeskjedInput beskjedIntern = brukerNotifikasjonMapper.mapBeskjedIntern(properties.getBrukernotifikasjon().getLink(), hentForsendelseResponse);
+				log.info("Opprettet eventType BESKJED med eventId/bestillingsId={}", hentForsendelseResponse.getBestillingsId());
+				kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicbeskjed(), nokkelIntern, beskjedIntern);
+				log.info("Beskjed med eventId/bestillingsId={} skrevet til topic={}", hentForsendelseResponse.getBestillingsId(), properties.getBrukernotifikasjon().getTopicbeskjed());
+			}
 		}
+	}
+
+	private boolean innenKjernetid(DistribusjonstidspunktKode distribusjonstidspunkt) {
+		if (distribusjonstidspunkt == null || distribusjonstidspunkt.equals(DistribusjonstidspunktKode.UMIDDELBART)) {
+			return false;
+		}
+		LocalTime tid = LocalTime.now();
+		return (tid.isAfter(kjernetidStart) && tid.isBefore(kjernetidSlutt));
 	}
 
 	private boolean erVedtakEllerViktig(DistribusjonsTypeKode distribusjonsType) {
