@@ -37,7 +37,6 @@ public class ProdusentNotifikasjon {
 	private final DokdistdittnavProperties properties;
 	private final LocalTime kjernetidStart;
 	private final LocalTime kjernetidSlutt;
-	private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm");
 
 	@Autowired
 	public ProdusentNotifikasjon(KafkaEventProducer kafkaEventProducer, AdministrerForsendelse administrerForsendelse,
@@ -46,8 +45,8 @@ public class ProdusentNotifikasjon {
 		this.administrerForsendelse = administrerForsendelse;
 		this.brukerNotifikasjonMapper = new BrukerNotifikasjonMapper();
 		this.properties = properties;
-		this.kjernetidStart = LocalTime.parse("10:00", formatter);
-		this.kjernetidSlutt = LocalTime.parse("23:00", formatter);
+		this.kjernetidStart = LocalTime.parse("10:00:00");
+		this.kjernetidSlutt = LocalTime.parse("23:00:00");
 	}
 
 	@Handler
