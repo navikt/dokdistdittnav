@@ -16,8 +16,10 @@ import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKa
 import org.apache.camel.Exchange;
 import org.apache.camel.Handler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.time.Clock;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
@@ -37,16 +39,21 @@ public class ProdusentNotifikasjon {
 	private final DokdistdittnavProperties properties;
 	private final LocalTime kjernetidStart;
 	private final LocalTime kjernetidSlutt;
+	private Clock clock;
 
 	@Autowired
-	public ProdusentNotifikasjon(KafkaEventProducer kafkaEventProducer, AdministrerForsendelse administrerForsendelse,
-								 DokdistdittnavProperties properties) {
+	public ProdusentNotifikasjon(KafkaEventProducer kafkaEventProducer,
+								 AdministrerForsendelse administrerForsendelse,
+								 DokdistdittnavProperties properties,
+								 @Value("${kjernetidStart}") String kjernetidStart,
+								 @Value("${kjernetidSlutt}") String kjernetidSlutt) {
 		this.kafkaEventProducer = kafkaEventProducer;
 		this.administrerForsendelse = administrerForsendelse;
 		this.brukerNotifikasjonMapper = new BrukerNotifikasjonMapper();
 		this.properties = properties;
-		this.kjernetidStart = LocalTime.parse("07:00:00");
-		this.kjernetidSlutt = LocalTime.parse("23:00:00");
+		this.kjernetidStart = LocalTime.parse(kjernetidStart);
+		this.kjernetidSlutt = LocalTime.parse(kjernetidSlutt);
+		this.clock = Clock.systemDefaultZone();
 	}
 
 	@Handler
@@ -85,8 +92,12 @@ public class ProdusentNotifikasjon {
 		if (distribusjonstidspunkt == null || distribusjonstidspunkt.equals(DistribusjonstidspunktKode.UMIDDELBART)) {
 			return true;
 		}
-		LocalTime tid = LocalTime.now();
+		LocalTime tid = getCurrentTime();
 		return (tid.isAfter(kjernetidStart) && tid.isBefore(kjernetidSlutt));
+	}
+
+	private LocalTime getCurrentTime() {
+		return LocalTime.now(clock);
 	}
 
 	private boolean erVedtakEllerViktig(DistribusjonsTypeKode distribusjonsType) {

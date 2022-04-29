@@ -34,6 +34,11 @@ public class JmsItestConfig {
 	}
 
 	@Bean
+	public Queue qdist010UtenforKjernetid(@Value("${dokdistdittnav_qdist010_dist_ditt_nav_kbq.queuename}") String qdist010FunksjonellFeil) {
+		return new ActiveMQQueue(qdist010FunksjonellFeil);
+	}
+
+	@Bean
 	public Queue qdist009(@Value("${dokdistsentralprint_qdist009_dist_s_print.queuename}") String qdist009QueueName) throws JMSException {
 		return new MQQueue(qdist009QueueName);
 	}

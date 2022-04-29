@@ -35,6 +35,7 @@ public class Qdist010Route extends RouteBuilder {
 	private final DokdistStatusUpdater dokdistStatusUpdater;
 	private final Queue qdist010;
 	private final Queue qdist010FunksjonellFeil;
+	private final Queue qdist010UtenforKjernetid;
 	private final Qdist010MetricsRoutePolicy qdist010MetricsRoutePolicy;
 
 	@Autowired
@@ -42,11 +43,13 @@ public class Qdist010Route extends RouteBuilder {
 						 DokdistStatusUpdater dokdistStatusUpdater,
 						 Queue qdist010,
 						 Queue qdist010FunksjonellFeil,
+						 Queue qdist010UtenforKjernetid,
 						 Qdist010MetricsRoutePolicy qdist010MetricsRoutePolicy) {
 		this.produsentNotifikasjon = produsentNotifikasjon;
 		this.dokdistStatusUpdater = dokdistStatusUpdater;
 		this.qdist010 = qdist010;
 		this.qdist010FunksjonellFeil = qdist010FunksjonellFeil;
+		this.qdist010UtenforKjernetid = qdist010UtenforKjernetid;
 		this.qdist010MetricsRoutePolicy = qdist010MetricsRoutePolicy;
 	}
 
@@ -68,7 +71,7 @@ public class Qdist010Route extends RouteBuilder {
 				.handled(true)
 				.useOriginalMessage()
 				.log(LoggingLevel.WARN, log, "${exception}; " + getIdsForLogging())
-				.to("jms:" + qdist010FunksjonellFeil.getQueueName());
+				.to("jms:" + qdist010UtenforKjernetid.getQueueName());
 
 		from("jms:" + qdist010.getQueueName() +
 				"?transacted=true")

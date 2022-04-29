@@ -28,7 +28,7 @@
 		<confluent.version>7.0.1</confluent.version>
 		<avro.version>1.11.0</avro.version>
 		<camel.version>3.14.0</camel.version>
-		<teamdokumenthandtering-avro-schemas.version>96ec5ebb</teamdokumenthandtering-avro-schemas.version>
+		<teamdokumenthandtering-avro-schemas.version>1.0-SNAPSHOT</teamdokumenthandtering-avro-schemas.version>
 		<doknotifikasjon-schemas-version>1.2021.06.22-11.27-265ce1fe1ab4</doknotifikasjon-schemas-version>
 		<logstash-logback-encoder.version>7.0.1</logstash-logback-encoder.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
