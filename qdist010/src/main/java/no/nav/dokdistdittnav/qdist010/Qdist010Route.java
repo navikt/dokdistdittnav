@@ -61,17 +61,17 @@ public class Qdist010Route extends RouteBuilder {
 				.logExhaustedMessageBody(true)
 				.loggingLevel(ERROR));
 
-		onException(AbstractDokdistdittnavFunctionalException.class, JAXBException.class, ValidationException.class)
-				.handled(true)
-				.useOriginalMessage()
-				.log(LoggingLevel.WARN, log, "${exception}; " + getIdsForLogging())
-				.to("jms:" + qdist010FunksjonellFeil.getQueueName());
-
 		onException(UtenforKjernetidFunctionalException.class)
 				.handled(true)
 				.useOriginalMessage()
 				.log(LoggingLevel.WARN, log, "${exception}; " + getIdsForLogging())
 				.to("jms:" + qdist010UtenforKjernetid.getQueueName());
+
+		onException(AbstractDokdistdittnavFunctionalException.class, JAXBException.class, ValidationException.class)
+				.handled(true)
+				.useOriginalMessage()
+				.log(LoggingLevel.WARN, log, "${exception}; " + getIdsForLogging())
+				.to("jms:" + qdist010FunksjonellFeil.getQueueName());
 
 		from("jms:" + qdist010.getQueueName() +
 				"?transacted=true")

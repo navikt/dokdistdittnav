@@ -92,12 +92,8 @@ public class ProdusentNotifikasjon {
 		if (distribusjonstidspunkt == null || distribusjonstidspunkt.equals(DistribusjonstidspunktKode.UMIDDELBART)) {
 			return true;
 		}
-		LocalTime tid = getCurrentTime();
+		LocalTime tid = LocalTime.now(clock);
 		return (tid.isAfter(kjernetidStart) && tid.isBefore(kjernetidSlutt));
-	}
-
-	private LocalTime getCurrentTime() {
-		return LocalTime.now(clock);
 	}
 
 	private boolean erVedtakEllerViktig(DistribusjonsTypeKode distribusjonsType) {
