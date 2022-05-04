@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.context.ActiveProfiles;
@@ -75,6 +76,15 @@ class Qdist010IT extends ApplicationTestConfig {
 	@BeforeEach
 	public void setupBefore() {
 		CALL_ID = UUID.randomUUID().toString();
+	}
+
+	@Bean
+	public Clock clock() {
+		//15.30.00 -> UTC
+		LocalTime morgen = LocalTime.of(13, 30, 00);
+		LocalDate today = LocalDate.now(ZoneId.systemDefault());
+		LocalDateTime todayMidnight = LocalDateTime.of(today, morgen);
+		return Clock.fixed(todayMidnight.toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
 	}
 
 	@Test
@@ -379,13 +389,6 @@ class Qdist010IT extends ApplicationTestConfig {
 
 	@Test
 	void innenforKjernetidFunctionalException() throws Exception {
-		//15.30.00 -> UTC
-		LocalTime morgen = LocalTime.of(13, 30, 00);
-		LocalDate today = LocalDate.now(ZoneId.systemDefault());
-		LocalDateTime todayMidnight = LocalDateTime.of(today, morgen);
-		Clock fixedClock = Clock.fixed(todayMidnight.toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
-		ReflectionTestUtils.setField(produsentNotifikasjon, "clock", fixedClock);
-
 		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
 				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
 				.withBody(testUtils.classpathToString("__files/rdist001/getForsendelse_withKjernetid.json").replace("insertCallIdHere", CALL_ID))));

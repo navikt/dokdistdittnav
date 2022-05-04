@@ -21,7 +21,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.Clock;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 
 import static java.util.Objects.nonNull;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
@@ -46,14 +45,15 @@ public class ProdusentNotifikasjon {
 								 AdministrerForsendelse administrerForsendelse,
 								 DokdistdittnavProperties properties,
 								 @Value("${kjernetidStart}") String kjernetidStart,
-								 @Value("${kjernetidSlutt}") String kjernetidSlutt) {
+								 @Value("${kjernetidSlutt}") String kjernetidSlutt,
+								 Clock clock) {
 		this.kafkaEventProducer = kafkaEventProducer;
 		this.administrerForsendelse = administrerForsendelse;
 		this.brukerNotifikasjonMapper = new BrukerNotifikasjonMapper();
 		this.properties = properties;
 		this.kjernetidStart = LocalTime.parse(kjernetidStart);
 		this.kjernetidSlutt = LocalTime.parse(kjernetidSlutt);
-		this.clock = Clock.systemDefaultZone();
+		this.clock = clock;
 	}
 
 	@Handler
@@ -72,19 +72,23 @@ public class ProdusentNotifikasjon {
 			log.info("Legger melding med distribusjonstidspunkt {} på vente-kø for eventId/bestillingsId={}", hentForsendelseResponse.getDistribusjonstidspunkt(), hentForsendelseResponse.getBestillingsId());
 			throw new UtenforKjernetidFunctionalException("Utenfor kjernetid, legges på ventekø");
 		} else {
-			if (erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype()) && isJournalpostIdNotNull(hentForsendelseResponse)) {
-				OppgaveInput oppgaveIntern = brukerNotifikasjonMapper.oppretteOppgave(properties.getBrukernotifikasjon().getLink(), hentForsendelseResponse);
-				log.info("Opprettet eventType OPPGAVE med eventId/bestillingsId={}", hentForsendelseResponse.getBestillingsId());
-				kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicoppgave(), nokkelIntern, oppgaveIntern);
-				log.info("Oppgave med eventId/bestillingsId={} skrevet til topic={}", hentForsendelseResponse.getBestillingsId(), properties.getBrukernotifikasjon().getTopicoppgave());
-			}
+			behandleForsendelse(hentForsendelseResponse, nokkelIntern);
+		}
+	}
 
-			if (!erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype()) && isJournalpostIdNotNull(hentForsendelseResponse)) {
-				BeskjedInput beskjedIntern = brukerNotifikasjonMapper.mapBeskjedIntern(properties.getBrukernotifikasjon().getLink(), hentForsendelseResponse);
-				log.info("Opprettet eventType BESKJED med eventId/bestillingsId={}", hentForsendelseResponse.getBestillingsId());
-				kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicbeskjed(), nokkelIntern, beskjedIntern);
-				log.info("Beskjed med eventId/bestillingsId={} skrevet til topic={}", hentForsendelseResponse.getBestillingsId(), properties.getBrukernotifikasjon().getTopicbeskjed());
-			}
+	private void behandleForsendelse(HentForsendelseResponseTo hentForsendelseResponse, NokkelInput nokkelIntern){
+		if (erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype()) && isJournalpostIdNotNull(hentForsendelseResponse)) {
+			OppgaveInput oppgaveIntern = brukerNotifikasjonMapper.oppretteOppgave(properties.getBrukernotifikasjon().getLink(), hentForsendelseResponse);
+			log.info("Opprettet eventType OPPGAVE med eventId/bestillingsId={}", hentForsendelseResponse.getBestillingsId());
+			kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicoppgave(), nokkelIntern, oppgaveIntern);
+			log.info("Oppgave med eventId/bestillingsId={} skrevet til topic={}", hentForsendelseResponse.getBestillingsId(), properties.getBrukernotifikasjon().getTopicoppgave());
+		}
+
+		if (!erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype()) && isJournalpostIdNotNull(hentForsendelseResponse)) {
+			BeskjedInput beskjedIntern = brukerNotifikasjonMapper.mapBeskjedIntern(properties.getBrukernotifikasjon().getLink(), hentForsendelseResponse);
+			log.info("Opprettet eventType BESKJED med eventId/bestillingsId={}", hentForsendelseResponse.getBestillingsId());
+			kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicbeskjed(), nokkelIntern, beskjedIntern);
+			log.info("Beskjed med eventId/bestillingsId={} skrevet til topic={}", hentForsendelseResponse.getBestillingsId(), properties.getBrukernotifikasjon().getTopicbeskjed());
 		}
 	}
 
