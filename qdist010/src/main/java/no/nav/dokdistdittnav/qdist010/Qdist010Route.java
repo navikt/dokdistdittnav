@@ -1,6 +1,7 @@
 package no.nav.dokdistdittnav.qdist010;
 
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
+import no.nav.dokdistdittnav.exception.functional.UtenforKjernetidFunctionalException;
 import no.nav.dokdistdittnav.metrics.Qdist010MetricsRoutePolicy;
 import no.nav.dokdistdittnav.qdist010.brukernotifikasjon.ProdusentNotifikasjon;
 import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKanal;
@@ -8,9 +9,8 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.ValidationException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
-import org.springframework.stereotype.Component;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.jms.Queue;
 import javax.xml.bind.JAXBContext;
@@ -35,6 +35,7 @@ public class Qdist010Route extends RouteBuilder {
 	private final DokdistStatusUpdater dokdistStatusUpdater;
 	private final Queue qdist010;
 	private final Queue qdist010FunksjonellFeil;
+	private final Queue qdist010UtenforKjernetid;
 	private final Qdist010MetricsRoutePolicy qdist010MetricsRoutePolicy;
 
 	@Autowired
@@ -42,11 +43,13 @@ public class Qdist010Route extends RouteBuilder {
 						 DokdistStatusUpdater dokdistStatusUpdater,
 						 Queue qdist010,
 						 Queue qdist010FunksjonellFeil,
+						 Queue qdist010UtenforKjernetid,
 						 Qdist010MetricsRoutePolicy qdist010MetricsRoutePolicy) {
 		this.produsentNotifikasjon = produsentNotifikasjon;
 		this.dokdistStatusUpdater = dokdistStatusUpdater;
 		this.qdist010 = qdist010;
 		this.qdist010FunksjonellFeil = qdist010FunksjonellFeil;
+		this.qdist010UtenforKjernetid = qdist010UtenforKjernetid;
 		this.qdist010MetricsRoutePolicy = qdist010MetricsRoutePolicy;
 	}
 
@@ -57,6 +60,12 @@ public class Qdist010Route extends RouteBuilder {
 				.log(log)
 				.logExhaustedMessageBody(true)
 				.loggingLevel(ERROR));
+
+		onException(UtenforKjernetidFunctionalException.class)
+				.handled(true)
+				.useOriginalMessage()
+				.log(LoggingLevel.INFO, log, "Forsendelse til DittNAV er utenfor kjernetid. Legges på kø. " + getIdsForLogging())
+				.to("jms:" + qdist010UtenforKjernetid.getQueueName());
 
 		onException(AbstractDokdistdittnavFunctionalException.class, JAXBException.class, ValidationException.class)
 				.handled(true)

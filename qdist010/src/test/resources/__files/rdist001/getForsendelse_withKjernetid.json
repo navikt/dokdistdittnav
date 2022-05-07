@@ -3,7 +3,7 @@
   "modus": "T",
   "forsendelseStatus": "KLAR_FOR_DIST",
   "tema": "DAG",
-  "distribusjonstidspunkt": "UMIDDELBART",
+  "distribusjonstidspunkt": "KJERNETID",
   "forsendelseTittel": "forsendelseTittel",
   "distribusjonstype": "VIKTIG",
   "mottaker": {

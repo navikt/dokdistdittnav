@@ -1,20 +1,31 @@
 package no.nav.dokdistdittnav.qdist010.itest;
 
+import no.nav.dokdistdittnav.qdist010.brukernotifikasjon.ProdusentNotifikasjon;
 import no.nav.dokdistdittnav.qdist010.itest.config.ApplicationTestConfig;
 import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.TextMessage;
 import javax.xml.bind.JAXBElement;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -33,6 +44,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.doReturn;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 
@@ -53,11 +65,26 @@ class Qdist010IT extends ApplicationTestConfig {
 	private Queue qdist010FunksjonellFeil;
 
 	@Autowired
+	private Queue qdist010UtenforKjernetid;
+
+	@Autowired
 	private Queue backoutQueue;
+
+	@Autowired
+	private ProdusentNotifikasjon produsentNotifikasjon;
 
 	@BeforeEach
 	public void setupBefore() {
 		CALL_ID = UUID.randomUUID().toString();
+	}
+
+	@Bean
+	public Clock clock() {
+		//15.30.00 -> UTC
+		LocalTime morgen = LocalTime.of(13, 30, 00);
+		LocalDate today = LocalDate.now(ZoneId.systemDefault());
+		LocalDateTime todayMidnight = LocalDateTime.of(today, morgen);
+		return Clock.fixed(todayMidnight.toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
 	}
 
 	@Test
@@ -306,6 +333,76 @@ class Qdist010IT extends ApplicationTestConfig {
 
 		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
 		verify(3, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
+	}
+
+	@Test
+	void shouldThrowBeforeKjernetidFunctionalException() throws Exception {
+		//05.00.00 -> UTC
+		LocalTime morgen = LocalTime.of(03, 00, 00);
+		LocalDate today = LocalDate.now(ZoneId.systemDefault());
+		LocalDateTime todayMidnight = LocalDateTime.of(today, morgen);
+		Clock fixedClock = Clock.fixed(todayMidnight.toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
+		ReflectionTestUtils.setField(produsentNotifikasjon, "clock", fixedClock);
+
+		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
+				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
+				.withBody(testUtils.classpathToString("__files/rdist001/getForsendelse_withKjernetid.json").replace("insertCallIdHere", CALL_ID))));
+		stubFor(put(FORSENDELSE_PATH)
+				.willReturn(aResponse().withStatus(HttpStatus.OK.value())));
+
+		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
+
+		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+			String resultOnQdist010UtenforKjernetidQueue = receive(qdist010UtenforKjernetid);
+			assertNotNull(resultOnQdist010UtenforKjernetidQueue);
+			assertEquals(resultOnQdist010UtenforKjernetidQueue, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
+		});
+
+		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+	}
+
+	@Test
+	void shouldThrowEtterKjernetidFunctionalException() throws Exception {
+		//23.30.00 -> UTC
+		LocalTime morgen = LocalTime.of(21, 30, 00);
+		LocalDate today = LocalDate.now(ZoneId.systemDefault());
+		LocalDateTime todayMidnight = LocalDateTime.of(today, morgen);
+		Clock fixedClock = Clock.fixed(todayMidnight.toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
+		ReflectionTestUtils.setField(produsentNotifikasjon, "clock", fixedClock);
+
+		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
+				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
+				.withBody(testUtils.classpathToString("__files/rdist001/getForsendelse_withKjernetid.json").replace("insertCallIdHere", CALL_ID))));
+		stubFor(put(FORSENDELSE_PATH)
+				.willReturn(aResponse().withStatus(HttpStatus.OK.value())));
+
+		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
+
+		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+			String resultOnQdist010UtenforKjernetidQueue = receive(qdist010UtenforKjernetid);
+			assertNotNull(resultOnQdist010UtenforKjernetidQueue);
+			assertEquals(resultOnQdist010UtenforKjernetidQueue, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
+		});
+
+		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+	}
+
+	@Test
+	void innenforKjernetidFunctionalException() throws Exception {
+		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
+				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
+				.withBody(testUtils.classpathToString("__files/rdist001/getForsendelse_withKjernetid.json").replace("insertCallIdHere", CALL_ID))));
+		stubFor(put(FORSENDELSE_PATH)
+				.willReturn(aResponse().withStatus(HttpStatus.OK.value())));
+
+		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
+
+		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+			verify(1, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
+		});
+
+		verifyAllStubs(1);
 	}
 
 	private void sendStringMessage(Queue queue, final String message) {

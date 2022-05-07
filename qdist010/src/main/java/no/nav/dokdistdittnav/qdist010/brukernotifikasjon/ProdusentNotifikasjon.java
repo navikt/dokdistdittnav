@@ -7,14 +7,20 @@ import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode;
+import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonstidspunktKode;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
+import no.nav.dokdistdittnav.exception.functional.UtenforKjernetidFunctionalException;
 import no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKanal;
 import org.apache.camel.Exchange;
 import org.apache.camel.Handler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.time.Clock;
+import java.time.LocalTime;
 
 import static java.util.Objects.nonNull;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
@@ -30,14 +36,24 @@ public class ProdusentNotifikasjon {
 	private final AdministrerForsendelse administrerForsendelse;
 	private final BrukerNotifikasjonMapper brukerNotifikasjonMapper;
 	private final DokdistdittnavProperties properties;
+	private final LocalTime kjernetidStart;
+	private final LocalTime kjernetidSlutt;
+	private Clock clock;
 
 	@Autowired
-	public ProdusentNotifikasjon(KafkaEventProducer kafkaEventProducer, AdministrerForsendelse administrerForsendelse,
-								 DokdistdittnavProperties properties) {
+	public ProdusentNotifikasjon(KafkaEventProducer kafkaEventProducer,
+								 AdministrerForsendelse administrerForsendelse,
+								 DokdistdittnavProperties properties,
+								 @Value("${kjernetidStart}") String kjernetidStart,
+								 @Value("${kjernetidSlutt}") String kjernetidSlutt,
+								 Clock clock) {
 		this.kafkaEventProducer = kafkaEventProducer;
 		this.administrerForsendelse = administrerForsendelse;
 		this.brukerNotifikasjonMapper = new BrukerNotifikasjonMapper();
 		this.properties = properties;
+		this.kjernetidStart = LocalTime.parse(kjernetidStart);
+		this.kjernetidSlutt = LocalTime.parse(kjernetidSlutt);
+		this.clock = clock;
 	}
 
 	@Handler
@@ -52,6 +68,15 @@ public class ProdusentNotifikasjon {
 		}
 		exchange.setProperty(PROPERTY_BESTILLINGS_ID, hentForsendelseResponse.getBestillingsId());
 
+		if 	(!innenKjernetid(hentForsendelseResponse.getDistribusjonstidspunkt())){
+			log.info("Legger melding med distribusjonstidspunkt {} på vente-kø for eventId/bestillingsId={}", hentForsendelseResponse.getDistribusjonstidspunkt(), hentForsendelseResponse.getBestillingsId());
+			throw new UtenforKjernetidFunctionalException("Utenfor kjernetid, legges på ventekø");
+		} else {
+			behandleForsendelse(hentForsendelseResponse, nokkelIntern);
+		}
+	}
+
+	private void behandleForsendelse(HentForsendelseResponseTo hentForsendelseResponse, NokkelInput nokkelIntern){
 		if (erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype()) && isJournalpostIdNotNull(hentForsendelseResponse)) {
 			OppgaveInput oppgaveIntern = brukerNotifikasjonMapper.oppretteOppgave(properties.getBrukernotifikasjon().getLink(), hentForsendelseResponse);
 			log.info("Opprettet eventType OPPGAVE med eventId/bestillingsId={}", hentForsendelseResponse.getBestillingsId());
@@ -65,6 +90,14 @@ public class ProdusentNotifikasjon {
 			kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicbeskjed(), nokkelIntern, beskjedIntern);
 			log.info("Beskjed med eventId/bestillingsId={} skrevet til topic={}", hentForsendelseResponse.getBestillingsId(), properties.getBrukernotifikasjon().getTopicbeskjed());
 		}
+	}
+
+	private boolean innenKjernetid(DistribusjonstidspunktKode distribusjonstidspunkt) {
+		if (distribusjonstidspunkt == null || distribusjonstidspunkt.equals(DistribusjonstidspunktKode.UMIDDELBART)) {
+			return true;
+		}
+		LocalTime tid = LocalTime.now(clock);
+		return (tid.isAfter(kjernetidStart) && tid.isBefore(kjernetidSlutt));
 	}
 
 	private boolean erVedtakEllerViktig(DistribusjonsTypeKode distribusjonsType) {
