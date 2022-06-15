@@ -18,7 +18,8 @@ import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLIN
 import static no.nav.dokdistdittnav.kdist002.TestUtils.BESTILLINGSID;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.DOKDISTDITTNAV;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.DOKDISTDPI;
-import static no.nav.dokdistdittnav.kdist002.TestUtils.DOKNOTIFIKASJON_BESTILLINGSID;
+import static no.nav.dokdistdittnav.kdist002.TestUtils.DOKNOTIFIKASJON_BESTILLINGSID_NEW;
+import static no.nav.dokdistdittnav.kdist002.TestUtils.DOKNOTIFIKASJON_BESTILLINGSID_OLD;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.FORSENDELSE_ID;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.MELDING;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.finnForsendelseResponseTo;
@@ -54,9 +55,8 @@ class Kdist002ServiceTest {
 	}
 
 	@Test
-	public void shouldExtractBestillingsIdFraDoknotifikasjonStatusEvent() {
-		PersisterForsendelseRequestTo persisterForsendelseRequestTo = persisterForsendelseMapper.map(PersisterForsendelseMapperTest.createHentForsendelseResponse());
-		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseTo());
+	public void shouldExtractOldBestillingsIdFraDoknotifikasjonStatusEvent() {
+		when(administrerForsendelse.hentForsendelse(FORSENDELSE_ID)).thenReturn(hentForsendelseResponseTo());
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
 				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
 				.verdi(BESTILLINGSID)
@@ -65,7 +65,24 @@ class Kdist002ServiceTest {
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
 
-		DoneEventRequest doneEventRequest = kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID));
+		DoneEventRequest doneEventRequest = kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD));
+
+		assertNotNull(doneEventRequest);
+		assertEquals(hentForsendelseResponseTo().getMottaker().getMottakerId(), doneEventRequest.getMottakerId());
+	}
+
+	@Test
+	public void shouldExtractNewBestillingsIdFraDoknotifikasjonStatusEvent() {
+		when(administrerForsendelse.hentForsendelse(FORSENDELSE_ID)).thenReturn(hentForsendelseResponseTo());
+		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
+				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
+				.verdi(BESTILLINGSID)
+				.build())).thenReturn(finnForsendelseResponseTo());
+		when(administrerForsendelse.persisterForsendelse(any(PersisterForsendelseRequestTo.class))).thenReturn(PersisterForsendelseResponseTo.builder()
+				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
+				.build());
+
+		DoneEventRequest doneEventRequest = kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID_NEW));
 
 		assertNotNull(doneEventRequest);
 		assertEquals(hentForsendelseResponseTo().getMottaker().getMottakerId(), doneEventRequest.getMottakerId());
@@ -82,7 +99,7 @@ class Kdist002ServiceTest {
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
 
-		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDITTNAV, INFO.name(), DOKNOTIFIKASJON_BESTILLINGSID)));
+		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDITTNAV, INFO.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
 
 		assertNotNull(doneEventRequest);
 	}
@@ -98,7 +115,7 @@ class Kdist002ServiceTest {
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
 
-		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDPI, INFO.name(), DOKNOTIFIKASJON_BESTILLINGSID)));
+		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDPI, INFO.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
 
 		assertNotNull(doneEventRequest);
 	}
@@ -114,7 +131,7 @@ class Kdist002ServiceTest {
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
 
-		DoneEventRequest doneEventRequest = kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID));
+		DoneEventRequest doneEventRequest = kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD));
 
 		assertNull(doneEventRequest);
 	}
@@ -131,7 +148,7 @@ class Kdist002ServiceTest {
 				.build());
 
 		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> kdist002Service.sendForsendelse(
-				doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID)));
+				doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
 
 		assertEquals("finnForsendelseResponseTo kan ikke være null", e.getMessage());
 	}
@@ -151,7 +168,7 @@ class Kdist002ServiceTest {
 				.build());
 
 		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> kdist002Service.sendForsendelse(
-				doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID)));
+				doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
 
 		assertEquals("Mottaker kan ikke være null", e.getMessage());
 	}

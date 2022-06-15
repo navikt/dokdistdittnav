@@ -16,7 +16,8 @@ public class TestUtils {
 
 	public static final String FORSENDELSE_ID = "1720847";
 	public static final String NY_FORSENDELSE_ID = "33333";
-	public static final String DOKNOTIFIKASJON_BESTILLINGSID = "B-dokdistdittnav-811c0c5d-e74c-491a-8b8c-d94075c822c3";
+	public static final String DOKNOTIFIKASJON_BESTILLINGSID_OLD = "B-dokdistdittnav-811c0c5d-e74c-491a-8b8c-d94075c822c3";
+	public static final String DOKNOTIFIKASJON_BESTILLINGSID_NEW = "811c0c5d-e74c-491a-8b8c-d94075c822c3";
 	public static final String DOKNOTIFIKASJON_BESTILLINGSID_FEIL_UUID = "O-dokdistdittnav-9f7dac2c-0c00-3a0d-aab9-1a51449b1d1a";
 	public static final String BESTILLINGSID = "811c0c5d-e74c-491a-8b8c-d94075c822c3";
 	public static final String MELDING = "Altinn feilet";
