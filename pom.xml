@@ -18,7 +18,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.6.6</version>
+		<version>2.7.1</version>
 	</parent>
 
 	<properties>
@@ -27,13 +27,12 @@
 		<brukernotifikasjon.version>v2.5.1</brukernotifikasjon.version>
 		<confluent.version>7.0.1</confluent.version>
 		<avro.version>1.11.0</avro.version>
-		<camel.version>3.14.0</camel.version>
+		<camel.version>3.17.0</camel.version>
 		<teamdokumenthandtering-avro-schemas.version>96ec5ebb</teamdokumenthandtering-avro-schemas.version>
 		<doknotifikasjon-schemas-version>1.2021.06.22-11.27-265ce1fe1ab4</doknotifikasjon-schemas-version>
-		<logstash-logback-encoder.version>7.0.1</logstash-logback-encoder.version>
+		<logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
 		<wmq.version>9.2.4.0</wmq.version>
-		<lombok.version>1.18.22</lombok.version>
 		<activemq.version>5.16.2</activemq.version>
 		<spring-cloud-contract-wiremock.version>3.1.0</spring-cloud-contract-wiremock.version>
 		<commons-io.version>2.11.0</commons-io.version>
@@ -41,7 +40,6 @@
 		<melding-virksomhet-dokdistfordeling.version>2.0.4</melding-virksomhet-dokdistfordeling.version>
 
 		<maven-toolchains-plugin.version>3.0.0</maven-toolchains-plugin.version>
-		<maven-plugin.version>3.0.0-M5</maven-plugin.version>
 	</properties>
 
 	<repositories>
@@ -141,14 +139,6 @@
 				<artifactId>melding-virksomhet-dokdistfordeling</artifactId>
 				<version>${melding-virksomhet-dokdistfordeling.version}</version>
 			</dependency>
-
-			<dependency>
-				<groupId>org.projectlombok</groupId>
-				<artifactId>lombok</artifactId>
-				<version>${lombok.version}</version>
-				<scope>provided</scope>
-			</dependency>
-
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-contract-wiremock</artifactId>
@@ -189,12 +179,10 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>${maven-plugin.version}</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>${maven-plugin.version}</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
