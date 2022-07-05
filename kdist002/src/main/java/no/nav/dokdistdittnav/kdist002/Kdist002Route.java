@@ -10,7 +10,7 @@ import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKa
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.kafka.DefaultKafkaManualCommit;
+import org.apache.camel.component.kafka.consumer.DefaultKafkaManualCommit;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -139,7 +139,7 @@ public class Kdist002Route extends RouteBuilder {
 		DefaultKafkaManualCommit manualCommit = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
 		if (manualCommit != null) {
 			log.info("Kdist002, manual commit " + createLogging(manualCommit));
-			manualCommit.commitSync();
+			manualCommit.commit();
 		}
 	}
 

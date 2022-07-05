@@ -8,7 +8,7 @@ import no.nav.dokdistdittnav.utils.MDCProcessor;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.kafka.DefaultKafkaManualCommit;
+import org.apache.camel.component.kafka.consumer.DefaultKafkaManualCommit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -60,7 +60,7 @@ public class Kdist001Route extends RouteBuilder {
 					DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
 					if (manual != null) {
 						log.error("Kdist001 Funksjonell feil i record" + defaultKafkaManualCommit(exchange));
-						manual.commitSync();
+						manual.commit();
 					}
 				})
 				.log(LoggingLevel.WARN, log, "${exception}");
