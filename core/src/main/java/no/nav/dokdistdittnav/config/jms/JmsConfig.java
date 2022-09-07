@@ -16,14 +16,13 @@ import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Queue;
 
+import java.util.concurrent.TimeUnit;
+
 import static com.ibm.mq.constants.CMQC.MQENC_NATIVE;
 import static com.ibm.msg.client.jms.JmsConstants.JMS_IBM_CHARACTER_SET;
 import static com.ibm.msg.client.jms.JmsConstants.JMS_IBM_ENCODING;
 import static com.ibm.msg.client.wmq.common.CommonConstants.WMQ_CM_CLIENT;
 
-/**
- * @author Sigurd Midttun, Visma Consulting AS
- */
 @Configuration
 @Profile("nais")
 public class JmsConfig {
@@ -51,7 +50,7 @@ public class JmsConfig {
 	}
 
 	@Bean
-	public ConnectionFactory wmqConnectionFactory(final MqGatewayAlias mqGatewayAlias,
+	public ConnectionFactory connectionFactory(final MqGatewayAlias mqGatewayAlias,
 												  final @Value("${dokdistdittnav_channel.name}") String channelName,
 												  final DokdistDittnavServiceuser dokdistDittnavServiceuser) throws JMSException {
 		return createConnectionFactory(mqGatewayAlias, channelName, dokdistDittnavServiceuser);
@@ -69,10 +68,9 @@ public class JmsConfig {
 		connectionFactory.setCCSID(UTF_8_WITH_PUA);
 		connectionFactory.setIntProperty(JMS_IBM_ENCODING, MQENC_NATIVE);
 		connectionFactory.setIntProperty(JMS_IBM_CHARACTER_SET, UTF_8_WITH_PUA);
+
 		UserCredentialsConnectionFactoryAdapter adapter = new UserCredentialsConnectionFactoryAdapter();
 		adapter.setTargetConnectionFactory(connectionFactory);
-
-		// Konfigurasjon for IBM MQ broker med TLS og autorisasjon med serviceuser mot onpremise Active Directory.
 		adapter.setUsername(dokdistDittnavServiceuser.getUsername());
 		adapter.setPassword(dokdistDittnavServiceuser.getPassword());
 
@@ -80,7 +78,8 @@ public class JmsConfig {
 		pooledFactory.setConnectionFactory(adapter);
 		pooledFactory.setMaxConnections(10);
 		pooledFactory.setMaximumActiveSessionPerConnection(10);
-
+		pooledFactory.setReconnectOnException(true);
+		pooledFactory.setExpiryTimeout(TimeUnit.HOURS.toMillis(24));
 		return pooledFactory;
 	}
 }
