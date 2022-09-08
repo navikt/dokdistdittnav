@@ -31,7 +31,6 @@
 		<teamdokumenthandtering-avro-schemas.version>96ec5ebb</teamdokumenthandtering-avro-schemas.version>
 		<doknotifikasjon-schemas-version>1.2021.06.22-11.27-265ce1fe1ab4</doknotifikasjon-schemas-version>
 		<logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
-		<resilience4j.version>1.7.1</resilience4j.version>
 		<wmq.version>9.2.4.0</wmq.version>
 		<activemq.version>5.16.2</activemq.version>
 		<spring-cloud-contract-wiremock.version>3.1.0</spring-cloud-contract-wiremock.version>
@@ -111,11 +110,6 @@
 				<groupId>net.logstash.logback</groupId>
 				<artifactId>logstash-logback-encoder</artifactId>
 				<version>${logstash-logback-encoder.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.github.resilience4j</groupId>
-				<artifactId>resilience4j-spring-boot2</artifactId>
-				<version>${resilience4j.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.camel.springboot</groupId>
