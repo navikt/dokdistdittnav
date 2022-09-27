@@ -39,6 +39,10 @@ spec:
       value: {{ DOKDISTSENTRALPRINT_QDIST009_DIST_S_PRINT_QUEUENAME }}
     - name: DOKDISTDITTNAV_QDIST010_DIST_DITT_NAV_KBQ_QUEUENAME
       value: {{ DOKDISTDITTNAV_QDIST010_DIST_DITT_NAV_KBQ_QUEUENAME }}
+    - name: DOKDISTDITTNAV_DOKARKIV_OAUTH_SCOPE
+      value: {{ DOKDISTDITTNAV_DOKARKIV_OAUTH_SCOPE }}
+    - name: DOKDISTDITTNAV_DOKARKIV_OPPDATER_DISTRIBUSJONSINFO_URI
+      value: {{ DOKDISTDITTNAV_DOKARKIV_OPPDATER_DISTRIBUSJONSINFO_URI }}
   image: {{ image }}
   ingresses:
         {{#each INGRESSES}}
@@ -76,3 +80,6 @@ spec:
         mountPath: /var/run/secrets/nais.io/srvdokdistdittnav
       - kvPath: {{ DOKDISTDITTNAV_VAULT }}
         mountPath: "/var/run/secrets/nais.io/vault"
+  azure:
+    application:
+      enabled: true

@@ -5,6 +5,8 @@
 	"DOKDISTDITTNAV_DOKNOTIFIKASJON_STATUSTOPIC": "teamdokumenthandtering.aapen-dok-notifikasjon-status",
 	"DOKDISTDITTNAV_TOPIC_LESTAVMOTTAKER": "teamdokumenthandtering.privat-dokdistdittnav-lestavmottaker-q1",
 	"DOKDISTDITTNAV_BRUKERNOTIFIKASJON_LINK": "https://person.dev.nav.no/mine-saker/tema/",
+    "DOKDISTDITTNAV_DOKARKIV_OAUTH_SCOPE": "https://TODO.no/FIXME",
+    "DOKDISTDITTNAV_DOKARKIV_OPPDATER_DISTRIBUSJONSINFO_URI": "https://TODO.no/FIXME",
 	"ADMINISTRERFORSENDELSE_V1_URL": "https://app-q1.adeo.no/dokdist/rest/v1/administrerforsendelse",
 	"DOKDISTDITTNAV_CHANNEL_NAME": "Q1_DOKDISTDITTNAV",
 	"MQGATEWAY01_HOSTNAME": "b27apvl219.preprod.local",
