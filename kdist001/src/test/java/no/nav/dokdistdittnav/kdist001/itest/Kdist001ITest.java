@@ -18,10 +18,13 @@ import java.io.InputStream;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.patch;
+import static com.github.tomakehurst.wiremock.client.WireMock.patchRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -48,6 +51,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json", FORSENDELSE_ID, OK.value());
 		stubPutOppdaterForsendelse(FERDIGSTILT.name(), FORSENDELSE_ID, OK.value());
+		stubPatchOppdaterDistribusjonsinfo(JOURNALPOST_ID, OK.value());
 
 		HoveddokumentLest hoveddokumentLest = HoveddokumentLest.newBuilder()
 				.setDokumentInfoId(DOKUMENTINFO_ID)
@@ -59,6 +63,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?journalpostId=" + JOURNALPOST_ID)));
 			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
 			verify(1, putRequestedFor(urlEqualTo(URL_OPPDATERFORSENDELSE)));
+			verify(1, patchRequestedFor(urlMatching(".*/oppdaterDistribusjonsinfo")));
 		});
 	}
 
@@ -66,6 +71,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	public void shouldReadMessageFromLestavmottakerTopicenAndLogWhenDokumentInfoIdNonMatch() {
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-feil-dokumentinfoid.json", FORSENDELSE_ID, OK.value());
+		stubPatchOppdaterDistribusjonsinfo(JOURNALPOST_ID, OK.value());
 
 		HoveddokumentLest hoveddokumentLest = HoveddokumentLest.newBuilder()
 				.setDokumentInfoId(DOKUMENTINFOID_2)
@@ -77,6 +83,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?journalpostId=" + JOURNALPOST_ID)));
 			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
 		});
+		verify(0, patchRequestedFor(urlMatching(".*/oppdaterDistribusjonsinfo")));
 	}
 
 	@Test
@@ -140,6 +147,12 @@ public class Kdist001ITest extends ApplicationTestConfig {
 				"privat-dokdistdittnav-lestavmottaker", "key",
 				hoveddokumentLest
 		);
+	}
+
+	private void stubPatchOppdaterDistribusjonsinfo(String forsendelseId, int httpStatusvalue) {
+		stubFor(patch(urlMatching("/"+ forsendelseId + "/oppdaterDistribusjonsinfo"))
+				.willReturn(aResponse().withStatus(httpStatusvalue)));
+
 	}
 
 	@SneakyThrows
