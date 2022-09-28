@@ -1,6 +1,7 @@
 package no.nav.dokdistdittnav.config.properties;
 
 import lombok.Data;
+import no.nav.dokdistdittnav.consumer.dokarkiv.JournalPostId;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
@@ -18,7 +19,7 @@ public class DokdistdittnavProperties {
 	private final Topic topic = new Topic();
 	private final Brukernotifikasjon brukernotifikasjon = new Brukernotifikasjon();
 	private final Doknotifikasjon doknotifikasjon = new Doknotifikasjon();
-	private final DokArkiv dokArkiv = new DokArkiv();
+	private final Dokarkiv dokarkiv = new Dokarkiv();
 
 	@Data
 	@Validated
@@ -49,14 +50,15 @@ public class DokdistdittnavProperties {
 
 	@Data
 	@Validated
-	public static class DokArkiv {
+	public static class Dokarkiv {
+		private final String oppdaterDistribusjonsinfoPath = "/oppdaterDistribusjonsinfo";
+		@NotEmpty
+		private String baseUri;
 		@NotEmpty
 		private String oauthScope;
-		@NotEmpty
-		private String oppdaterDistribusjonsinfoUri;
 
-		public URI getOppdaterDistribusjonsinfoUri() {
-			return URI.create(oppdaterDistribusjonsinfoUri);
+		public URI getOppdaterDistribusjonsinfoURI(JournalPostId journalPostId) {
+			return URI.create(baseUri + journalPostId.value() + oppdaterDistribusjonsinfoPath);
 		}
 	}
 }

@@ -30,13 +30,13 @@ import static no.nav.dokdistdittnav.constants.RetryConstants.MAX_ATTEMPTS_SHORT;
 @Component
 public class DokarkivConsumer {
 
-	private final Function<JournalPostId,Function<UriBuilder, URI>> HELENE_URI;
+	private final DokdistdittnavProperties dokdistdittnavProperties;
 	private final WebClient webClient;
 
 	public DokarkivConsumer(DokdistdittnavProperties dokdistdittnavProperties,
 							WebClient webClient) {
-		HELENE_URI = journalPostId -> builder -> builder.build(dokdistdittnavProperties.getDokArkiv().getOppdaterDistribusjonsinfoUri(), journalPostId.value());
 		this.webClient = webClient;
+		this.dokdistdittnavProperties = dokdistdittnavProperties;
 	}
 
 	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
@@ -45,17 +45,17 @@ public class DokarkivConsumer {
 
 		try {
 			webClient.patch()
-					.uri(HELENE_URI.apply(journalPostId))
+					.uri(dokdistdittnavProperties.getDokarkiv().getOppdaterDistribusjonsinfoURI(journalPostId))
 					.headers(this::createHeaders)
 					.bodyValue(feilregistrerForsendelse)
 					.retrieve();
 		} catch (HttpClientErrorException e) {
-			log.error("Kall mot ????? - feilet funksjonelt ved registrering av lest status for journalpost med id={}, feilmelding={}", journalPostId.value(), e.getMessage());
-			throw new AbstractDokdistdittnavFunctionalException(format("Kall mot ????? - feilet ved registrering av lest status for journalpost med id=%s, feilmelding=%s", journalPostId.value(), e.getMessage()), e) {
+			log.error("Kall mot dokarkiv feilet funksjonelt ved registrering av lest status for journalpost med id={}, feilmelding={}", journalPostId.value(), e.getMessage());
+			throw new AbstractDokdistdittnavFunctionalException(format("Kall mot dokarkiv feilet ved registrering av lest status for journalpost med id=%s, feilmelding=%s", journalPostId.value(), e.getMessage()), e) {
 			};
 		} catch (HttpServerErrorException e) {
-			log.error("Kall mot ????? - feilet funksjonelt ved registrering av lest status for journalpost med id={}, feilmelding={}", journalPostId.value(), e.getMessage());
-			throw new AbstractDokdistdittnavTechnicalException(format("Kall mot ????? - feilet ved registrering av lest status for journalpost med id=%s, feilmelding=%s", journalPostId.value(), e.getMessage()), e) {
+			log.error("Kall mot dokarkiv feilet funksjonelt ved registrering av lest status for journalpost med id={}, feilmelding={}", journalPostId.value(), e.getMessage());
+			throw new AbstractDokdistdittnavTechnicalException(format("Kall mot dokarkiv feilet ved registrering av lest status for journalpost med id=%s, feilmelding=%s", journalPostId.value(), e.getMessage()), e) {
 			};
 		}
 	}

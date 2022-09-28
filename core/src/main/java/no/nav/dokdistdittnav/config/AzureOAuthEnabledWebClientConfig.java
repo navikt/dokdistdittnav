@@ -60,7 +60,7 @@ public class AzureOAuthEnabledWebClientConfig {
 				.clientSecret(azureTokenProperties.clientSecret())
 				.clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
 				.authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-				.scope(dokdistdittnavProperties.getDokArkiv().getOauthScope())
+				.scope(dokdistdittnavProperties.getDokarkiv().getOauthScope())
 				//(azureTokenProperties.tenantId())
 		        //(azureTokenProperties.wellKnownUrl())
 				.build();
