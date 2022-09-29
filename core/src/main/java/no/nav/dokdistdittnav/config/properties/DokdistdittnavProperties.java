@@ -1,7 +1,7 @@
 package no.nav.dokdistdittnav.config.properties;
 
 import lombok.Data;
-import no.nav.dokdistdittnav.consumer.dokarkiv.JournalPostId;
+import no.nav.dokdistdittnav.consumer.dokarkiv.JournalpostId;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
@@ -57,7 +57,7 @@ public class DokdistdittnavProperties {
 		@NotEmpty
 		private String oauthScope;
 
-		public URI getOppdaterDistribusjonsinfoURI(JournalPostId journalPostId) {
+		public URI getOppdaterDistribusjonsinfoURI(JournalpostId journalPostId) {
 			return URI.create(baseUri + journalPostId.value() + oppdaterDistribusjonsinfoPath);
 		}
 	}

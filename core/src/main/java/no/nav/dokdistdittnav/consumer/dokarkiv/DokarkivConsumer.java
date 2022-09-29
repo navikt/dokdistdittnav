@@ -33,46 +33,46 @@ public class DokarkivConsumer {
 
 	private final DokdistdittnavProperties dokdistdittnavProperties;
 	private final ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager;
-	private final AzureTokenProperties azureTokenProperties;
 	private final WebClient webClient;
 
 	public DokarkivConsumer(DokdistdittnavProperties dokdistdittnavProperties,
 							ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager,
-							AzureTokenProperties azureTokenProperties,
 							WebClient webClient) {
 		this.oAuth2AuthorizedClientManager = oAuth2AuthorizedClientManager;
-		this.azureTokenProperties = azureTokenProperties;
 		this.webClient = webClient;
 		this.dokdistdittnavProperties = dokdistdittnavProperties;
 	}
 
 	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
 	@Monitor(value = DOKARKIV_CONSUMER, extraTags = {PROCESS, "oppdaterDistribusjonsinfo"}, histogram = true)
-	public void settTidLestHoveddokument(JournalPostId journalPostId, OppdaterDistribusjonsInfo feilregistrerForsendelse) {
+	public void settTidLestHoveddokument(JournalpostId journalpostId, OppdaterDistribusjonsInfo oppdaterDistribusjonsinfo) {
 		webClient.patch()
-				.uri(dokdistdittnavProperties.getDokarkiv().getOppdaterDistribusjonsinfoURI(journalPostId))
+				.uri(dokdistdittnavProperties.getDokarkiv().getOppdaterDistribusjonsinfoURI(journalpostId))
 				.attributes(getOauth2AuthorizedClient())
 				.headers(this::createHeaders)
-				.bodyValue(feilregistrerForsendelse)
+				.bodyValue(oppdaterDistribusjonsinfo)
 				.retrieve()
 				.bodyToMono(String.class)
-				.doOnError(handleError(journalPostId))
+				.doOnError(handleError(journalpostId))
 				.block();
 	}
 
-	private Consumer<Throwable> handleError(JournalPostId journalPostId) {
+	private Consumer<Throwable> handleError(JournalpostId journalpostId) {
 		return error -> {
 			if (error instanceof WebClientResponseException response && ((WebClientResponseException) error).getStatusCode().is4xxClientError()) {
-				log.error("Kall mot dokarkiv feilet funksjonelt ved registrering av lest status for journalpost med id={}, feilmelding={}", journalPostId.value(), error.getMessage());
+				log.error("Kall mot dokarkiv feilet funksjonelt ved registrering av lest status for journalpost med id={}, feilmelding={}", journalpostId.value(), error.getMessage());
 				throw new DokarkivOppdaterDistribusjonsinfoFunctionalException(
-						String.format("Kall mot SAF (GraphQL) feilet med status=%s, feilmelding=%s",
+						String.format("Kall mot dokarkiv feilet funksjonelt ved registrering av lest status for journalpost med id=%s, status=%s, feilmelding=%s",
+								journalpostId.value(),
 								response.getRawStatusCode(),
 								response.getMessage()),
 						error);
 			} else {
-				log.error("Kall mot dokarkiv feilet teknisk ved registrering av lest status for journalpost med id={}, feilmelding={}", journalPostId.value(), error.getMessage());
+				log.error("Kall mot dokarkiv feilet teknisk ved registrering av lest status for journalpost med id={}, feilmelding={}", journalpostId.value(), error.getMessage());
 				throw new DokarkivOppdaterDistribusjonsinfoTechnicalException(
-						String.format("Kall mot SAF (GraphQL) feilet med feilmelding=%s", error.getMessage()),
+						String.format("Kall mot dokarkiv feilet teknisk ved registrering av lest status for journalpost med id=%s ,feilmelding=%s",
+								journalpostId.value(),
+								error.getMessage()),
 						error);
 			}
 		};
