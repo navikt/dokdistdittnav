@@ -1,27 +1,26 @@
 package no.nav.dokdistdittnav.consumer.dokarkiv;
 
-import io.netty.handler.timeout.ReadTimeoutException;
-import io.netty.handler.timeout.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.dokdistdittnav.config.properties.AzureTokenProperties;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
-import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
 import no.nav.dokdistdittnav.exception.technical.AbstractDokdistdittnavTechnicalException;
 import no.nav.dokdistdittnav.metrics.Monitor;
 import org.slf4j.MDC;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
-import static java.lang.String.format;
 import static no.nav.dokdistdittnav.constants.MdcConstants.CALL_ID;
 import static no.nav.dokdistdittnav.constants.MdcConstants.DOKARKIV_CONSUMER;
 import static no.nav.dokdistdittnav.constants.MdcConstants.PROCESS;
@@ -33,10 +32,16 @@ import static no.nav.dokdistdittnav.constants.RetryConstants.MAX_ATTEMPTS_SHORT;
 public class DokarkivConsumer {
 
 	private final DokdistdittnavProperties dokdistdittnavProperties;
+	private final ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager;
+	private final AzureTokenProperties azureTokenProperties;
 	private final WebClient webClient;
 
 	public DokarkivConsumer(DokdistdittnavProperties dokdistdittnavProperties,
+							ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager,
+							AzureTokenProperties azureTokenProperties,
 							WebClient webClient) {
+		this.oAuth2AuthorizedClientManager = oAuth2AuthorizedClientManager;
+		this.azureTokenProperties = azureTokenProperties;
 		this.webClient = webClient;
 		this.dokdistdittnavProperties = dokdistdittnavProperties;
 	}
@@ -46,6 +51,7 @@ public class DokarkivConsumer {
 	public void settTidLestHoveddokument(JournalPostId journalPostId, OppdaterDistribusjonsInfo feilregistrerForsendelse) {
 		webClient.patch()
 				.uri(dokdistdittnavProperties.getDokarkiv().getOppdaterDistribusjonsinfoURI(journalPostId))
+				.attributes(getOauth2AuthorizedClient())
 				.headers(this::createHeaders)
 				.bodyValue(feilregistrerForsendelse)
 				.retrieve()
@@ -70,6 +76,11 @@ public class DokarkivConsumer {
 						error);
 			}
 		};
+	}
+
+	private Consumer<Map<String, Object>> getOauth2AuthorizedClient() {
+		Mono<OAuth2AuthorizedClient> clientMono = oAuth2AuthorizedClientManager.authorize(AzureTokenProperties.getOAuth2AuthorizeRequestForAzure());
+		return ServerOAuth2AuthorizedClientExchangeFilterFunction.oauth2AuthorizedClient(clientMono.block());
 	}
 
 	private void createHeaders(HttpHeaders headers) {
