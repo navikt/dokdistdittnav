@@ -108,8 +108,8 @@ public class Kdist002ITest extends ApplicationTestConfig {
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-forsendelsestatus-feilet.json", FORSENDELSE_ID, OK.value());
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
-			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+			verify(getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
+			verify(getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
 		});
 	}
 
@@ -120,17 +120,17 @@ public class Kdist002ITest extends ApplicationTestConfig {
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-forsendelsestatus-feilet.json", FORSENDELSE_ID, OK.value());
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
-			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+			verify(getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
+			verify(getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
 		});
 	}
 
 	private void verifyAndCountForsendelse(String bestillingsId, String forsendelseStatus) {
-		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + bestillingsId)));
-		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
-		verify(1, postRequestedFor(urlMatching("/administrerforsendelse")));
-		verify(1, putRequestedFor(urlMatching("/administrerforsendelse/feilregistrerforsendelse")));
-		verify(1, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + NY_FORSENDELSE_ID + "&forsendelseStatus=" + forsendelseStatus)));
+		verify(getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + bestillingsId)));
+		verify(getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+		verify(postRequestedFor(urlMatching("/administrerforsendelse")));
+		verify(putRequestedFor(urlMatching("/administrerforsendelse/feilregistrerforsendelse")));
+		verify(putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + NY_FORSENDELSE_ID + "&forsendelseStatus=" + forsendelseStatus)));
 	}
 
 	private void stubGetHentForsendelse(String responsebody, String forsendelseId, int httpStatusvalue) {
