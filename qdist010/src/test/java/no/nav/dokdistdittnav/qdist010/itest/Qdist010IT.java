@@ -6,7 +6,6 @@ import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
@@ -20,7 +19,6 @@ import javax.jms.Queue;
 import javax.jms.TextMessage;
 import javax.xml.bind.JAXBElement;
 import java.time.Clock;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -44,7 +42,6 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.doReturn;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 
@@ -53,6 +50,8 @@ class Qdist010IT extends ApplicationTestConfig {
 
 	private static final String FORSENDELSE_ID = "33333";
 	private static final String FORSENDELSE_PATH = "/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT" + "&varselStatus=OPPRETTET";
+
+	private static final ZoneId OSLO_ZONE = ZoneId.of("Europe/Oslo");
 	private static String CALL_ID;
 
 	@Autowired
@@ -82,9 +81,9 @@ class Qdist010IT extends ApplicationTestConfig {
 	public Clock clock() {
 		//15.30.00 -> UTC
 		LocalTime morgen = LocalTime.of(13, 30, 00);
-		LocalDate today = LocalDate.now(ZoneId.systemDefault());
+		LocalDate today = LocalDate.now(OSLO_ZONE);
 		LocalDateTime todayMidnight = LocalDateTime.of(today, morgen);
-		return Clock.fixed(todayMidnight.toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
+		return Clock.fixed(todayMidnight.toInstant(ZoneOffset.UTC), OSLO_ZONE);
 	}
 
 	@Test
@@ -339,9 +338,9 @@ class Qdist010IT extends ApplicationTestConfig {
 	void shouldThrowBeforeKjernetidFunctionalException() throws Exception {
 		//05.00.00 -> UTC
 		LocalTime morgen = LocalTime.of(03, 00, 00);
-		LocalDate today = LocalDate.now(ZoneId.systemDefault());
+		LocalDate today = LocalDate.now(OSLO_ZONE);
 		LocalDateTime todayMidnight = LocalDateTime.of(today, morgen);
-		Clock fixedClock = Clock.fixed(todayMidnight.toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
+		Clock fixedClock = Clock.fixed(todayMidnight.toInstant(ZoneOffset.UTC), OSLO_ZONE);
 		ReflectionTestUtils.setField(produsentNotifikasjon, "clock", fixedClock);
 
 		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
@@ -364,10 +363,10 @@ class Qdist010IT extends ApplicationTestConfig {
 	@Test
 	void shouldThrowEtterKjernetidFunctionalException() throws Exception {
 		//23.30.00 -> UTC
-		LocalTime morgen = LocalTime.of(21, 30, 00);
-		LocalDate today = LocalDate.now(ZoneId.systemDefault());
+		LocalTime morgen = LocalTime.of(23, 30, 0);
+		LocalDate today = LocalDate.of(2022, 4, 29);
 		LocalDateTime todayMidnight = LocalDateTime.of(today, morgen);
-		Clock fixedClock = Clock.fixed(todayMidnight.toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
+		Clock fixedClock = Clock.fixed(todayMidnight.atZone(OSLO_ZONE).toInstant(), OSLO_ZONE);
 		ReflectionTestUtils.setField(produsentNotifikasjon, "clock", fixedClock);
 
 		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
