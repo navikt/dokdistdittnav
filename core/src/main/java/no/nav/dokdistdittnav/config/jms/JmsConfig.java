@@ -15,6 +15,7 @@ import org.springframework.jms.connection.UserCredentialsConnectionFactoryAdapte
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Queue;
+import javax.net.ssl.SSLSocketFactory;
 
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +29,7 @@ import static com.ibm.msg.client.wmq.common.CommonConstants.WMQ_CM_CLIENT;
 public class JmsConfig {
 
 	private static final int UTF_8_WITH_PUA = 1208;
+	private static final String ANY_TLS13_OR_HIGHER = "*TLS13ORHIGHER";
 
 	@Bean
 	public Queue qdist010(@Value("${dokdistdittnav_qdist010_dist_ditt_nav.queuename}") String qdist010QueueName) throws JMSException {
@@ -62,6 +64,14 @@ public class JmsConfig {
 		MQConnectionFactory connectionFactory = new MQConnectionFactory();
 		connectionFactory.setHostName(mqGatewayAlias.getHostname());
 		connectionFactory.setPort(mqGatewayAlias.getPort());
+
+		if (mqGatewayAlias.isEnableTls()) {
+			// https://www.ibm.com/docs/en/ibm-mq/9.1?topic=mm-migrating-existing-security-configurations-use-any-tls12-higher-cipherspec
+			connectionFactory.setSSLCipherSuite(ANY_TLS13_OR_HIGHER);
+			SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+			connectionFactory.setSSLSocketFactory(factory);
+		}
+
 		connectionFactory.setChannel(channelName);
 		connectionFactory.setQueueManager(mqGatewayAlias.getName());
 		connectionFactory.setTransportType(WMQ_CM_CLIENT);

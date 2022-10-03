@@ -9,7 +9,7 @@
 	"DOKDISTDITTNAV_DOKARKIV_OAUTH_SCOPE": "api://prod-fss.teamdokumenthandtering.dokarkiv/.default",
 	"DOKDISTDITTNAV_DOKARKIV_BASE_URI": "https://dokarkiv.intern.nav.no/rest/journalpostapi/v1/journalpost",
 	"ADMINISTRERFORSENDELSE_V1_URL": "https://app.adeo.no/dokdist/rest/v1/administrerforsendelse",
-	"DOKDISTDITTNAV_CHANNEL_NAME": "P_DOKDISTDITTNAV",
+	"DOKDISTDITTNAV_CHANNEL_NAME": "P_DOKDISTDITTNAV_SE",
 	"MQGATEWAY01_HOSTNAME": "mpls01.adeo.no",
 	"MQGATEWAY01_PORT": "1414",
 	"MQGATEWAY01_NAME": "MPLS01",
