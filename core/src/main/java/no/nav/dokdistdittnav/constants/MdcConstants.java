@@ -13,5 +13,6 @@ public final class MdcConstants {
 	public static final String NAV_CALL_ID = "Nav-Call-Id";
 	public static final String NAV_CONSUMER_ID = "Nav-Consumer-Id";
 	public static final String DOK_CONSUMER = "dok_consumer";
+	public static final String DOKARKIV_CONSUMER = "dokarkiv_consumer";
 	public static final String PROCESS = "process";
 }

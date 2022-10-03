@@ -1,10 +1,13 @@
 {
+	"AZURE_APP_TOKEN_URL": "https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/oauth2/v2.0/token",
 	"DOKDISTDITTNAV_BRUKERNOTIFIKASJON_TOPICBESKJED": "min-side.aapen-brukernotifikasjon-beskjed-v1",
 	"DOKDISTDITTNAV_BRUKERNOTIFIKASJON_TOPICOPPGAVE": "min-side.aapen-brukernotifikasjon-oppgave-v1",
 	"DOKDISTDITTNAV_BRUKERNOTIFIKASJON_TOPICDONE": "min-side.aapen-brukernotifikasjon-done-v1",
 	"DOKDISTDITTNAV_DOKNOTIFIKASJON_STATUSTOPIC": "teamdokumenthandtering.aapen-dok-notifikasjon-status",
 	"DOKDISTDITTNAV_TOPIC_LESTAVMOTTAKER": "teamdokumenthandtering.privat-dokdistdittnav-lestavmottaker-q1",
 	"DOKDISTDITTNAV_BRUKERNOTIFIKASJON_LINK": "https://person.dev.nav.no/mine-saker/tema/",
+	"DOKDISTDITTNAV_DOKARKIV_OAUTH_SCOPE": "api://dev-fss.teamdokumenthandtering.dokarkiv-q1/.default",
+	"DOKDISTDITTNAV_DOKARKIV_BASE_URI": "https://dokarkiv-q1.dev.intern.nav.no/rest/journalpostapi/v1/journalpost",
 	"ADMINISTRERFORSENDELSE_V1_URL": "https://app-q1.adeo.no/dokdist/rest/v1/administrerforsendelse",
 	"DOKDISTDITTNAV_CHANNEL_NAME": "Q1_DOKDISTDITTNAV",
 	"MQGATEWAY01_HOSTNAME": "b27apvl219.preprod.local",

@@ -3,6 +3,9 @@ package no.nav.dokdistdittnav.kdist001;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
+import no.nav.dokdistdittnav.consumer.dokarkiv.DokarkivConsumer;
+import no.nav.dokdistdittnav.consumer.dokarkiv.JournalpostId;
+import no.nav.dokdistdittnav.consumer.dokarkiv.OppdaterDistribusjonsInfo;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
@@ -13,6 +16,8 @@ import no.nav.safselvbetjening.schemas.HoveddokumentLest;
 import org.apache.camel.Handler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.time.OffsetDateTime;
 
 import static java.lang.String.format;
 import static java.util.Objects.nonNull;
@@ -30,16 +35,18 @@ public class Ferdigprodusent {
 
 	private final AdministrerForsendelse administrerForsendelse;
 	private final DokdistdittnavProperties dokdistdittnavProperties;
+	private final DokarkivConsumer dokarkivConsumer;
 	private final KafkaEventProducer kafkaEventProducer;
 	private final BrukerNotifikasjonMapper mapper;
 
 	@Autowired
 	public Ferdigprodusent(AdministrerForsendelse administrerForsendelse, DokdistdittnavProperties dokdistdittnavProperties,
-						   KafkaEventProducer kafkaEventProducer) {
+						   KafkaEventProducer kafkaEventProducer, DokarkivConsumer dokarkivConsumer) {
 		this.administrerForsendelse = administrerForsendelse;
 		this.dokdistdittnavProperties = dokdistdittnavProperties;
 		this.kafkaEventProducer = kafkaEventProducer;
 		this.mapper = new BrukerNotifikasjonMapper();
+		this.dokarkivConsumer = dokarkivConsumer;
 	}
 
 	@Handler
@@ -60,6 +67,7 @@ public class Ferdigprodusent {
 
 				NokkelInput nokkelInput = mapper.mapNokkelIntern(finnForsendelseResponse.getForsendelseId(), dokdistdittnavProperties.getAppnavn(), hentForsendelseResponse);
 				kafkaEventProducer.publish(dokdistdittnavProperties.getBrukernotifikasjon().getTopicdone(), nokkelInput, mapper.mapDoneInput());
+				dokarkivConsumer.settTidLestHoveddokument(new JournalpostId(hoveddokumentLest.getJournalpostId()), new OppdaterDistribusjonsInfo(OffsetDateTime.now()));
 				administrerForsendelse.oppdaterVarselStatus(finnForsendelseResponse.getForsendelseId(), FERDIGSTILT.name());
 				log.info("Oppdatert forsendelse med forsendelseId={} til varselStatus={}", finnForsendelseResponse.getForsendelseId(), FERDIGSTILT);
 			}
