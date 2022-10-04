@@ -54,13 +54,15 @@ public class JmsConfig {
 
 	@Bean
 	public ConnectionFactory connectionFactory(final MqGatewayAlias mqGatewayAlias,
-												  final @Value("${dokdistdittnav_channel.name}") String channelName,
-												  final DokdistDittnavServiceuser dokdistDittnavServiceuser) throws JMSException {
-		return createConnectionFactory(mqGatewayAlias, channelName, dokdistDittnavServiceuser);
+											   final @Value("${dokdistdittnav_channel.name}") String channelName,
+											   final @Value("${dokdistdittnav_channel_secure.name}") String channelNameSecure,
+											   final DokdistDittnavServiceuser dokdistDittnavServiceuser) throws JMSException {
+		return createConnectionFactory(mqGatewayAlias, channelName, channelNameSecure, dokdistDittnavServiceuser);
 	}
 
 	private PooledConnectionFactory createConnectionFactory(final MqGatewayAlias mqGatewayAlias,
 															final String channelName,
+															final String channelNameSecure,
 															final DokdistDittnavServiceuser dokdistDittnavServiceuser) throws JMSException {
 		MQConnectionFactory connectionFactory = new MQConnectionFactory();
 		connectionFactory.setHostName(mqGatewayAlias.getHostname());
@@ -72,9 +74,11 @@ public class JmsConfig {
 			connectionFactory.setSSLCipherSuite(ANY_TLS13_OR_HIGHER);
 			SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 			connectionFactory.setSSLSocketFactory(factory);
+			connectionFactory.setChannel(channelNameSecure);
+		} else {
+			connectionFactory.setChannel(channelName);
 		}
 
-		connectionFactory.setChannel(channelName);
 		connectionFactory.setQueueManager(mqGatewayAlias.getName());
 		connectionFactory.setTransportType(WMQ_CM_CLIENT);
 		connectionFactory.setCCSID(UTF_8_WITH_PUA);
