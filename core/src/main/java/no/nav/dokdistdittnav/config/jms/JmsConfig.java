@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 import static com.ibm.mq.constants.CMQC.MQENC_NATIVE;
 import static com.ibm.msg.client.jms.JmsConstants.JMS_IBM_CHARACTER_SET;
 import static com.ibm.msg.client.jms.JmsConstants.JMS_IBM_ENCODING;
+import static com.ibm.msg.client.jms.JmsConstants.USER_AUTHENTICATION_MQCSP;
 import static com.ibm.msg.client.wmq.common.CommonConstants.WMQ_CM_CLIENT;
 
 @Configuration
@@ -64,6 +65,7 @@ public class JmsConfig {
 		MQConnectionFactory connectionFactory = new MQConnectionFactory();
 		connectionFactory.setHostName(mqGatewayAlias.getHostname());
 		connectionFactory.setPort(mqGatewayAlias.getPort());
+		connectionFactory.setBooleanProperty(USER_AUTHENTICATION_MQCSP, true);
 
 		if (mqGatewayAlias.isEnableTls()) {
 			// https://www.ibm.com/docs/en/ibm-mq/9.1?topic=mm-migrating-existing-security-configurations-use-any-tls12-higher-cipherspec
