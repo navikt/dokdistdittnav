@@ -25,8 +25,4 @@ public class MqGatewayAlias {
 	@Min(0)
 	private int port;
 	private boolean enableTls;
-
-	public boolean isEnableTls() {
-		return enableTls;
-	}
 }
