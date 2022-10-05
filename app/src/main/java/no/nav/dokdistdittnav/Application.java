@@ -25,6 +25,8 @@ import org.springframework.retry.annotation.EnableRetry;
 })
 public class Application {
 	public static void main(String[] args) {
+		// Hindre at passordet lekker ut i loggene.
+		System.setProperty("javax.net.ssl.keyStorePassword", System.getenv("SRVDOKDISTDITTNAVCERT_PASSWORD"));
 		SpringApplication.run(Application.class, args);
 	}
 }
