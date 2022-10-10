@@ -6,11 +6,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.security.oauth2.client.AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.ClientCredentialsReactiveOAuth2AuthorizedClientProvider;
 import org.springframework.security.oauth2.client.InMemoryReactiveOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProvider;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.endpoint.WebClientReactiveClientCredentialsTokenResponseClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
@@ -45,11 +45,25 @@ public class AzureOAuthEnabledWebClientConfig {
 	}
 
 	@Bean
-	ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager(ReactiveClientRegistrationRepository clientRegistrationRepository, ReactiveOAuth2AuthorizedClientService oAuth2AuthorizedClientService) {
-		ReactiveOAuth2AuthorizedClientProvider authorizedClientProvider = ReactiveOAuth2AuthorizedClientProviderBuilder
-				.builder()
-				.clientCredentials()
+	ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager(
+			ReactiveClientRegistrationRepository clientRegistrationRepository,
+			ReactiveOAuth2AuthorizedClientService oAuth2AuthorizedClientService,
+			WebProxyProperties webProxyProperties
+	) {
+		ClientCredentialsReactiveOAuth2AuthorizedClientProvider authorizedClientProvider = new ClientCredentialsReactiveOAuth2AuthorizedClientProvider();
+		var nettyHttpClient = HttpClient.create()
+				.proxy(webProxyProperties::setProxy)
+				.responseTimeout(Duration.of(20, ChronoUnit.SECONDS));
+		var clientHttpConnector = new ReactorClientHttpConnector(nettyHttpClient);
+
+		WebClient webClientWithProxy =  WebClient.builder()
+				.clientConnector(clientHttpConnector)
 				.build();
+
+		WebClientReactiveClientCredentialsTokenResponseClient client = new WebClientReactiveClientCredentialsTokenResponseClient();
+		client.setWebClient(webClientWithProxy);
+
+		authorizedClientProvider.setAccessTokenResponseClient(client);
 
 		AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager authorizedClientManager = new AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager(clientRegistrationRepository, oAuth2AuthorizedClientService);
 		authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
