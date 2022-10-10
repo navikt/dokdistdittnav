@@ -27,11 +27,13 @@ import java.time.temporal.ChronoUnit;
 public class AzureOAuthEnabledWebClientConfig {
 
 	@Bean
-	WebClient webClient(ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
+	WebClient webClient(
+			ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager,
+			WebProxyProperties webProxyProperties) {
 		ServerOAuth2AuthorizedClientExchangeFilterFunction oauth2exchangeFilterFunction = new ServerOAuth2AuthorizedClientExchangeFilterFunction(oAuth2AuthorizedClientManager);
 
 		var nettyHttpClient = HttpClient.create()
-				.proxyWithSystemProperties()
+				.proxy(webProxyProperties::setProxy)
 				.responseTimeout(Duration.of(20, ChronoUnit.SECONDS));
 		var clientHttpConnector = new ReactorClientHttpConnector(nettyHttpClient);
 
