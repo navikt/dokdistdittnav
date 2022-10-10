@@ -29,7 +29,8 @@ public class AzureOAuthEnabledWebClientConfig {
 	@Bean
 	WebClient webClient(
 			ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager,
-			WebProxyProperties webProxyProperties) {
+			WebProxyProperties webProxyProperties
+	) {
 		ServerOAuth2AuthorizedClientExchangeFilterFunction oauth2exchangeFilterFunction = new ServerOAuth2AuthorizedClientExchangeFilterFunction(oAuth2AuthorizedClientManager);
 
 		var nettyHttpClient = HttpClient.create()

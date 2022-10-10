@@ -1,5 +1,6 @@
 package no.nav.dokdistdittnav.kdist001.itest.config;
 
+import no.nav.dokdistdittnav.config.WebProxyProperties;
 import no.nav.dokdistdittnav.config.properties.AzureTokenProperties;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.config.properties.MqGatewayAlias;
@@ -22,7 +23,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 		DokdistDittnavServiceuser.class,
 		DokdistdittnavProperties.class,
 		AzureTokenProperties.class,
-		MqGatewayAlias.class
+		MqGatewayAlias.class,
+		WebProxyProperties.class
 })
 @Import({
 		JmsItestConfig.class,
