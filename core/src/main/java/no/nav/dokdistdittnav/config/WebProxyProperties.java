@@ -15,7 +15,7 @@ public record WebProxyProperties(
 	public <T extends ProxyProvider.TypeSpec> void setProxy(T proxyProvider) {
 		log.info("Setter proxy proxyHost={}. proxyPort={}", proxyHost, proxyPort);
 		if (proxyHost != null) {
-			proxyProvider.type(ProxyProvider.Proxy.HTTP).host(proxyHost).port(proxyPort).nonProxyHosts(nonProxyHosts);
+			proxyProvider.type(ProxyProvider.Proxy.HTTP).host(proxyHost).port(proxyPort).nonProxyHosts("localhost|127.0.0.1|10.254.0.1|.+.local|.+.adeo.no|.+.nav.no|.+.aetat.no|.+.devillo.no|.+.oera.no|.+nais.io|.+.aivencloud.com");
 		}
 	}
 }
