@@ -58,7 +58,7 @@ public class DokdistdittnavProperties {
 		private String oauthScope;
 
 		public URI getOppdaterDistribusjonsinfoURI(JournalpostId journalPostId) {
-			return URI.create(baseUri + journalPostId.value() + oppdaterDistribusjonsinfoPath);
+			return URI.create(baseUri + "/" + journalPostId.value() + oppdaterDistribusjonsinfoPath);
 		}
 	}
 }
