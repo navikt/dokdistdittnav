@@ -37,7 +37,7 @@ public class Kdist001Route extends RouteBuilder {
 		errorHandler(defaultErrorHandler()
 				.onExceptionOccurred(exchange -> {
 					Throwable exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
-					if (exception != null) {
+					if (exception != null && !(exception instanceof AbstractDokdistdittnavFunctionalException)) {
 						DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
 						manual.getConsumer().seek(manual.getPartition(), manual.getRecordOffset());
 						log.error("Kdist001 Teknisk feil. Seek tilbake til record(topic={}, partition={}, offset={})", manual.getTopicName(),
