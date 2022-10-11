@@ -3,7 +3,10 @@ package no.nav.dokdistdittnav.consumer.dokarkiv;
 import java.time.OffsetDateTime;
 
 public record OppdaterDistribusjonsInfo(
+		boolean settStatusEkspedert,
 		OffsetDateTime datoLest
 ) {
-	public static final boolean settStatusEkspedert = false;
+	public OppdaterDistribusjonsInfo(OffsetDateTime datoLest) {
+		this(false, datoLest);
+	}
 }
