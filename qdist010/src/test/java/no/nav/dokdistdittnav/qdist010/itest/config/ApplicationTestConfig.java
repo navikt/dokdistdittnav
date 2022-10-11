@@ -1,10 +1,9 @@
 package no.nav.dokdistdittnav.qdist010.itest.config;
 
-import no.nav.dokdistdittnav.config.WebProxyProperties;
 import no.nav.dokdistdittnav.config.properties.AzureTokenProperties;
+import no.nav.dokdistdittnav.config.properties.DokdistDittnavServiceuser;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.config.properties.MqGatewayAlias;
-import no.nav.dokdistdittnav.config.properties.DokdistDittnavServiceuser;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,8 +22,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 		DokdistDittnavServiceuser.class,
 		DokdistdittnavProperties.class,
 		AzureTokenProperties.class,
-		MqGatewayAlias.class,
-		WebProxyProperties.class
+		MqGatewayAlias.class
 })
 @Import({
 		JmsItestConfig.class,

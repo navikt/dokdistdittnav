@@ -1,6 +1,5 @@
 package no.nav.dokdistdittnav;
 
-import no.nav.dokdistdittnav.config.WebProxyProperties;
 import no.nav.dokdistdittnav.config.kafka.KafkaConfig;
 import no.nav.dokdistdittnav.config.properties.AzureTokenProperties;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
@@ -22,8 +21,7 @@ import org.springframework.retry.annotation.EnableRetry;
 		DokdistDittnavServiceuser.class,
 		DokdistdittnavProperties.class,
 		AzureTokenProperties.class,
-		MqGatewayAlias.class,
-		WebProxyProperties.class
+		MqGatewayAlias.class
 })
 public class Application {
 	public static void main(String[] args) {
