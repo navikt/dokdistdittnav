@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistdittnav.config.kafka.CamelKafkaProperties;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
+import no.nav.dokdistdittnav.exception.technical.AbstractDokdistdittnavTechnicalException;
 import no.nav.dokdistdittnav.kafka.DoneEventRequest;
 import no.nav.dokdistdittnav.metrics.DittnavMetricsRoutePolicy;
 import no.nav.dokdistdittnav.utils.MDCProcessor;
@@ -24,7 +25,6 @@ import static no.nav.dokdistdittnav.constants.DomainConstants.KDIST002_ID;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDELSE_ID;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FEILET;
-import static org.apache.camel.Exchange.EXCEPTION_CAUGHT;
 import static org.apache.camel.LoggingLevel.ERROR;
 import static org.apache.camel.LoggingLevel.INFO;
 import static org.apache.camel.LoggingLevel.WARN;
@@ -62,19 +62,22 @@ public class Kdist002Route extends RouteBuilder {
 
 		//@formatter:off
 		errorHandler(defaultErrorHandler()
-				.onExceptionOccurred(exchange -> {
-					Throwable exception = exchange.getProperty(EXCEPTION_CAUGHT, Throwable.class);
-					if (exception != null) {
-						DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
-						manual.getConsumer().seek(manual.getPartition(), manual.getRecordOffset());
-						log.error("Kdist002 Teknisk feil. Seek tilbake til record(topic={}, partition={}, offset={})", manual.getTopicName(),
-								manual.getPartition().partition(), manual.getRecordOffset());
-					}
-				})
 				.retryAttemptedLogLevel(ERROR)
 				.logRetryStackTrace(false)
 				.logExhaustedMessageBody(false)
 				.loggingLevel(ERROR));
+
+		onException(AbstractDokdistdittnavTechnicalException.class)
+				.process(exchange -> {
+					DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
+					manual.getCamelExchangePayload().consumer.seek(manual.getPartition(), manual.getRecordOffset());
+					log.warn("Kdist002 Teknisk feil. Seek tilbake til record(topic={}, partition={}, offset={})", manual.getTopicName(),
+							manual.getPartition().partition(), manual.getRecordOffset());
+				})
+				.logExhaustedMessageBody(false)
+				.logExhaustedMessageHistory(false)
+				.logStackTrace(false)
+				.log(WARN, log, "${exception}");
 
 		onException(AbstractDokdistdittnavFunctionalException.class)
 				.handled(true)
@@ -85,7 +88,6 @@ public class Kdist002Route extends RouteBuilder {
 				.logRetryAttempted(false)
 				.process(this::defaultKafkaManualCommit)
 				.log(WARN, log, "${exception}");
-
 
 		from(camelKafkaProperties.buildKafkaUrl(dittnavProperties.getDoknotifikasjon().getStatustopic(), camelKafkaProperties.kafkaConsumer()))
 				.id(KDIST002_ID)
