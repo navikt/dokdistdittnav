@@ -8,7 +8,6 @@ import no.nav.dokdistdittnav.kafka.DoneEventRequest;
 import no.nav.dokdistdittnav.utils.MDCProcessor;
 import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKanal;
 import org.apache.camel.Exchange;
-import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.kafka.consumer.DefaultKafkaManualCommit;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
@@ -17,14 +16,17 @@ import org.springframework.stereotype.Component;
 
 import javax.jms.Queue;
 import javax.xml.bind.JAXBContext;
-import java.nio.charset.StandardCharsets;
 
 import static java.lang.String.format;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static no.nav.dokdistdittnav.constants.DomainConstants.KDIST002_ID;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDELSE_ID;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FEILET;
+import static org.apache.camel.Exchange.EXCEPTION_CAUGHT;
+import static org.apache.camel.LoggingLevel.ERROR;
 import static org.apache.camel.LoggingLevel.INFO;
+import static org.apache.camel.LoggingLevel.WARN;
 import static org.apache.camel.component.kafka.KafkaConstants.MANUAL_COMMIT;
 import static org.apache.camel.support.builder.PredicateBuilder.or;
 
@@ -34,9 +36,6 @@ public class Kdist002Route extends RouteBuilder {
 
 	private static final String QDIST009 = "qdist009";
 	private static final String DONE_EVENT = "doknotifikasjon_done";
-	private static final String COMMIT_MELDING = "Kdist002, manual commit ";
-	private static final String ERROR_MELDING = "Kdist002 Funksjonell feil i record";
-	private static final String END_MELDING = "Avsluttet behandlingen: ";
 
 	private final CamelKafkaProperties camelKafkaProperties;
 	private final Kdist002Service kdist002Service;
@@ -56,9 +55,11 @@ public class Kdist002Route extends RouteBuilder {
 
 	@Override
 	public void configure() throws Exception {
+
+		//@formatter:off
 		errorHandler(defaultErrorHandler()
 				.onExceptionOccurred(exchange -> {
-					Throwable exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
+					Throwable exception = exchange.getProperty(EXCEPTION_CAUGHT, Throwable.class);
 					if (exception != null) {
 						DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
 						manual.getConsumer().seek(manual.getPartition(), manual.getRecordOffset());
@@ -66,10 +67,10 @@ public class Kdist002Route extends RouteBuilder {
 								manual.getPartition().partition(), manual.getRecordOffset());
 					}
 				})
-				.retryAttemptedLogLevel(LoggingLevel.ERROR)
+				.retryAttemptedLogLevel(ERROR)
 				.logRetryStackTrace(false)
 				.logExhaustedMessageBody(false)
-				.loggingLevel(LoggingLevel.ERROR));
+				.loggingLevel(ERROR));
 
 		onException(AbstractDokdistdittnavFunctionalException.class)
 				.handled(true)
@@ -78,8 +79,8 @@ public class Kdist002Route extends RouteBuilder {
 				.logExhaustedMessageHistory(false)
 				.logStackTrace(false)
 				.logRetryAttempted(false)
-				.process(exchange -> defaultKafkaManualCommit(exchange, ERROR_MELDING))
-				.log(LoggingLevel.WARN, log, "${exception}");
+				.process(this::defaultKafkaManualCommit)
+				.log(WARN, log, "${exception}");
 
 
 		from(camelKafkaProperties.buildKafkaUrl(dittnavProperties.getDoknotifikasjon().getStatustopic(), camelKafkaProperties.kafkaConsumer()))
@@ -89,13 +90,13 @@ public class Kdist002Route extends RouteBuilder {
 				.choice()
 				.when(or(simple("${body.bestillerId}").isNotEqualTo(dittnavProperties.getAppnavn()),
 						simple("${body.status}").isNotEqualTo(FEILET.name())))
-					.process(exchange -> defaultKafkaManualCommit(exchange, END_MELDING))
+					.process(this::defaultKafkaManualCommit)
 					.endChoice()
 				.otherwise()
 				.bean(kdist002Service)
 					.choice()
 					.when(simple("${body}").isNull())
-						.process(exchange -> defaultKafkaManualCommit(exchange, END_MELDING))
+						.process(this::defaultKafkaManualCommit)
 						.endChoice()
 					.otherwise()
 						.process(exchange -> {
@@ -107,7 +108,7 @@ public class Kdist002Route extends RouteBuilder {
 						.to("direct:" + QDIST009)
 						.to("direct:" + DONE_EVENT)
 				.end()
-				.process(exchange -> defaultKafkaManualCommit(exchange, COMMIT_MELDING));
+				.process(this::defaultKafkaManualCommit);
 
 		from("direct:" + QDIST009)
 				.id(QDIST009)
@@ -118,7 +119,7 @@ public class Kdist002Route extends RouteBuilder {
 					exchange.getIn().setBody(distribuerTilKanal);
 				})
 				.marshal(new JaxbDataFormat(JAXBContext.newInstance(DistribuerTilKanal.class)))
-				.convertBodyTo(String.class, StandardCharsets.UTF_8.toString())
+				.convertBodyTo(String.class, UTF_8.toString())
 				.to("jms:" + qdist009.getQueueName())
 				.log(INFO, log, "Kdist002 skrevet forsendelse med " + getIdsForLogging() + " på kø QDIST009.")
 				.end();
@@ -128,6 +129,7 @@ public class Kdist002Route extends RouteBuilder {
 				.bean(doneEventProducer)
 				.log(INFO, "Kdist002 skrevet hendelse med " + getIdsForLogging() + " til topic=" + dittnavProperties.getBrukernotifikasjon().getTopicdone())
 				.end();
+		//@formatter:on
 	}
 
 	private static String getIdsForLogging() {
@@ -135,7 +137,7 @@ public class Kdist002Route extends RouteBuilder {
 				"forsendelseId=${exchangeProperty." + PROPERTY_FORSENDELSE_ID + "}";
 	}
 
-	private void defaultKafkaManualCommit(Exchange exchange, String melding) {
+	private void defaultKafkaManualCommit(Exchange exchange) {
 		DefaultKafkaManualCommit manualCommit = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
 		if (manualCommit != null) {
 			log.info("Kdist002, manual commit " + createLogging(manualCommit));

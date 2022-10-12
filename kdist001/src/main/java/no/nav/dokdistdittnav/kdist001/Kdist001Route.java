@@ -14,6 +14,8 @@ import org.springframework.stereotype.Component;
 
 import static java.lang.String.format;
 import static no.nav.dokdistdittnav.constants.DomainConstants.KDIST001_ID;
+import static org.apache.camel.Exchange.EXCEPTION_CAUGHT;
+import static org.apache.camel.LoggingLevel.ERROR;
 import static org.apache.camel.component.kafka.KafkaConstants.MANUAL_COMMIT;
 
 @Slf4j
@@ -34,9 +36,11 @@ public class Kdist001Route extends RouteBuilder {
 
 	@Override
 	public void configure() {
+
+		//@formatter:off
 		errorHandler(defaultErrorHandler()
 				.onExceptionOccurred(exchange -> {
-					Throwable exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
+					Throwable exception = exchange.getProperty(EXCEPTION_CAUGHT, Throwable.class);
 					if (exception != null && !(exception instanceof AbstractDokdistdittnavFunctionalException)) {
 						DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
 						manual.getConsumer().seek(manual.getPartition(), manual.getRecordOffset());
@@ -44,10 +48,10 @@ public class Kdist001Route extends RouteBuilder {
 								manual.getPartition().partition(), manual.getRecordOffset());
 					}
 				})
-				.retryAttemptedLogLevel(LoggingLevel.ERROR)
+				.retryAttemptedLogLevel(ERROR)
 				.logRetryStackTrace(false)
 				.logExhaustedMessageBody(false)
-				.loggingLevel(LoggingLevel.ERROR));
+				.loggingLevel(ERROR));
 
 		onException(AbstractDokdistdittnavFunctionalException.class)
 				.handled(true)
@@ -56,36 +60,34 @@ public class Kdist001Route extends RouteBuilder {
 				.logExhaustedMessageHistory(false)
 				.logStackTrace(false)
 				.logRetryAttempted(false)
-				.process(exchange -> {
-					DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
-					if (manual != null) {
-						log.error("Kdist001 Funksjonell feil i record" + defaultKafkaManualCommit(exchange));
-						manual.commit();
-					}
-				})
+				.process(this::defaultKafkaManualCommit)
 				.log(LoggingLevel.WARN, log, "${exception}");
-
 
 		from(camelKafkaProperties.buildKafkaUrl(dokdistdittnavProperties.getTopic().getLestavmottaker(), camelKafkaProperties.kafkaConsumer()))
 				.autoStartup(dokdistdittnavProperties.isAutostartup())
 				.id(KDIST001_ID)
 				.process(new MDCProcessor())
-				.process(exchange -> log.info("Kdist001 mottatt " + defaultKafkaManualCommit(exchange)))
+				.process(exchange -> log.info("Kdist001 mottatt " + createLoggingFraHeader(exchange)))
 				.bean(ferdigprodusent)
-				.process(exchange -> {
-					DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
-					if (manual != null) {
-						log.info("Kdist001, manual commit " + defaultKafkaManualCommit(exchange));
-						manual.commit();
-					}
-				})
+				.process(this::defaultKafkaManualCommit)
 				.end();
-
-
+		//@formatter:on
 	}
 
-	private String defaultKafkaManualCommit(Exchange exchange) {
-		DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
-		return format("(topic=%s, partition={%s, offset=%s, groupId=%s).", manual.getTopicName(), manual.getPartition().partition(), manual.getRecordOffset(), camelKafkaProperties.getGroupId());
+	private void defaultKafkaManualCommit(Exchange exchange) {
+		DefaultKafkaManualCommit manualCommit = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
+		if (manualCommit != null) {
+			log.info("Kdist001, manual commit " + createLogging(manualCommit));
+			manualCommit.commit();
+		}
+	}
+
+	private String createLoggingFraHeader(Exchange exchange) {
+		DefaultKafkaManualCommit manualCommit = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
+		return createLogging(manualCommit);
+	}
+
+	private String createLogging(DefaultKafkaManualCommit manualCommit) {
+		return format("(topic=%s, partition={%s, offset=%s, groupId=%s).", manualCommit.getTopicName(), manualCommit.getPartition().partition(), manualCommit.getRecordOffset(), camelKafkaProperties.getGroupId());
 	}
 }
