@@ -25,19 +25,12 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 		MqGatewayAlias.class
 })
 @Import({
-		JmsItestConfig.class,
-		KafkaTestConfig.class,
-		CustomAvroSerializer.class
+		JmsItestConfig.class
 })
 @EmbeddedKafka(
 		partitions = 1,
-		controlledShutdown = true,
 		brokerProperties = {
-				"listeners=PLAINTEXT://127.0.0.1:60172",
-				"port=60172",
-				"offsets.topic.replication.factor=1",
-				"transaction.state.log.replication.factor=1",
-				"transaction.state.log.min.isr=1"
+				"listeners=PLAINTEXT://127.0.0.1:60172"
 		}
 )
 @EnableAutoConfiguration
