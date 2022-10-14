@@ -8,7 +8,6 @@ import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseResponseTo;
 import no.nav.dokdistdittnav.kafka.DoneEventRequest;
-import no.nav.dokdistdittnav.kdist002.mapper.PersisterForsendelseMapper;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +40,6 @@ class Kdist002ServiceTest {
 
 	private DokdistdittnavProperties dokdistdittnavProperties;
 	private AdministrerForsendelse administrerForsendelse;
-	private PersisterForsendelseMapper persisterForsendelseMapper;
 
 	@Autowired
 	private Kdist002Service kdist002Service;
@@ -49,7 +47,6 @@ class Kdist002ServiceTest {
 	@BeforeEach
 	public void setUp() {
 		administrerForsendelse = mock(AdministrerForsendelseConsumer.class);
-		persisterForsendelseMapper = new PersisterForsendelseMapper();
 		dokdistdittnavProperties = dokdistdittnavProperties();
 		kdist002Service = new Kdist002Service(dokdistdittnavProperties, administrerForsendelse);
 	}

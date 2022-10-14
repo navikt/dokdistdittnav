@@ -118,8 +118,6 @@ class PersisterForsendelseMapperTest {
 		assertEquals(dokumentTo.getTilknyttetSom(), TILKNYTTET_SOM_VEDLEGG);
 		assertEquals(dokumentTo.getRekkefolge(), 2);
 		assertEquals(dokumentTo.getArkivDokumentInfoId(), ARKIV_DOKUMENTINFO_ID_2);
-
-
 	}
 
 	private HentForsendelseResponseTo createHentForsendelseResponseWithMottakerNull() {

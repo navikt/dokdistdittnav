@@ -5,7 +5,6 @@ import no.nav.dokdistdittnav.kdist002.itest.config.ApplicationTestConfig;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.context.ActiveProfiles;
@@ -32,6 +31,7 @@ import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.
 import static no.nav.dokdistdittnav.utils.DokdistUtils.classpathToString;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -58,12 +58,13 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 	@Test
 	public void shouldFeilRegistrerForsendelseOgOppdaterForsendelse() {
-		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name()));
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json", FORSENDELSE_ID, OK.value());
 		stubPostPersisterForsendelse("__files/rdist001/persisterForsendelseResponse-happy.json", HttpStatus.OK.value());
 		stubPutFeilregistrerforsendelse(OK.value());
 		stubPutOppdaterForsendelse(KLAR_FOR_DIST.name(), NY_FORSENDELSE_ID, OK.value());
+
+		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name()));
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
 			String message = receive(qdist009);
@@ -75,12 +76,13 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 	@Test
 	public void shouldAvsluttBehandlingenWhenBestillerIdIsNotDittnavAndStatusIsNotFeilet() {
-		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDPI, INFO.name()));
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json", FORSENDELSE_ID, OK.value());
 		stubPostPersisterForsendelse("__files/rdist001/persisterForsendelseResponse-happy.json", HttpStatus.OK.value());
 		stubPutFeilregistrerforsendelse(OK.value());
 		stubPutOppdaterForsendelse(KLAR_FOR_DIST.name(), NY_FORSENDELSE_ID, OK.value());
+
+		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDPI, INFO.name()));
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
 			verify(0, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
@@ -89,12 +91,13 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 	@Test
 	public void shouldAvsluttBehandlingenWhenBestillerIdIsNotDittnavAndStatusFeilet() {
-		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDPI, FEILET.name()));
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json", FORSENDELSE_ID, OK.value());
 		stubPostPersisterForsendelse("__files/rdist001/persisterForsendelseResponse-happy.json", HttpStatus.OK.value());
 		stubPutFeilregistrerforsendelse(OK.value());
 		stubPutOppdaterForsendelse(KLAR_FOR_DIST.name(), NY_FORSENDELSE_ID, OK.value());
+
+		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDPI, FEILET.name()));
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
 			verify(0, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
@@ -103,9 +106,10 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 	@Test
 	public void shouldLogWhenVarselstatusIsNotEqualToOPPRETTET() {
-		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name()));
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-forsendelsestatus-feilet.json", FORSENDELSE_ID, OK.value());
+
+		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name()));
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
 			verify(getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
@@ -115,9 +119,10 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 	@Test
 	public void shouldLogAndAvsluttBehandlingHvisForsendelseStatusErFEILET() {
-		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name()));
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-forsendelsestatus-feilet.json", FORSENDELSE_ID, OK.value());
+
+		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name()));
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
 			verify(getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
@@ -134,15 +139,18 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	}
 
 	private void stubGetHentForsendelse(String responsebody, String forsendelseId, int httpStatusvalue) {
-		stubFor(get("/administrerforsendelse/" + forsendelseId).willReturn(aResponse().withStatus(httpStatusvalue)
-				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(classpathToString(responsebody))));
+		stubFor(get("/administrerforsendelse/" + forsendelseId)
+				.willReturn(aResponse()
+						.withStatus(httpStatusvalue)
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBody(classpathToString(responsebody))));
 	}
 
 	void stubGetFinnForsendelse(String responseBody, int httpStatusValue) {
 		stubFor(get("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)
-				.willReturn(aResponse().withStatus(httpStatusValue)
-						.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
+				.willReturn(aResponse()
+						.withStatus(httpStatusValue)
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBody(classpathToString(responseBody))));
 	}
 
@@ -160,7 +168,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	private void stubPostPersisterForsendelse(String responseBody, int httpStatusValue) {
 		stubFor(post(urlEqualTo("/administrerforsendelse"))
 				.willReturn(aResponse()
-						.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withStatus(httpStatusValue)
 						.withBody(classpathToString(responseBody))));
 	}
@@ -175,10 +183,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	}
 
 	private void sendMessageToTopic(String topicname, DoknotifikasjonStatus status) {
-		kafkaEventProducer.publish(
-				topicname, "key",
-				status
-		);
+		kafkaEventProducer.publish(topicname, "key", status);
 	}
 
 	public DoknotifikasjonStatus doknotifikasjonStatus(String appnavn, String status) {
