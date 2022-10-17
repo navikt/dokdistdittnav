@@ -15,6 +15,8 @@
 	"DOKDISTDITTNAV_BRUKERNOTIFIKASJON_LINK": "https://person.dev.nav.no/mine-saker/tema/",
 	"DOKDISTDITTNAV_DOKARKIV_OAUTH_SCOPE": "api://dev-fss.teamdokumenthandtering.dokarkiv-q1/.default",
 	"DOKDISTDITTNAV_DOKARKIV_BASE_URI": "https://dokarkiv-q1.dev.intern.nav.no/rest/journalpostapi/v1/journalpost",
+	"DOKDISTDITTNAV_DOKNOTIFIKASJON_OAUTH_SCOPE": "api://dev-fss.teamdokumenthandtering.doknotifikasjon-2/.default",
+	"DOKDISTDITTNAV_DOKNOTIFIKASJON_BASE_URI": "https://doknotifikasjon-2.dev.intern.nav.no/rest/v1/notifikasjoninfo/",
 	"ADMINISTRERFORSENDELSE_V1_URL": "https://app-q1.adeo.no/dokdist/rest/v1/administrerforsendelse",
 	"DOKDISTDITTNAV_CHANNEL_NAME": "Q1_DOKDISTDITTNAV",
 	"DOKDISTDITTNAV_CHANNEL_SECURE_NAME": "Q1_DOKDISTDITTNAV_SE",
