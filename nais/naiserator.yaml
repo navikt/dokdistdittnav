@@ -2,7 +2,7 @@ kind: Application
 apiVersion: nais.io/v1alpha1
 metadata:
   name: {{ APPNAVN }}
-  namespace: {{ NAMESPACE }}
+  namespace: teamdokumenthandtering
   labels:
     team: teamdokumenthandtering
 spec:
@@ -93,3 +93,4 @@ spec:
   azure:
     application:
       enabled: true
+  webproxy: true

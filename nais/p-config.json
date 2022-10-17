@@ -1,4 +1,11 @@
 {
+	"APPNAVN": "dokdistdittnav",
+	"KAFKA_POOL": "nav-prod",
+	"MIN_REPLICAS": "1",
+	"MAX_REPLICAS": "4",
+	"INGRESSES": [
+		"https://dokdistdittnav.intern.nav.no"
+	],
 	"AZURE_APP_TOKEN_URL": "https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/oauth2/v2.0/token",
 	"DOKDISTDITTNAV_BRUKERNOTIFIKASJON_TOPICBESKJED": "min-side.aapen-brukernotifikasjon-beskjed-v1",
 	"DOKDISTDITTNAV_BRUKERNOTIFIKASJON_TOPICOPPGAVE": "min-side.aapen-brukernotifikasjon-oppgave-v1",
@@ -22,13 +29,5 @@
 	"DOKDISTDITTNAV_QDIST010_DIST_DITT_NAV_QUEUENAME": "QA.P_DOKDISTDITTNAV.QDIST010_DIST_DITT_NAV",
 	"DOKDISTSENTRALPRINT_QDIST009_DIST_S_PRINT_QUEUENAME": "QA.P_DOKDISTSENTRALPRINT.QDIST009_DIST_S_PRINT",
 	"SRVDOKDISTDITTNAV": "/serviceuser/data/prod/srvdokdistdittnav",
-	"DOKDISTDITTNAV_VAULT": "/kv/prod/fss/dokdistdittnav/teamdokumenthandtering",
-	"APPNAVN": "dokdistdittnav",
-	"NAMESPACE": "teamdokumenthandtering",
-	"KAFKA_POOL": "nav-prod",
-	"MIN_REPLICAS": "1",
-	"MAX_REPLICAS": "4",
-	"INGRESSES": [
-		"https://dokdistdittnav.intern.nav.no"
-	]
+	"DOKDISTDITTNAV_VAULT": "/kv/prod/fss/dokdistdittnav/teamdokumenthandtering"
 }
