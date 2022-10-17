@@ -10,11 +10,11 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 public class NotifikasjonDistribusjonDto {
-	private final int id;
-	private final String status;
-	private final String kanal;
-	private final String kontaktInfo;
-	private final String tittel;
-	private final String tekst;
-	private final LocalDateTime sendtDato;
+	int id;
+	String status;
+	String kanal;
+	String kontaktInfo;
+	String tittel;
+	String tekst;
+	LocalDateTime sendtDato;
 }

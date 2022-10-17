@@ -88,13 +88,17 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	@Autowired
 	private EmbeddedKafkaBroker embeddedKafkaBroker;
 
-	@BeforeEach
-	void setUp() {
+	@BeforeAll
+	void setupKafkaListener(){
 		DefaultKafkaConsumerFactory<String, Object> consumerFactory = new DefaultKafkaConsumerFactory<>(getConsumerProperties());
 		ContainerProperties containerProperties = new ContainerProperties("aapen-dok-notifikasjon-status");
 		container = new KafkaMessageListenerContainer<>(consumerFactory, containerProperties);
 		records = new LinkedBlockingQueue<>();
 		container.setupMessageListener((MessageListener<String, Object>) e -> records.add(e));
+	}
+
+	@BeforeEach
+	void setUp() {
 		container.start();
 		ContainerTestUtils. waitForAssignment(container, embeddedKafkaBroker.getPartitionsPerTopic());
 		stubFor(post("/azure_token")

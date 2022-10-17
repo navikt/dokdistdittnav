@@ -54,17 +54,12 @@ public class TestUtils {
 	}
 
 
-	//@SneakyThrows
+	@SneakyThrows
 	private static <T> T objectMapper(String input, Class<T> tClass) {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.registerModule(new JavaTimeModule());
 		mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-		try {
-			return mapper.readValue(input, tClass);
-		} catch (Exception e){
-			System.out.println("hecc");
-		}
-		return null;
+		return mapper.readValue(input, tClass);
 	}
 
 	@SneakyThrows
