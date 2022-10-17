@@ -1,8 +1,11 @@
 package no.nav.dokdistdittnav.kdist002;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.SneakyThrows;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
+import no.nav.dokdistdittnav.consumer.doknotifikasjon.NotifikasjonInfoTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
 import org.apache.commons.io.IOUtils;
@@ -35,6 +38,11 @@ public class TestUtils {
 		return objectMapper(forsendelseString, HentForsendelseResponseTo.class);
 	}
 
+	public static NotifikasjonInfoTo hentNotifikasjonInfoTo() {
+		String forsendelseString = classpathToString("__files/rnot001/doknot-happy.json");
+		return objectMapper(forsendelseString, NotifikasjonInfoTo.class);
+	}
+
 	public static HentForsendelseResponseTo hentForsendelseResponseWithForsendelseStatusFeilet() {
 		String forsendelseString = classpathToString("__files/rdist001/forsendelseresponse-with-forsendelsestatus-feil.json");
 		return objectMapper(forsendelseString, HentForsendelseResponseTo.class);
@@ -46,10 +54,17 @@ public class TestUtils {
 	}
 
 
-	@SneakyThrows
+	//@SneakyThrows
 	private static <T> T objectMapper(String input, Class<T> tClass) {
 		ObjectMapper mapper = new ObjectMapper();
-		return mapper.readValue(input, tClass);
+		mapper.registerModule(new JavaTimeModule());
+		mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+		try {
+			return mapper.readValue(input, tClass);
+		} catch (Exception e){
+			System.out.println("hecc");
+		}
+		return null;
 	}
 
 	@SneakyThrows

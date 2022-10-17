@@ -8,6 +8,8 @@
 	"DOKDISTDITTNAV_BRUKERNOTIFIKASJON_LINK": "https://person.nav.no/mine-saker/tema/",
 	"DOKDISTDITTNAV_DOKARKIV_OAUTH_SCOPE": "api://prod-fss.teamdokumenthandtering.dokarkiv/.default",
 	"DOKDISTDITTNAV_DOKARKIV_BASE_URI": "https://dokarkiv.intern.nav.no/rest/journalpostapi/v1/journalpost",
+	"DOKDISTDITTNAV_DOKNOTIFIKASJON_OAUTH_SCOPE": "api://prod-fss.teamdokumenthandtering.doknotifikasjon-2/.default",
+	"DOKDISTDITTNAV_DOKNOTIFIKASJON_BASE_URI": "https://doknotifikasjon-2.intern.nav.no/rest/v1/notifikasjoninfo/",
 	"ADMINISTRERFORSENDELSE_V1_URL": "https://app.adeo.no/dokdist/rest/v1/administrerforsendelse",
 	"DOKDISTDITTNAV_CHANNEL_NAME": "P_DOKDISTDITTNAV",
 	"DOKDISTDITTNAV_CHANNEL_SECURE_NAME": "P_DOKDISTDITTNAV_SE",

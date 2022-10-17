@@ -1,4 +1,4 @@
-package no.nav.dokdistdittnav.kdist002;
+package no.nav.dokdistdittnav.kdist002.mapper;
 
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseRequestTo;

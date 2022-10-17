@@ -20,6 +20,7 @@ public class DokdistdittnavProperties {
 	private final Brukernotifikasjon brukernotifikasjon = new Brukernotifikasjon();
 	private final Doknotifikasjon doknotifikasjon = new Doknotifikasjon();
 	private final Dokarkiv dokarkiv = new Dokarkiv();
+	private final Dokdist dokdist = new Dokdist();
 
 	@Data
 	@Validated
@@ -46,6 +47,29 @@ public class DokdistdittnavProperties {
 	public static class Doknotifikasjon {
 		@NotNull
 		private String statustopic;
+		@NotEmpty
+		private String baseUri;
+		@NotEmpty
+		private String oauthScope;
+
+		public URI getNotifikasjonInfoURI(String bestillingsId) {
+			return URI.create(baseUri + bestillingsId);
+		}
+
+	}
+
+	@Data
+	@Validated
+	public static class Dokdist {
+		@NotEmpty
+		private String baseUri;
+		@NotEmpty
+		private String oauthScope;
+
+		public URI getDokdistURI() {
+			return URI.create(baseUri);
+		}
+
 	}
 
 	@Data

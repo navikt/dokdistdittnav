@@ -1,5 +1,6 @@
 package no.nav.dokdistdittnav.consumer.rdist001;
 
+import no.nav.dokdistdittnav.consumer.dokumentdistribusjon.OppdaterVarselInfoRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FeilRegistrerForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
@@ -19,6 +20,8 @@ public interface AdministrerForsendelse {
 	void oppdaterForsendelseAndVarselStatus(String forsendelseId, String forsendelseStatus, String varselStatus);
 
 	void oppdaterVarselStatus(String forsendelseId, String varselStatus);
+
+	void oppdaterVarselInfo(OppdaterVarselInfoRequest oppdaterVarselInfo);
 
 	FinnForsendelseResponseTo finnForsendelse(final FinnForsendelseRequestTo finnForsendelseRequestTo);
 

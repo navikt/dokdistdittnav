@@ -87,8 +87,7 @@ public class Kdist002Route extends RouteBuilder {
 				.process(new MDCProcessor())
 				.process(exchange -> log.info("Kdist002 mottatt " + createLoggingFraHeader(exchange)))
 				.choice()
-				.when(or(simple("${body.bestillerId}").isNotEqualTo(dittnavProperties.getAppnavn()),
-						simple("${body.status}").isNotEqualTo(FEILET.name())))
+				.when(simple("${body.bestillerId}").isNotEqualTo(dittnavProperties.getAppnavn()))
 					.process(exchange -> defaultKafkaManualCommit(exchange, END_MELDING))
 					.endChoice()
 				.otherwise()

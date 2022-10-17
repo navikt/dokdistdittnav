@@ -3,6 +3,7 @@ package no.nav.dokdistdittnav.consumer.rdist001;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistdittnav.config.properties.DokdistDittnavServiceuser;
 import no.nav.dokdistdittnav.constants.RetryConstants;
+import no.nav.dokdistdittnav.consumer.dokumentdistribusjon.OppdaterVarselInfoRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FeilRegistrerForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
@@ -183,9 +184,24 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 
 	}
 
+	@Override
+	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
+	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "oppdaterVarselInfo"}, histogram = true)
+	public void oppdaterVarselInfo(OppdaterVarselInfoRequest oppdaterVarselInfo) {
+		String uri = UriComponentsBuilder.fromHttpUrl(administrerforsendelseV1Url+"/oppdatervarselinfo")
+				.toUriString();
+		log.info("Mottatt kall til å oppdatere varselinfo={} tilhørende forsendelseId={}", oppdaterVarselInfo.forsendelseId());
+		oppdaterForsendelse(uri);
+
+	}
+
 	private void oppdaterForsendelse(String uri) {
+		oppdaterForsendelseWithBody(uri, null);
+	}
+
+	private void oppdaterForsendelseWithBody(String uri, OppdaterVarselInfoRequest oppdaterVarselInfo) {
 		try {
-			HttpEntity<?> entity = new HttpEntity<>(createHeaders());
+			HttpEntity<?> entity = new HttpEntity<>(oppdaterVarselInfo, createHeaders());
 			restTemplate.exchange(uri, PUT, entity, String.class);
 		} catch (HttpClientErrorException e) {
 			throw new Rdist001HentForsendelseFunctionalException(format("Kall mot rdist001 - oppdaterForsendelse feilet med statusCode=%s, feilmelding=%s", e.getStatusCode(), e.getMessage()),
