@@ -324,7 +324,7 @@ class Qdist010IT extends ApplicationTestConfig {
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
-		await().atMost(100, TimeUnit.SECONDS).untilAsserted(() -> {
+		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
 			String resultOnQdist010BackoutQueue = receive(backoutQueue);
 			assertNotNull(resultOnQdist010BackoutQueue);
 			assertEquals(resultOnQdist010BackoutQueue, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
