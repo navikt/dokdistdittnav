@@ -2,7 +2,7 @@ package no.nav.dokdistdittnav.qdist010;
 
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
 import no.nav.dokdistdittnav.exception.functional.UtenforKjernetidFunctionalException;
-import no.nav.dokdistdittnav.metrics.Qdist010MetricsRoutePolicy;
+import no.nav.dokdistdittnav.metrics.DittnavMetricsRoutePolicy;
 import no.nav.dokdistdittnav.qdist010.brukernotifikasjon.ProdusentNotifikasjon;
 import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKanal;
 import org.apache.camel.LoggingLevel;
@@ -36,7 +36,7 @@ public class Qdist010Route extends RouteBuilder {
 	private final Queue qdist010;
 	private final Queue qdist010FunksjonellFeil;
 	private final Queue qdist010UtenforKjernetid;
-	private final Qdist010MetricsRoutePolicy qdist010MetricsRoutePolicy;
+	private final DittnavMetricsRoutePolicy qdist010MetricsRoutePolicy;
 
 	@Autowired
 	public Qdist010Route(ProdusentNotifikasjon produsentNotifikasjon,
@@ -44,7 +44,7 @@ public class Qdist010Route extends RouteBuilder {
 						 Queue qdist010,
 						 Queue qdist010FunksjonellFeil,
 						 Queue qdist010UtenforKjernetid,
-						 Qdist010MetricsRoutePolicy qdist010MetricsRoutePolicy) {
+						 DittnavMetricsRoutePolicy qdist010MetricsRoutePolicy) {
 		this.produsentNotifikasjon = produsentNotifikasjon;
 		this.dokdistStatusUpdater = dokdistStatusUpdater;
 		this.qdist010 = qdist010;

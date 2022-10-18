@@ -23,5 +23,4 @@
 	<logger name="no.nav.dokdistdittnav" level="INFO" additivity="false">
 		<appender-ref ref="applikasjonslogg"/>
 	</logger>
-
 </included>
