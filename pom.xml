@@ -34,6 +34,7 @@
 		<wmq.version>9.3.0.1</wmq.version>
 		<commons-io.version>2.11.0</commons-io.version>
 		<melding-virksomhet-dokdistfordeling.version>5-7ff79fc</melding-virksomhet-dokdistfordeling.version>
+		<resilience4j.version>1.7.1</resilience4j.version>
 
 		<!-- Test -->
 		<spring-cloud-contract-wiremock.version>3.1.4</spring-cloud-contract-wiremock.version>
@@ -84,6 +85,11 @@
 				<version>${camel.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>io.github.resilience4j</groupId>
+				<artifactId>resilience4j-spring-boot2</artifactId>
+				<version>${resilience4j.version}</version>
 			</dependency>
 
 			<!-- Kafka -->
