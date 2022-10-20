@@ -53,20 +53,22 @@ import static org.springframework.http.HttpMethod.PUT;
 @Slf4j
 @Component
 public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
-	
-	private final String administrerforsendelseV1Url;
+
 	private final RestTemplate restTemplate;
+	private final String oppdaterVarselInfoUrl;
+	private final String administrerforsendelseV1Url;
 
 	@Autowired
-	public AdministrerForsendelseConsumer(@Value("${administrerforsendelse.v1.url}") String administrerforsendelseV1Url,
-										  RestTemplateBuilder restTemplateBuilder,
-										  final DokdistDittnavServiceuser dittnavServiceuser) {
+	public AdministrerForsendelseConsumer(RestTemplateBuilder restTemplateBuilder,
+										  final DokdistDittnavServiceuser dittnavServiceuser,
+										  @Value("${administrerforsendelse.v1.url}") String administrerforsendelseV1Url) {
 		this.administrerforsendelseV1Url = administrerforsendelseV1Url;
 		this.restTemplate = restTemplateBuilder
 				.setReadTimeout(Duration.ofSeconds(20))
 				.setConnectTimeout(Duration.ofSeconds(5))
 				.basicAuthentication(dittnavServiceuser.getUsername(), dittnavServiceuser.getPassword())
 				.build();
+		oppdaterVarselInfoUrl = UriComponentsBuilder.fromHttpUrl(administrerforsendelseV1Url+"/oppdatervarselinfo").toUriString();
 	}
 
 	@Override
@@ -185,21 +187,19 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 	}
 
 	@Override
-	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
 	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "oppdaterVarselInfo"}, histogram = true)
+	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
 	public void oppdaterVarselInfo(OppdaterVarselInfoRequest oppdaterVarselInfo) {
-		String uri = UriComponentsBuilder.fromHttpUrl(administrerforsendelseV1Url+"/oppdatervarselinfo")
-				.toUriString();
 		log.info("Mottatt kall til å oppdatere varselinfo={} tilhørende forsendelseId={}", oppdaterVarselInfo.forsendelseId());
-		oppdaterForsendelse(uri);
+		oppdaterForsendelse(oppdaterVarselInfoUrl, oppdaterVarselInfo);
 
 	}
 
 	private void oppdaterForsendelse(String uri) {
-		oppdaterForsendelseWithBody(uri, null);
+		oppdaterForsendelse(uri, null);
 	}
 
-	private void oppdaterForsendelseWithBody(String uri, OppdaterVarselInfoRequest oppdaterVarselInfo) {
+	private void oppdaterForsendelse(String uri, OppdaterVarselInfoRequest oppdaterVarselInfo) {
 		try {
 			HttpEntity<?> entity = new HttpEntity<>(oppdaterVarselInfo, createHeaders());
 			restTemplate.exchange(uri, PUT, entity, String.class);
@@ -211,6 +211,7 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 			throw new Rdist001HentForsendelseTechnicalException(format("Kall mot rdist001 - oppdaterForsendelse feilet teknisk med statusCode=%s,feilmelding=%s", e.getStatusCode(), e.getMessage()), e);
 		}
 	}
+
 
 	private HttpHeaders createHeaders() {
 		HttpHeaders headers = new HttpHeaders();

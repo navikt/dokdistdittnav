@@ -64,7 +64,7 @@ class Kdist002ServiceTest {
 				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
 				.verdi(BESTILLINGSID)
 				.build())).thenReturn(finnForsendelseResponseTo());
-		when(doknotifikasjonConsumer.getDistribusjonInfo(DOKNOTIFIKASJON_BESTILLINGSID_OLD)).thenReturn(hentNotifikasjonInfoTo());
+		when(doknotifikasjonConsumer.getNotifikasjonInfo(DOKNOTIFIKASJON_BESTILLINGSID_OLD)).thenReturn(hentNotifikasjonInfoTo());
 
 		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatusWithoutDistribusjonsId(DOKDISTDITTNAV, OVERSENDT.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
 

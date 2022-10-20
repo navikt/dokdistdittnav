@@ -42,7 +42,7 @@ public class DoknotifikasjonConsumer {
 
 	@Monitor(value = DOKNOTIFIKASJON_CONSUMER, extraTags = {PROCESS, "_test_"}, histogram = true)
 	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
-	public NotifikasjonInfoTo getDistribusjonInfo(String bestillingsId) {
+	public NotifikasjonInfoTo getNotifikasjonInfo(String bestillingsId) {
 		return webClient.get()
 				.uri(dokdistdittnavProperties.getDoknotifikasjon().getNotifikasjonInfoURI(bestillingsId))
 				.headers(this::createHeaders)

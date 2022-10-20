@@ -1,6 +1,5 @@
 package no.nav.dokdistdittnav.kdist002.mapper;
 
-import no.nav.dokdistdittnav.consumer.doknotifikasjon.NotifikasjonDistribusjonDto;
 import no.nav.dokdistdittnav.consumer.doknotifikasjon.NotifikasjonInfoTo;
 import no.nav.dokdistdittnav.consumer.dokumentdistribusjon.Notifikasjon;
 import no.nav.dokdistdittnav.consumer.dokumentdistribusjon.OppdaterVarselInfoRequest;
@@ -14,17 +13,17 @@ public class OppdaterVarselInfoMapper {
 	private static final String MOBILTELEFON = "MOBILTELEFON";
 
 	public static OppdaterVarselInfoRequest mapNotifikasjonBestilling(String bestillingsId, NotifikasjonInfoTo notifikasjonInfoTo){
-		Set<Notifikasjon> notifikasjoner = notifikasjonInfoTo.getNotifikasjonDistribusjoner().stream().map(distribusjon -> mapNotifikasjon(distribusjon)).collect(Collectors.toSet());
+		Set<Notifikasjon> notifikasjoner = notifikasjonInfoTo.notifikasjonDistribusjoner().stream().map(distribusjon -> mapNotifikasjon(distribusjon)).collect(Collectors.toSet());
 		return new OppdaterVarselInfoRequest(bestillingsId, notifikasjoner);
 	}
 
-	private static Notifikasjon mapNotifikasjon(NotifikasjonDistribusjonDto notifikasjonDist){
-		String kanal = notifikasjonDist.getKanal();
+	private static Notifikasjon mapNotifikasjon(NotifikasjonInfoTo.NotifikasjonDistribusjonDto notifikasjonDist){
+		String kanal = notifikasjonDist.kanal();
 		return new Notifikasjon(
 				mapKanal(kanal),
-				mapTittel(kanal, notifikasjonDist.getTittel()),
-				notifikasjonDist.getTekst(),
-				notifikasjonDist.getKontaktInfo());
+				mapTittel(kanal, notifikasjonDist.tittel()),
+				notifikasjonDist.tekst(),
+				notifikasjonDist.kontaktInfo());
 	}
 
 	private static String mapTittel(String kanal, String tittel){

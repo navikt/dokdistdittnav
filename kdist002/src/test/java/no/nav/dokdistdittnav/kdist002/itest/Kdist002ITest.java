@@ -35,6 +35,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -192,7 +193,8 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 		await().pollInterval(500, MILLISECONDS).atMost(2, SECONDS).untilAsserted(() -> {
 			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
-			verify(1, putRequestedFor((urlEqualTo("/administrerforsendelse/oppdatervarselinfo"))));
+			verify(1, putRequestedFor((urlEqualTo("/administrerforsendelse/oppdatervarselinfo")))
+					.withRequestBody(containing(classpathToString("__files/rnot001/updateDistInfoRequest-happy.json"))));
 		});
 	}
 

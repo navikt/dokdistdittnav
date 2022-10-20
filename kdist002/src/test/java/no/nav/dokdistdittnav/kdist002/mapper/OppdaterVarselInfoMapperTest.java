@@ -1,6 +1,5 @@
 package no.nav.dokdistdittnav.kdist002.mapper;
 
-import no.nav.dokdistdittnav.consumer.doknotifikasjon.NotifikasjonDistribusjonDto;
 import no.nav.dokdistdittnav.consumer.doknotifikasjon.NotifikasjonInfoTo;
 import no.nav.dokdistdittnav.consumer.dokumentdistribusjon.Notifikasjon;
 import no.nav.dokdistdittnav.consumer.dokumentdistribusjon.OppdaterVarselInfoRequest;
@@ -33,19 +32,19 @@ class OppdaterVarselInfoMapperTest {
 
 	@Test
 	public void shouldMap() {
-		Set<NotifikasjonDistribusjonDto> distribusjoner = new HashSet<>();
-		distribusjoner.add(createNotifikasjonDistribushjonDto(EPOST));
-		distribusjoner.add(createNotifikasjonDistribushjonDto(IKKE_EPOST));
+		Set<NotifikasjonInfoTo.NotifikasjonDistribusjonDto> distribusjoner = new HashSet<>();
+		distribusjoner.add(createNotifikasjonDistribusjonDto(EPOST));
+		distribusjoner.add(createNotifikasjonDistribusjonDto(IKKE_EPOST));
 		NotifikasjonInfoTo notifikasjonInfoTo = createNotifikasjonInfoTo(distribusjoner);
 
 		OppdaterVarselInfoRequest oppdaterVarselInfoRequest = mapNotifikasjonBestilling(bestillingsId, notifikasjonInfoTo);
 
 		assertThat(oppdaterVarselInfoRequest.forsendelseId(), is(bestillingsId));
 		assertThat(oppdaterVarselInfoRequest.notifikasjoner().size(), is(2));
-		List<Notifikasjon> Notifikasjoner = oppdaterVarselInfoRequest.notifikasjoner().stream()
+		List<Notifikasjon> notifikasjoner = oppdaterVarselInfoRequest.notifikasjoner().stream()
 				.sorted(Comparator.comparing(Notifikasjon::kanal)).collect(Collectors.toList());
-		assertNotifikasjonInfoTo(Notifikasjoner.get(0), EPOST, TITTEL);
-		assertNotifikasjonInfoTo(Notifikasjoner.get(1), MOBILTELEFON, null);
+		assertNotifikasjonInfoTo(notifikasjoner.get(0), EPOST, TITTEL);
+		assertNotifikasjonInfoTo(notifikasjoner.get(1), MOBILTELEFON, null);
 
 	}
 
@@ -56,7 +55,7 @@ class OppdaterVarselInfoMapperTest {
 		assertThat(notifikasjon.tekst(), is(TEKST));
 	}
 
-	public NotifikasjonInfoTo createNotifikasjonInfoTo(Set<NotifikasjonDistribusjonDto> distribusjoner) {
+	public NotifikasjonInfoTo createNotifikasjonInfoTo(Set<NotifikasjonInfoTo.NotifikasjonDistribusjonDto> distribusjoner) {
 		return new NotifikasjonInfoTo(
 				1,
 				BESTILLERID,
@@ -66,8 +65,8 @@ class OppdaterVarselInfoMapperTest {
 		);
 	}
 
-	public NotifikasjonDistribusjonDto createNotifikasjonDistribushjonDto(String kanal) {
-		return new NotifikasjonDistribusjonDto(
+	public NotifikasjonInfoTo.NotifikasjonDistribusjonDto createNotifikasjonDistribusjonDto(String kanal) {
+		return new NotifikasjonInfoTo.NotifikasjonDistribusjonDto(
 				1,
 				STATUS,
 				kanal,

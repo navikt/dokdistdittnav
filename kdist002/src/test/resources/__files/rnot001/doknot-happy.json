@@ -16,10 +16,10 @@
         {
             "id": 553161,
             "status": "FERDIGSTILT",
-            "kanal": "EPOST",
-            "kontaktInfo": "test@nav.no",
+            "kanal": "SMS",
+            "kontaktInfo": "12345678",
             "tittel": "Du har fått en oppgave fra NAV",
-            "tekst": "Påminnelse: <!DOCTYPE html><html><head><title>Oppgave</title></head><body><p>Hei!</p><p>Du har fått en ny oppgave på Ditt NAV. Logg inn og se hva oppgaven gjelder.</p><p>Vennlig hilsen</p><p>NAV</p></body></html>\n",
+            "tekst": "<tekst>",
             "sendtDato": "2022-06-08T08:30:00.241415"
         }
     ]

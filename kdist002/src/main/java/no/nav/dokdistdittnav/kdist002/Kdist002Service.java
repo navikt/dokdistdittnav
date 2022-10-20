@@ -59,13 +59,13 @@ public class Kdist002Service {
 		FinnForsendelseResponseTo finnForsendelse = finnForsendelse(oldBestillingsId);
 
 		if (OVERSENDT.name().equals(doknotifikasjonStatus.getStatus()) && isNull(doknotifikasjonStatus.getDistribusjonId())) {
-			NotifikasjonInfoTo notifikasjonInfoTo = doknotifikasjonConsumer.getDistribusjonInfo(doknotifikasjonStatus.getBestillingsId());
-			log.info("Kdist002 lagrer informasjon om notifikasjonen={} for bestillingsId={}", notifikasjonInfoTo.getId(), oldBestillingsId);
+			NotifikasjonInfoTo notifikasjonInfoTo = doknotifikasjonConsumer.getNotifikasjonInfo(doknotifikasjonStatus.getBestillingsId());
+			log.info("Kdist002 oppdaterer distribusjonsinfo for notifikasjonen={} for bestillingsId={}", notifikasjonInfoTo.id(), oldBestillingsId);
 			administrerForsendelse.oppdaterVarselInfo(mapNotifikasjonBestilling(oldBestillingsId, notifikasjonInfoTo));
-			log.info("Kdist002 har oppdatert distribusjonsinformasjon for notifikasjon med id={}", notifikasjonInfoTo.getId());
+			log.info("Kdist002 har oppdatert distribusjonsinfo for notifikasjon med id={}", notifikasjonInfoTo.id());
 		}
 		if (!FEILET.name().equals(doknotifikasjonStatus.getStatus())) {
-			log.info("BestillingsID={} har ikke status feilet og skal ikke sendes videre til sentralprint. Avslutter behandlingen", doknotifikasjonStatus.getBestillingsId());
+			log.info("Kdist002 bestillingsId={} har ikke status feilet. Avslutter behandlingen", doknotifikasjonStatus.getBestillingsId());
 			return null;
 		}
 		validateFinnForsendelse(finnForsendelse);

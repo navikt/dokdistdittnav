@@ -4,15 +4,22 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
-@Value
 @Builder
-@AllArgsConstructor
-public class NotifikasjonInfoTo {
-	int id;
-	String bestillerId;
-	String status;
-	int antallRenotifikasjoner;
-	Set<NotifikasjonDistribusjonDto> notifikasjonDistribusjoner;
+public record NotifikasjonInfoTo(int id,
+								 String bestillerId,
+								 String status,
+								 int antallRenotifikasjoner,
+								 Set<NotifikasjonDistribusjonDto> notifikasjonDistribusjoner) {
+	@Builder
+	public record NotifikasjonDistribusjonDto(int id,
+											  String status,
+											  String kanal,
+											  String kontaktInfo,
+											  String tittel,
+											  String tekst,
+											  LocalDateTime sendtDato) {
+	}
 }
