@@ -1,12 +1,12 @@
 package no.nav.dokdistdittnav.kdist002.itest;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.dokdistdittnav.kdist002.itest.config.ApplicationTestConfig;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,9 +16,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.listener.MessageListener;
@@ -28,7 +26,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import javax.jms.Queue;
 import javax.xml.bind.JAXBElement;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -54,8 +51,6 @@ import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.OVERSENDT;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.classpathToString;
 import static org.awaitility.Awaitility.await;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.HttpStatus.OK;
@@ -90,7 +85,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	private EmbeddedKafkaBroker embeddedKafkaBroker;
 
 	@BeforeAll
-	void setupKafkaListener(){
+	void setupKafkaListener() {
 		DefaultKafkaConsumerFactory<String, Object> consumerFactory = new DefaultKafkaConsumerFactory<>(getConsumerProperties());
 		ContainerProperties containerProperties = new ContainerProperties("aapen-dok-notifikasjon-status");
 		container = new KafkaMessageListenerContainer<>(consumerFactory, containerProperties);
@@ -101,7 +96,8 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	@BeforeEach
 	void setUp() {
 		container.start();
-		ContainerTestUtils. waitForAssignment(container, embeddedKafkaBroker.getPartitionsPerTopic());
+		ContainerTestUtils.waitForAssignment(container, embeddedKafkaBroker.getPartitionsPerTopic());
+		WireMock.reset();
 		stubFor(post("/azure_token")
 				.willReturn(aResponse()
 						.withStatus(OK.value())
@@ -110,7 +106,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	}
 
 	@AfterEach
-	void steardown(){
+	void steardown() {
 		container.stop();
 	}
 
