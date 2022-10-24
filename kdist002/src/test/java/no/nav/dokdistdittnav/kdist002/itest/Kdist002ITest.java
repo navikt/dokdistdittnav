@@ -22,6 +22,7 @@ import org.springframework.kafka.listener.MessageListener;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.utils.ContainerTestUtils;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.event.annotation.BeforeTestClass;
 
 import javax.jms.Queue;
 import javax.xml.bind.JAXBElement;
@@ -84,24 +85,20 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	@Autowired
 	private EmbeddedKafkaBroker embeddedKafkaBroker;
 
-	@BeforeAll
-	void setupKafkaListener() {
+
+	@BeforeEach
+	void setUp() {
 		DefaultKafkaConsumerFactory<String, Object> consumerFactory = new DefaultKafkaConsumerFactory<>(getConsumerProperties());
 		ContainerProperties containerProperties = new ContainerProperties("aapen-dok-notifikasjon-status");
 		container = new KafkaMessageListenerContainer<>(consumerFactory, containerProperties);
 		records = new LinkedBlockingQueue<>();
 		container.setupMessageListener((MessageListener<String, Object>) e -> records.add(e));
-	}
-
-	@BeforeEach
-	void setUp() {
 		container.start();
 		ContainerTestUtils.waitForAssignment(container, embeddedKafkaBroker.getPartitionsPerTopic());
-		WireMock.reset();
 		stubFor(post("/azure_token")
 				.willReturn(aResponse()
 						.withStatus(OK.value())
-						.withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+						.withHeader(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
 						.withBodyFile("azure/token_response_dummy.json")));
 	}
 
@@ -257,7 +254,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	private void stubNotifikasjonInfo(String responseBody, int httpStatusValue) {
 		stubFor(get("/rest/v1/notifikasjoninfo/B-dokdistdittnav-811c0c5d-e74c-491a-8b8c-d94075c822c3")
 				.willReturn(aResponse()
-						.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withStatus(httpStatusValue)
 						.withBody(classpathToString(responseBody))));
 	}

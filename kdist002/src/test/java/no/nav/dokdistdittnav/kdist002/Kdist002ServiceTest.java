@@ -69,7 +69,7 @@ class Kdist002ServiceTest {
 		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatusWithoutDistribusjonsId(DOKDISTDITTNAV, OVERSENDT.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
 
 		verify(administrerForsendelse, times(1)).finnForsendelse(any());
-		verify(administrerForsendelse,times(1)).oppdaterVarselInfo(any());
+		verify(administrerForsendelse, times(1)).oppdaterVarselInfo(any());
 		assertNull(doneEventRequest);
 	}
 
