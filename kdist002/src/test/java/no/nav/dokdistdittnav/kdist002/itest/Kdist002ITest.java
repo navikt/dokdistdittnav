@@ -183,10 +183,11 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 	@Test
 	public void shouldUpdateDistInfo() {
-		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDITTNAV, OVERSENDT.name(), null));
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubNotifikasjonInfo("__files/rnot001/doknot-happy.json", OK.value());
 		stubUpdateVarselInfo();
+
+		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDITTNAV, OVERSENDT.name(), null));
 
 		await().pollInterval(500, MILLISECONDS).atMost(2, SECONDS).untilAsserted(() -> {
 			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
