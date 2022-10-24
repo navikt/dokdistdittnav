@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static no.nav.dokdistdittnav.constants.MdcConstants.CALL_ID;
-import static no.nav.dokdistdittnav.constants.MdcConstants.DOKARKIV_CONSUMER;
+import static no.nav.dokdistdittnav.constants.MdcConstants.DOK_CONSUMER;
 import static no.nav.dokdistdittnav.constants.MdcConstants.PROCESS;
 import static no.nav.dokdistdittnav.constants.RetryConstants.DELAY_SHORT;
 import static no.nav.dokdistdittnav.constants.RetryConstants.MAX_ATTEMPTS_SHORT;
@@ -45,7 +45,7 @@ public class DokarkivConsumer {
 	}
 
 	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
-	@Monitor(value = DOKARKIV_CONSUMER, extraTags = {PROCESS, "oppdaterDistribusjonsinfo"}, histogram = true)
+	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "oppdaterDistribusjonsinfo"}, histogram = true)
 	public void settTidLestHoveddokument(JournalpostId journalpostId, OppdaterDistribusjonsInfo oppdaterDistribusjonsinfo) {
 		webClient.patch()
 				.uri(dokdistdittnavProperties.getDokarkiv().getOppdaterDistribusjonsinfoURI(journalpostId))

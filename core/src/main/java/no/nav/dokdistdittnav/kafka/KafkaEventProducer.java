@@ -37,7 +37,7 @@ public class KafkaEventProducer {
 	@Monitor(createErrorMetric = true, errorMetricInclude = KafkaTechnicalException.class)
 	@Retryable(include = KafkaTechnicalException.class, maxAttempts = MAX_VALUE, backoff = @Backoff(delay = DELAY_LONG))
 	public void publish(String topic, Object key, Object event) {
-		ProducerRecord<Object, Object> producerRecord = new ProducerRecord(
+		ProducerRecord<Object, Object> producerRecord = new ProducerRecord<>(
 				topic,
 				null,
 				System.currentTimeMillis(),
