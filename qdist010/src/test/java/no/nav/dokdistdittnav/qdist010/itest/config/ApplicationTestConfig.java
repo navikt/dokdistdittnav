@@ -1,25 +1,19 @@
 package no.nav.dokdistdittnav.qdist010.itest.config;
 
-import no.nav.dokdistdittnav.config.properties.AzureTokenProperties;
+import no.nav.dokdistdittnav.azure.AzureProperties;
 import no.nav.dokdistdittnav.config.properties.DokdistDittnavServiceuser;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.config.properties.MqGatewayAlias;
-import no.nav.dokdistdittnav.consumer.azure.AzureTokenConsumer;
-import no.nav.dokdistdittnav.consumer.azure.TokenResponse;
-import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.retry.annotation.EnableRetry;
 
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 @Profile("itest")
@@ -27,7 +21,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @EnableConfigurationProperties({
 		DokdistDittnavServiceuser.class,
 		DokdistdittnavProperties.class,
-		AzureTokenProperties.class,
+		AzureProperties.class,
 		MqGatewayAlias.class
 })
 @Import({

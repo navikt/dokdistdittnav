@@ -1,8 +1,6 @@
 package no.nav.dokdistdittnav.kdist002.itest.config;
 
 
-import no.nav.dokdistdittnav.consumer.azure.AzureTokenConsumer;
-import no.nav.dokdistdittnav.consumer.azure.TokenResponse;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.RedeliveryPolicy;
 import org.apache.activemq.broker.BrokerService;
@@ -63,18 +61,5 @@ public class JmsItestConfig {
 		return pooledFactory;
 	}
 
-
-	@Bean
-	@Primary
-	AzureTokenConsumer azureTokenConsumer() {
-		AzureTokenConsumer azureTokenConsumer = Mockito.mock(AzureTokenConsumer.class);
-		Mockito.when(azureTokenConsumer.getClientCredentialToken(anyString())).thenReturn(
-				TokenResponse.builder()
-						.access_token("dummy")
-						.build()
-		);
-
-		return azureTokenConsumer;
-	}
 }
 

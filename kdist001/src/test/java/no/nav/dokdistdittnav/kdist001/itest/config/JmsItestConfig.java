@@ -1,24 +1,17 @@
 package no.nav.dokdistdittnav.kdist001.itest.config;
 
-
-import no.nav.dokdistdittnav.consumer.azure.AzureTokenConsumer;
-import no.nav.dokdistdittnav.consumer.azure.TokenResponse;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.RedeliveryPolicy;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.command.ActiveMQQueue;
 import org.apache.activemq.jms.pool.PooledConnectionFactory;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
-
-import static org.mockito.ArgumentMatchers.anyString;
 
 /**
  * @author Joakim Bjørnstad, Jbit AS
@@ -61,17 +54,5 @@ public class JmsItestConfig {
 		return pooledFactory;
 	}
 
-	@Bean
-	@Primary
-	AzureTokenConsumer azureTokenConsumer() {
-		AzureTokenConsumer azureTokenConsumer = Mockito.mock(AzureTokenConsumer.class);
-		Mockito.when(azureTokenConsumer.getClientCredentialToken(anyString())).thenReturn(
-				TokenResponse.builder()
-						.access_token("dummy")
-						.build()
-		);
-
-		return azureTokenConsumer;
-	}
 }
 

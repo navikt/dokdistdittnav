@@ -1,8 +1,8 @@
 package no.nav.dokdistdittnav.consumer.doknotifikasjon;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.dokdistdittnav.azure.AzureProperties;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
-import no.nav.dokdistdittnav.consumer.azure.AzureTokenConsumer;
 import no.nav.dokdistdittnav.consumer.dokarkiv.DokarkivOppdaterDistribusjonsinfoFunctionalException;
 import no.nav.dokdistdittnav.consumer.dokarkiv.DokarkivOppdaterDistribusjonsinfoTechnicalException;
 import no.nav.dokdistdittnav.exception.technical.AbstractDokdistdittnavTechnicalException;
@@ -12,10 +12,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Mono;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static no.nav.dokdistdittnav.constants.MdcConstants.CALL_ID;
@@ -29,15 +34,15 @@ import static no.nav.dokdistdittnav.constants.RetryConstants.MAX_ATTEMPTS_SHORT;
 public class DoknotifikasjonConsumer {
 
 	private final WebClient webClient;
-	private final AzureTokenConsumer azureTokenConsumer;
 	private final DokdistdittnavProperties dokdistdittnavProperties;
+	private final ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager;
 
 	public DoknotifikasjonConsumer(WebClient webClient,
-								   AzureTokenConsumer azureTokenConsumer,
-								   DokdistdittnavProperties dokdistdittnavProperties) {
+								   DokdistdittnavProperties dokdistdittnavProperties,
+								   ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
 		this.webClient = webClient;
-		this.azureTokenConsumer = azureTokenConsumer;
 		this.dokdistdittnavProperties = dokdistdittnavProperties;
+		this.oAuth2AuthorizedClientManager = oAuth2AuthorizedClientManager;
 	}
 
 	@Monitor(value = DOKNOTIFIKASJON_CONSUMER, extraTags = {PROCESS, "_test_"}, histogram = true)
@@ -45,6 +50,7 @@ public class DoknotifikasjonConsumer {
 	public NotifikasjonInfoTo getNotifikasjonInfo(String bestillingsId) {
 		return webClient.get()
 				.uri(dokdistdittnavProperties.getDoknotifikasjon().getNotifikasjonInfoURI(bestillingsId))
+				.attributes(getOAuth2AuthorizedClient())
 				.headers(this::createHeaders)
 				.retrieve()
 				.bodyToMono(NotifikasjonInfoTo.class)
@@ -77,6 +83,10 @@ public class DoknotifikasjonConsumer {
 	private void createHeaders(HttpHeaders headers) {
 		headers.set(CALL_ID, MDC.get(CALL_ID));
 		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.setBearerAuth(azureTokenConsumer.getClientCredentialToken(dokdistdittnavProperties.getDoknotifikasjon().getOauthScope()).getAccess_token());
+	}
+
+	private Consumer<Map<String, Object>> getOAuth2AuthorizedClient() {
+		Mono<OAuth2AuthorizedClient> clientMono = oAuth2AuthorizedClientManager.authorize(AzureProperties.getOAuth2AuthorizeRequestForAzure(AzureProperties.CLIENT_REGISTRATION_DOKNOTIFIKASJON));
+		return ServerOAuth2AuthorizedClientExchangeFilterFunction.oauth2AuthorizedClient(clientMono.block());
 	}
 }
