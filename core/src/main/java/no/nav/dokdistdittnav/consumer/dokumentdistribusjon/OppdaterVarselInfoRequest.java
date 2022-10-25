@@ -4,7 +4,7 @@ import java.util.Set;
 
 public record OppdaterVarselInfoRequest(
 		String forsendelseId,
-		Set<Notifikasjon> notifikasjoner
+		Set<Notifikasjon> notifikasjonList
 ) {
 
 }

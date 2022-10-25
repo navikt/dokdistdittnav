@@ -191,17 +191,26 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
 	public void oppdaterVarselInfo(OppdaterVarselInfoRequest oppdaterVarselInfo) {
 		log.info("Mottatt kall til å oppdatere varselinfo={} tilhørende forsendelseId={}", oppdaterVarselInfo.forsendelseId());
-		oppdaterForsendelse(oppdaterVarselInfoUrl, oppdaterVarselInfo);
+		oppdaterVarselInfo(oppdaterVarselInfoUrl, oppdaterVarselInfo);
 
+	}
+
+	private void oppdaterVarselInfo(String uri, OppdaterVarselInfoRequest oppdaterVarselInfoRequest){
+		try {
+			HttpEntity<?> entity = new HttpEntity<>(oppdaterVarselInfoRequest, createHeaders());
+			restTemplate.exchange(uri, PUT, entity, String.class);
+		} catch (HttpClientErrorException e) {
+			throw new Rdist001HentForsendelseFunctionalException(format("Kall mot rdist001 - oppdaterVarselInfo feilet med statusCode=%s, feilmelding=%s", e.getStatusCode(), e.getMessage()),
+					e);
+
+		} catch (HttpServerErrorException e) {
+			throw new Rdist001HentForsendelseTechnicalException(format("Kall mot rdist001 - oppdaterVarselInfo feilet teknisk med statusCode=%s,feilmelding=%s", e.getStatusCode(), e.getMessage()), e);
+		}
 	}
 
 	private void oppdaterForsendelse(String uri) {
-		oppdaterForsendelse(uri, null);
-	}
-
-	private void oppdaterForsendelse(String uri, OppdaterVarselInfoRequest oppdaterVarselInfo) {
 		try {
-			HttpEntity<?> entity = new HttpEntity<>(oppdaterVarselInfo, createHeaders());
+			HttpEntity<?> entity = new HttpEntity<>(createHeaders());
 			restTemplate.exchange(uri, PUT, entity, String.class);
 		} catch (HttpClientErrorException e) {
 			throw new Rdist001HentForsendelseFunctionalException(format("Kall mot rdist001 - oppdaterForsendelse feilet med statusCode=%s, feilmelding=%s", e.getStatusCode(), e.getMessage()),
