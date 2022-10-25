@@ -40,8 +40,8 @@ class OppdaterVarselInfoMapperTest {
 		OppdaterVarselInfoRequest oppdaterVarselInfoRequest = mapNotifikasjonBestilling(bestillingsId, notifikasjonInfoTo);
 
 		assertThat(oppdaterVarselInfoRequest.forsendelseId(), is(bestillingsId));
-		assertThat(oppdaterVarselInfoRequest.notifikasjoner().size(), is(2));
-		List<Notifikasjon> notifikasjoner = oppdaterVarselInfoRequest.notifikasjoner().stream()
+		assertThat(oppdaterVarselInfoRequest.notifikasjonList().size(), is(2));
+		List<Notifikasjon> notifikasjoner = oppdaterVarselInfoRequest.notifikasjonList().stream()
 				.sorted(Comparator.comparing(Notifikasjon::kanal)).collect(Collectors.toList());
 		assertNotifikasjonInfoTo(notifikasjoner.get(0), EPOST, TITTEL);
 		assertNotifikasjonInfoTo(notifikasjoner.get(1), MOBILTELEFON, null);
