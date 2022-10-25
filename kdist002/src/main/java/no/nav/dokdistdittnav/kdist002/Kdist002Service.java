@@ -61,7 +61,7 @@ public class Kdist002Service {
 		if (OVERSENDT.name().equals(doknotifikasjonStatus.getStatus()) && isNull(doknotifikasjonStatus.getDistribusjonId())) {
 			NotifikasjonInfoTo notifikasjonInfoTo = doknotifikasjonConsumer.getNotifikasjonInfo(doknotifikasjonStatus.getBestillingsId());
 			log.info("Kdist002 oppdaterer distribusjonsinfo for notifikasjonen={} for bestillingsId={}", notifikasjonInfoTo.id(), oldBestillingsId);
-			administrerForsendelse.oppdaterVarselInfo(mapNotifikasjonBestilling(oldBestillingsId, notifikasjonInfoTo));
+			administrerForsendelse.oppdaterVarselInfo(mapNotifikasjonBestilling(finnForsendelse.getForsendelseId(), notifikasjonInfoTo));
 			log.info("Kdist002 har oppdatert distribusjonsinfo for notifikasjon med id={}", notifikasjonInfoTo.id());
 		}
 		if (!FEILET.name().equals(doknotifikasjonStatus.getStatus())) {
