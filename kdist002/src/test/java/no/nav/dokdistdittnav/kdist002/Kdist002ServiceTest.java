@@ -1,6 +1,7 @@
 package no.nav.dokdistdittnav.kdist002;
 
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
+import no.nav.dokdistdittnav.consumer.doknotifikasjon.DoknotifikasjonConsumer;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelseConsumer;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
@@ -24,8 +25,10 @@ import static no.nav.dokdistdittnav.kdist002.TestUtils.MELDING;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.finnForsendelseResponseTo;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.hentForsendelseResponseTo;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.hentForsendelseResponseWithForsendelseStatusFeilet;
+import static no.nav.dokdistdittnav.kdist002.TestUtils.hentNotifikasjonInfoTo;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FEILET;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.INFO;
+import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.OVERSENDT;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -34,12 +37,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class Kdist002ServiceTest {
 
 	private DokdistdittnavProperties dokdistdittnavProperties;
 	private AdministrerForsendelse administrerForsendelse;
+	private DoknotifikasjonConsumer doknotifikasjonConsumer;
 
 	@Autowired
 	private Kdist002Service kdist002Service;
@@ -47,8 +53,40 @@ class Kdist002ServiceTest {
 	@BeforeEach
 	public void setUp() {
 		administrerForsendelse = mock(AdministrerForsendelseConsumer.class);
+		doknotifikasjonConsumer = mock(DoknotifikasjonConsumer.class);
 		dokdistdittnavProperties = dokdistdittnavProperties();
-		kdist002Service = new Kdist002Service(dokdistdittnavProperties, administrerForsendelse);
+		kdist002Service = new Kdist002Service(dokdistdittnavProperties, administrerForsendelse, doknotifikasjonConsumer);
+	}
+
+	@Test
+	public void shouldUpdateDistribusjonsTidspunkt() {
+		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
+				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
+				.verdi(BESTILLINGSID)
+				.build())).thenReturn(finnForsendelseResponseTo());
+		when(doknotifikasjonConsumer.getNotifikasjonInfo(DOKNOTIFIKASJON_BESTILLINGSID_OLD)).thenReturn(hentNotifikasjonInfoTo());
+
+		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatusWithoutDistribusjonsId(DOKDISTDITTNAV, OVERSENDT.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
+
+		verify(administrerForsendelse, times(1)).finnForsendelse(any());
+		verify(administrerForsendelse, times(1)).oppdaterVarselInfo(any());
+		assertNull(doneEventRequest);
+	}
+
+	@Test
+	public void shouldLogAndAvsluttBehandlingenWhenForsendelseStatusErNotFeilet() {
+		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseTo());
+		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
+				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
+				.verdi(BESTILLINGSID)
+				.build())).thenReturn(finnForsendelseResponseTo());
+		when(administrerForsendelse.persisterForsendelse(any(PersisterForsendelseRequestTo.class))).thenReturn(PersisterForsendelseResponseTo.builder()
+				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
+				.build());
+
+		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
+
+		assertNotNull(doneEventRequest);
 	}
 
 	@Test
@@ -86,7 +124,7 @@ class Kdist002ServiceTest {
 	}
 
 	@Test
-	public void shouldLogAndAvsluttBehandlingenWhenNotifikasjonStatusErNotFeilet() {
+	public void shouldLogAndAvsluttBehandlingenWhenForsendelseStatusErNotFeiletAndBestillerIdIsNotDokdistdittnav() {
 		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseTo());
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
 				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
@@ -96,7 +134,7 @@ class Kdist002ServiceTest {
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
 
-		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDITTNAV, INFO.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
+		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDPI, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
 
 		assertNotNull(doneEventRequest);
 	}
@@ -114,7 +152,7 @@ class Kdist002ServiceTest {
 
 		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDPI, INFO.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
 
-		assertNotNull(doneEventRequest);
+		assertNull(doneEventRequest);
 	}
 
 	@Test
@@ -176,6 +214,15 @@ class Kdist002ServiceTest {
 				.setBestillingsId(bestillingsId)
 				.setStatus(status)
 				.setDistribusjonId(1L)
+				.setMelding(MELDING)
+				.build();
+	}
+
+	public DoknotifikasjonStatus doknotifikasjonStatusWithoutDistribusjonsId(String appnavn, String status, String bestillingsId) {
+		return DoknotifikasjonStatus.newBuilder()
+				.setBestillerId(appnavn)
+				.setBestillingsId(bestillingsId)
+				.setStatus(status)
 				.setMelding(MELDING)
 				.build();
 	}

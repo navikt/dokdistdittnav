@@ -3,6 +3,7 @@ package no.nav.dokdistdittnav.consumer.rdist001;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistdittnav.config.properties.DokdistDittnavServiceuser;
 import no.nav.dokdistdittnav.constants.RetryConstants;
+import no.nav.dokdistdittnav.consumer.dokumentdistribusjon.OppdaterVarselInfoRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FeilRegistrerForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
@@ -52,20 +53,22 @@ import static org.springframework.http.HttpMethod.PUT;
 @Slf4j
 @Component
 public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
-	
-	private final String administrerforsendelseV1Url;
+
 	private final RestTemplate restTemplate;
+	private final String oppdaterVarselInfoUrl;
+	private final String administrerforsendelseV1Url;
 
 	@Autowired
-	public AdministrerForsendelseConsumer(@Value("${administrerforsendelse.v1.url}") String administrerforsendelseV1Url,
-										  RestTemplateBuilder restTemplateBuilder,
-										  final DokdistDittnavServiceuser dittnavServiceuser) {
+	public AdministrerForsendelseConsumer(RestTemplateBuilder restTemplateBuilder,
+										  final DokdistDittnavServiceuser dittnavServiceuser,
+										  @Value("${administrerforsendelse.v1.url}") String administrerforsendelseV1Url) {
 		this.administrerforsendelseV1Url = administrerforsendelseV1Url;
 		this.restTemplate = restTemplateBuilder
 				.setReadTimeout(Duration.ofSeconds(20))
 				.setConnectTimeout(Duration.ofSeconds(5))
 				.basicAuthentication(dittnavServiceuser.getUsername(), dittnavServiceuser.getPassword())
 				.build();
+		oppdaterVarselInfoUrl = UriComponentsBuilder.fromHttpUrl(administrerforsendelseV1Url+"/oppdatervarselinfo").toUriString();
 	}
 
 	@Override
@@ -183,6 +186,28 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 
 	}
 
+	@Override
+	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "oppdaterVarselInfo"}, histogram = true)
+	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
+	public void oppdaterVarselInfo(OppdaterVarselInfoRequest oppdaterVarselInfo) {
+		log.info("Mottatt kall til å oppdatere varselinfo={} tilhørende forsendelseId={}", oppdaterVarselInfo.forsendelseId());
+		oppdaterVarselInfo(oppdaterVarselInfoUrl, oppdaterVarselInfo);
+
+	}
+
+	private void oppdaterVarselInfo(String uri, OppdaterVarselInfoRequest oppdaterVarselInfoRequest){
+		try {
+			HttpEntity<?> entity = new HttpEntity<>(oppdaterVarselInfoRequest, createHeaders());
+			restTemplate.exchange(uri, PUT, entity, String.class);
+		} catch (HttpClientErrorException e) {
+			throw new Rdist001HentForsendelseFunctionalException(format("Kall mot rdist001 - oppdaterVarselInfo feilet med statusCode=%s, feilmelding=%s", e.getStatusCode(), e.getMessage()),
+					e);
+
+		} catch (HttpServerErrorException e) {
+			throw new Rdist001HentForsendelseTechnicalException(format("Kall mot rdist001 - oppdaterVarselInfo feilet teknisk med statusCode=%s,feilmelding=%s", e.getStatusCode(), e.getMessage()), e);
+		}
+	}
+
 	private void oppdaterForsendelse(String uri) {
 		try {
 			HttpEntity<?> entity = new HttpEntity<>(createHeaders());
@@ -195,6 +220,7 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 			throw new Rdist001HentForsendelseTechnicalException(format("Kall mot rdist001 - oppdaterForsendelse feilet teknisk med statusCode=%s,feilmelding=%s", e.getStatusCode(), e.getMessage()), e);
 		}
 	}
+
 
 	private HttpHeaders createHeaders() {
 		HttpHeaders headers = new HttpHeaders();

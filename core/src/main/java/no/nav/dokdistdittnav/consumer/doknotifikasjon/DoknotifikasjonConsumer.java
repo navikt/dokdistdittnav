@@ -1,8 +1,10 @@
-package no.nav.dokdistdittnav.consumer.dokarkiv;
+package no.nav.dokdistdittnav.consumer.doknotifikasjon;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistdittnav.azure.AzureProperties;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
+import no.nav.dokdistdittnav.consumer.dokarkiv.DokarkivOppdaterDistribusjonsinfoFunctionalException;
+import no.nav.dokdistdittnav.consumer.dokarkiv.DokarkivOppdaterDistribusjonsinfoTechnicalException;
 import no.nav.dokdistdittnav.exception.technical.AbstractDokdistdittnavTechnicalException;
 import no.nav.dokdistdittnav.metrics.Monitor;
 import org.slf4j.MDC;
@@ -22,62 +24,61 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static no.nav.dokdistdittnav.constants.MdcConstants.CALL_ID;
-import static no.nav.dokdistdittnav.constants.MdcConstants.DOK_CONSUMER;
+import static no.nav.dokdistdittnav.constants.MdcConstants.DOKNOTIFIKASJON_CONSUMER;
 import static no.nav.dokdistdittnav.constants.MdcConstants.PROCESS;
 import static no.nav.dokdistdittnav.constants.RetryConstants.DELAY_SHORT;
 import static no.nav.dokdistdittnav.constants.RetryConstants.MAX_ATTEMPTS_SHORT;
 
 @Slf4j
 @Component
-public class DokarkivConsumer {
+public class DoknotifikasjonConsumer {
 
 	private final WebClient webClient;
 	private final DokdistdittnavProperties dokdistdittnavProperties;
 	private final ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager;
 
-	public DokarkivConsumer(WebClient webClient,
-							DokdistdittnavProperties dokdistdittnavProperties,
-							ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
+	public DoknotifikasjonConsumer(WebClient webClient,
+								   DokdistdittnavProperties dokdistdittnavProperties,
+								   ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
 		this.webClient = webClient;
 		this.dokdistdittnavProperties = dokdistdittnavProperties;
 		this.oAuth2AuthorizedClientManager = oAuth2AuthorizedClientManager;
-
 	}
 
+	@Monitor(value = DOKNOTIFIKASJON_CONSUMER, extraTags = {PROCESS, "_test_"}, histogram = true)
 	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
-	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "oppdaterDistribusjonsinfo"}, histogram = true)
-	public void settTidLestHoveddokument(JournalpostId journalpostId, OppdaterDistribusjonsInfo oppdaterDistribusjonsinfo) {
-		webClient.patch()
-				.uri(dokdistdittnavProperties.getDokarkiv().getOppdaterDistribusjonsinfoURI(journalpostId))
+	public NotifikasjonInfoTo getNotifikasjonInfo(String bestillingsId) {
+		return webClient.get()
+				.uri(dokdistdittnavProperties.getDoknotifikasjon().getNotifikasjonInfoURI(bestillingsId))
 				.attributes(getOAuth2AuthorizedClient())
 				.headers(this::createHeaders)
-				.bodyValue(oppdaterDistribusjonsinfo)
 				.retrieve()
-				.bodyToMono(String.class)
-				.doOnError(handleError(journalpostId))
+				.bodyToMono(NotifikasjonInfoTo.class)
+				.doOnError(handleError(bestillingsId))
 				.block();
 	}
 
-	private Consumer<Throwable> handleError(JournalpostId journalpostId) {
+	private Consumer<Throwable> handleError(String bestillingsId) {
 		return error -> {
 			if (error instanceof WebClientResponseException response && ((WebClientResponseException) error).getStatusCode().is4xxClientError()) {
-				log.error("Kall mot dokarkiv feilet funksjonelt ved registrering av lest status for journalpost med id={}, feilmelding={}", journalpostId.value(), error.getMessage());
+				log.error("Kall mot doknotifikasjon feilet funksjonelt ved henting av notifikasjon med bestillingsId={}, feilmelding={}", bestillingsId, error.getMessage());
 				throw new DokarkivOppdaterDistribusjonsinfoFunctionalException(
-						String.format("Kall mot dokarkiv feilet funksjonelt ved registrering av lest status for journalpost med id=%s, status=%s, feilmelding=%s",
-								journalpostId.value(),
+						String.format("Kall mot doknotifikasjon feilet funksjonelt ved henting av notifikasjon med bestillingsId=%s, status=%s, feilmelding=%s",
+								bestillingsId,
 								response.getRawStatusCode(),
 								response.getMessage()),
 						error);
 			} else {
-				log.error("Kall mot dokarkiv feilet teknisk ved registrering av lest status for journalpost med id={}, feilmelding={}", journalpostId.value(), error.getMessage());
+				log.error("Kall mot doknotifikasjon feilet teknisk ved henting av notifikasjon med bestillingsId={}, feilmelding={}", bestillingsId, error.getMessage());
 				throw new DokarkivOppdaterDistribusjonsinfoTechnicalException(
-						String.format("Kall mot dokarkiv feilet teknisk ved registrering av lest status for journalpost med id=%s ,feilmelding=%s",
-								journalpostId.value(),
+						String.format("Kall mot doknotifikasjon feilet teknisk ved henting av notifikasjon med bestillingsId=%s ,feilmelding=%s",
+								bestillingsId,
 								error.getMessage()),
 						error);
 			}
 		};
 	}
+
 
 	private void createHeaders(HttpHeaders headers) {
 		headers.set(CALL_ID, MDC.get(CALL_ID));
@@ -85,7 +86,7 @@ public class DokarkivConsumer {
 	}
 
 	private Consumer<Map<String, Object>> getOAuth2AuthorizedClient() {
-		Mono<OAuth2AuthorizedClient> clientMono = oAuth2AuthorizedClientManager.authorize(AzureProperties.getOAuth2AuthorizeRequestForAzure(AzureProperties.CLIENT_REGISTRATION_DOKARKIV));
+		Mono<OAuth2AuthorizedClient> clientMono = oAuth2AuthorizedClientManager.authorize(AzureProperties.getOAuth2AuthorizeRequestForAzure(AzureProperties.CLIENT_REGISTRATION_DOKNOTIFIKASJON));
 		return ServerOAuth2AuthorizedClientExchangeFilterFunction.oauth2AuthorizedClient(clientMono.block());
 	}
 }

@@ -1,6 +1,6 @@
 package no.nav.dokdistdittnav.kdist002.itest.config;
 
-import no.nav.dokdistdittnav.config.properties.AzureTokenProperties;
+import no.nav.dokdistdittnav.azure.AzureProperties;
 import no.nav.dokdistdittnav.config.properties.DokdistDittnavServiceuser;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.config.properties.MqGatewayAlias;
@@ -21,7 +21,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @EnableConfigurationProperties({
 		DokdistDittnavServiceuser.class,
 		DokdistdittnavProperties.class,
-		AzureTokenProperties.class,
+		AzureProperties.class,
 		MqGatewayAlias.class
 })
 @Import({

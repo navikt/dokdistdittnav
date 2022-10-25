@@ -93,8 +93,7 @@ public class Kdist002Route extends RouteBuilder {
 				.process(exchange -> log.info("Kdist002 mottatt " + createLoggingFraHeader(exchange)))
 				.routePolicy(metricsRoutePolicy)
 				.choice()
-				.when(or(simple("${body.bestillerId}").isNotEqualTo(dittnavProperties.getAppnavn()),
-						simple("${body.status}").isNotEqualTo(FEILET.name())))
+				.when(simple("${body.bestillerId}").isNotEqualTo(dittnavProperties.getAppnavn()))
 					.process(this::defaultKafkaManualCommit)
 					.endChoice()
 				.otherwise()

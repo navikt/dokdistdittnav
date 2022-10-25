@@ -10,5 +10,8 @@ public final class MdcConstants {
 
 	public static final String CALL_ID = "callId";
 	public static final String DOK_CONSUMER = "dok_consumer";
+	public static final String DOKARKIV_CONSUMER = "dokarkiv_consumer";
+	public static final String DOKDIST_CONSUMER = "dokdist_consumer";
+	public static final String DOKNOTIFIKASJON_CONSUMER = "doknotifikasjon_consumer";
 	public static final String PROCESS = "process";
 }

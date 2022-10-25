@@ -2,6 +2,8 @@ package no.nav.dokdistdittnav.kdist002;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
+import no.nav.dokdistdittnav.consumer.doknotifikasjon.DoknotifikasjonConsumer;
+import no.nav.dokdistdittnav.consumer.doknotifikasjon.NotifikasjonInfoTo;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FeilRegistrerForsendelseRequest;
@@ -21,9 +23,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static java.lang.String.valueOf;
+import static java.util.Objects.isNull;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.KLAR_FOR_DIST;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatus.OPPRETTET;
+import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FEILET;
+import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.OVERSENDT;
+import static no.nav.dokdistdittnav.kdist002.mapper.OppdaterVarselInfoMapper.mapNotifikasjonBestilling;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.assertNotBlank;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.assertNotNull;
 import static org.apache.commons.lang3.StringUtils.substring;
@@ -37,11 +43,13 @@ public class Kdist002Service {
 	private final DokdistdittnavProperties properties;
 	private final AdministrerForsendelse administrerForsendelse;
 	private final PersisterForsendelseMapper persisterForsendelseMapper;
+	private final DoknotifikasjonConsumer doknotifikasjonConsumer;
 
-	public Kdist002Service(DokdistdittnavProperties properties, AdministrerForsendelse administrerForsendelse) {
+	public Kdist002Service(DokdistdittnavProperties properties, AdministrerForsendelse administrerForsendelse, DoknotifikasjonConsumer doknotifikasjonConsumer) {
 		this.properties = properties;
 		this.administrerForsendelse = administrerForsendelse;
 		this.persisterForsendelseMapper = new PersisterForsendelseMapper();
+		this.doknotifikasjonConsumer = doknotifikasjonConsumer;
 	}
 
 	@Handler
@@ -49,12 +57,24 @@ public class Kdist002Service {
 		log.info("Kdist002 hentet doknotifikasjonstatus med bestillingsId={} og status={} fra topic={}.", doknotifikasjonStatus.getBestillingsId(), doknotifikasjonStatus.getStatus(), properties.getDoknotifikasjon().getStatustopic());
 		String oldBestillingsId = extractDokdistBestillingsId(doknotifikasjonStatus.getBestillingsId());
 		FinnForsendelseResponseTo finnForsendelse = finnForsendelse(oldBestillingsId);
+
+		if (OVERSENDT.name().equals(doknotifikasjonStatus.getStatus()) && isNull(doknotifikasjonStatus.getDistribusjonId())) {
+			NotifikasjonInfoTo notifikasjonInfoTo = doknotifikasjonConsumer.getNotifikasjonInfo(doknotifikasjonStatus.getBestillingsId());
+			log.info("Kdist002 oppdaterer distribusjonsinfo for notifikasjonen={} for bestillingsId={}", notifikasjonInfoTo.id(), oldBestillingsId);
+			administrerForsendelse.oppdaterVarselInfo(mapNotifikasjonBestilling(finnForsendelse.getForsendelseId(), notifikasjonInfoTo));
+			log.info("Kdist002 har oppdatert distribusjonsinfo for notifikasjon med id={}", notifikasjonInfoTo.id());
+		}
+		if (!FEILET.name().equals(doknotifikasjonStatus.getStatus())) {
+			log.info("Kdist002 bestillingsId={} har ikke status feilet. Avslutter behandlingen", doknotifikasjonStatus.getBestillingsId());
+			return null;
+		}
 		validateFinnForsendelse(finnForsendelse);
 		HentForsendelseResponseTo hentForsendelseResponse = administrerForsendelse.hentForsendelse(finnForsendelse.getForsendelseId());
 		log.info("Hentet forsendelse med bestillingsId={}, varselStatus={} og forsendelseStatus={} ", hentForsendelseResponse.getBestillingsId(), hentForsendelseResponse.getVarselStatus(), hentForsendelseResponse.getForsendelseStatus());
 		return (isOpprettetVarselStatus(hentForsendelseResponse)) ?
 				createNewAndFeilRegistrerOldForsendelse(finnForsendelse.getForsendelseId(), hentForsendelseResponse, doknotifikasjonStatus) : null;
 	}
+
 
 	private FinnForsendelseResponseTo finnForsendelse(String bestillingsId) {
 		return administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()

@@ -1,6 +1,5 @@
 package no.nav.dokdistdittnav.kdist001.itest.config;
 
-
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.RedeliveryPolicy;
 import org.apache.activemq.broker.BrokerService;
@@ -54,5 +53,6 @@ public class JmsItestConfig {
 		pooledFactory.setMaxConnections(1);
 		return pooledFactory;
 	}
+
 }
 
