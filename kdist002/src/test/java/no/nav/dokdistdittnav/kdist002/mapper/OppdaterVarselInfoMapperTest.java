@@ -22,7 +22,7 @@ class OppdaterVarselInfoMapperTest {
 	private static final String EPOST = "EPOST";
 	private static final String IKKE_EPOST = "NOE_ANNET";
 	private static final String TITTEL = "Dette er en tittel";
-	private static final String KONTAKTINFO = "kontaktinfo";
+	private static final String KONTAKTINFO = "kontaktInfo";
 	private static final String BESTILLERID = "DITTNAV";
 	private static final String STATUS = "OVERSENDT";
 	private static final String TEKST = "Dette er en tekst";
@@ -51,7 +51,7 @@ class OppdaterVarselInfoMapperTest {
 	private void assertNotifikasjonInfoTo(Notifikasjon notifikasjon, String kanal, String tittel) {
 		assertThat(notifikasjon.kanal(), is(kanal));
 		assertThat(notifikasjon.tittel(), is(tittel));
-		assertThat(notifikasjon.kontaktinfo(), is(KONTAKTINFO));
+		assertThat(notifikasjon.kontaktInfo(), is(KONTAKTINFO));
 		assertThat(notifikasjon.tekst(), is(TEKST));
 	}
 

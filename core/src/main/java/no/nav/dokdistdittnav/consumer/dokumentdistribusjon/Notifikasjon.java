@@ -4,6 +4,6 @@ public record Notifikasjon(
 		String kanal,
 		String tittel,
 		String tekst,
-		String kontaktinfo
+		String kontaktInfo
 ) {
 }
