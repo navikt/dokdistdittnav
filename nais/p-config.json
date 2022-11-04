@@ -1,7 +1,7 @@
 {
 	"APPNAVN": "dokdistdittnav",
 	"KAFKA_POOL": "nav-prod",
-	"MIN_REPLICAS": "1",
+	"MIN_REPLICAS": "2",
 	"MAX_REPLICAS": "4",
 	"INGRESSES": [
 		"https://dokdistdittnav.intern.nav.no"
