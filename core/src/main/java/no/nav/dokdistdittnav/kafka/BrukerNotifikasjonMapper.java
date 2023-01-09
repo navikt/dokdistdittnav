@@ -8,7 +8,6 @@ import no.nav.brukernotifikasjon.schemas.input.BeskjedInput;
 import no.nav.brukernotifikasjon.schemas.input.DoneInput;
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
-import no.nav.dokdistdittnav.constants.DomainConstants;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
 import no.nav.dokdistdittnav.exception.technical.FinneIkkeURLException;
@@ -34,10 +33,10 @@ import static no.nav.dokdistdittnav.utils.DokdistUtils.classpathToString;
 public class BrukerNotifikasjonMapper {
 
 	private static final String NAMESPACE = "teamdokumenthandtering";
-	private static final String VEDTAK_TEKST = classpathToString("__files/vedtak_epostvarseltekst.html");
-	private static final String VIKTIG_TEKST = classpathToString("__files/viktig_epostvarseltekst.html");
-	private static final String BESKJED_TEKST = classpathToString("__files/melding_epostvarseltekst.html");
-	private static final String AARSOPPPGAVE_TEKST = classpathToString("__files/aarsoppgave_epostvarseltekst.html");
+	private static String VEDTAK_TEKST;
+	private static String VIKTIG_TEKST;
+	private static String BESKJED_TEKST;
+	private static String AARSOPPPGAVE_TEKST;
 	private static final String AARSOPPGAVE_DOKUMENTTYPEID = "000053";
 	private static final String VEDTAK_TITTEL = "Vedtak fra NAV";
 	private static final String VIKTIG_TITTEL = "Brev fra NAV";
@@ -45,6 +44,13 @@ public class BrukerNotifikasjonMapper {
 	static final String AARSOPPGAVE_TITTEL = "Årsoppgave fra NAV";
 	private static final TimeZone DEFAULT_TIME_ZONE = TimeZone.getTimeZone("Europe/Oslo");
 	private static final Integer SIKKEREHETSNIVAA = 4;
+
+	static {
+		VEDTAK_TEKST = classpathToString("__files/vedtak_epostvarseltekst.html");
+		VIKTIG_TEKST = classpathToString("__files/viktig_epostvarseltekst.html");
+		BESKJED_TEKST = classpathToString("__files/melding_epostvarseltekst.html");
+		AARSOPPPGAVE_TEKST = classpathToString("__files/aarsoppgave_epostvarseltekst.html");
+	}
 
 	public static NokkelInput mapNokkelIntern(String forsendelseId, String appnavn, HentForsendelseResponseTo hentForsendelseResponse) {
 		return new NokkelInputBuilder()
