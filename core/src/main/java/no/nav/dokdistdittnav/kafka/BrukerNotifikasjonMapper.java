@@ -24,6 +24,7 @@ import java.util.TimeZone;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static no.nav.dokdistdittnav.constants.DomainConstants.BESKJED_TEKST;
+import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_AARSOPPGAVE_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_VEDTAK_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_VIKTIG_TEKST;
@@ -38,13 +39,16 @@ public class BrukerNotifikasjonMapper {
 	private static final String VEDTAK_PATH = "__files/vedtak_epostvarseltekst.html";
 	private static final String VIKTIG_PATH = "__files/viktig_epostvarseltekst.html";
 	private static final String BESKJED_PATH = "__files/melding_epostvarseltekst.html";
+	private static final String AARSOPPGAVE_PATH = "__files/aarsoppgave_epostvarseltekst.html";
+	private static final String AARSOPPGAVE_DOKUMENTTYPEID = "000053";
 	private static final String VEDTAK_TITTEL = "Vedtak fra NAV";
 	private static final String VIKTIG_TITTEL = "Brev fra NAV";
 	private static final String BESKJED_TITTEL = "Melding fra NAV";
+	private static final String AARSOPPGAVE_TITTEL = "Årsoppgave fra NAV";
 	private static final TimeZone DEFAULT_TIME_ZONE = TimeZone.getTimeZone("Europe/Oslo");
 	private static final Integer SIKKEREHETSNIVAA = 4;
 
-	public NokkelInput mapNokkelIntern(String forsendelseId, String appnavn, HentForsendelseResponseTo hentForsendelseResponse) {
+	public static NokkelInput mapNokkelIntern(String forsendelseId, String appnavn, HentForsendelseResponseTo hentForsendelseResponse) {
 		return new NokkelInputBuilder()
 				.withEventId(hentForsendelseResponse.getBestillingsId())
 				.withGrupperingsId(forsendelseId)
@@ -54,7 +58,7 @@ public class BrukerNotifikasjonMapper {
 				.build();
 	}
 
-	public NokkelInput mapNokkelForKdist002(DoneEventRequest doneEventRequest, String appnavn) {
+	public static NokkelInput mapNokkelForKdist002(DoneEventRequest doneEventRequest, String appnavn) {
 		return new NokkelInputBuilder()
 				.withEventId(doneEventRequest.getBestillingsId())
 				.withGrupperingsId(doneEventRequest.getForsendelseId())
@@ -64,20 +68,37 @@ public class BrukerNotifikasjonMapper {
 				.build();
 	}
 
-	public BeskjedInput mapBeskjedIntern(String url, HentForsendelseResponseTo hentForsendelseResponse) {
+	public static BeskjedInput mapBeskjedIntern(String url, HentForsendelseResponseTo hentForsendelseResponse) {
+		String dokumenttypeId = hentForsendelseResponse.getDokumenter().get(0).getDokumenttypeId();
 		return new BeskjedInputBuilder()
 				.withTidspunkt(LocalDateTime.now(ZoneId.of("UTC")))
 				.withTekst(format(BESKJED_TEKST, hentForsendelseResponse.getForsendelseTittel()))
 				.withLink(mapLink(url, hentForsendelseResponse))
 				.withEksternVarsling(true)
-				.withEpostVarslingstekst(classpathToString(BESKJED_PATH))
-				.withEpostVarslingstittel(BESKJED_TITTEL)
-				.withSmsVarslingstekst(SMS_TEKST)
+				.withEpostVarslingstekst(classpathToString(getEpostVarslingstekstPath(dokumenttypeId)))
+				.withEpostVarslingstittel(mapInternEpostVarslingstittel(dokumenttypeId))
+				.withSmsVarslingstekst(mapInternSmsVarslingstekst(dokumenttypeId))
 				.withSikkerhetsnivaa(SIKKEREHETSNIVAA)
 				.build();
 	}
 
-	public OppgaveInput oppretteOppgave(String url, HentForsendelseResponseTo hentForsendelseResponse) {
+	private static String mapInternSmsVarslingstekst(String dokumenttypeId) {
+		return isDokumenttypeIdAarsopgpave(dokumenttypeId) ? SMS_AARSOPPGAVE_TEKST : SMS_TEKST;
+	}
+
+	private static String mapInternEpostVarslingstittel(String dokumenttypeId) {
+		return isDokumenttypeIdAarsopgpave(dokumenttypeId) ? AARSOPPGAVE_TITTEL : BESKJED_TITTEL;
+	}
+
+	private static String getEpostVarslingstekstPath(String dokumenttypeId) {
+		return isDokumenttypeIdAarsopgpave(dokumenttypeId) ? AARSOPPGAVE_PATH : BESKJED_PATH;
+	}
+
+	private static boolean isDokumenttypeIdAarsopgpave(String dokumenttypeId) {
+		return AARSOPPGAVE_DOKUMENTTYPEID.equals(dokumenttypeId);
+	}
+
+	public static OppgaveInput oppretteOppgave(String url, HentForsendelseResponseTo hentForsendelseResponse) {
 		return new OppgaveInputBuilder()
 				.withTidspunkt(LocalDateTime.now(ZoneId.of("UTC")))
 				.withTekst(getTekst(hentForsendelseResponse))
@@ -90,25 +111,25 @@ public class BrukerNotifikasjonMapper {
 				.build();
 	}
 
-	public DoneInput mapDoneInput() {
+	public static DoneInput mapDoneInput() {
 		return new DoneInputBuilder()
 				.withTidspunkt(LocalDateTime.now(ZoneOffset.UTC))
 				.build();
 	}
 
-	private String getTekst(HentForsendelseResponseTo hentForsendelseResponse) {
+	private static String getTekst(HentForsendelseResponseTo hentForsendelseResponse) {
 		switch (hentForsendelseResponse.getDistribusjonstype()) {
 			case VEDTAK:
 				return format(VEDTAK_TEKST, hentForsendelseResponse.getForsendelseTittel());
 			case VIKTIG:
 				return format(VIKTIG_TEKST, hentForsendelseResponse.getForsendelseTittel());
-			case  ANNET:
+			case ANNET:
 				break;
 		}
 		return null;
 	}
 
-	private String getSmsTekst(HentForsendelseResponseTo hentForsendelseResponse) {
+	private static String getSmsTekst(HentForsendelseResponseTo hentForsendelseResponse) {
 		switch (hentForsendelseResponse.getDistribusjonstype()) {
 			case VEDTAK:
 				return SMS_VEDTAK_TEKST;
@@ -120,7 +141,7 @@ public class BrukerNotifikasjonMapper {
 		return null;
 	}
 
-	private String mapEpostVarslingsteks(DistribusjonsTypeKode distribusjonsType) {
+	private static String mapEpostVarslingsteks(DistribusjonsTypeKode distribusjonsType) {
 		switch (distribusjonsType) {
 			case VEDTAK:
 				return classpathToString(VEDTAK_PATH);
@@ -132,14 +153,14 @@ public class BrukerNotifikasjonMapper {
 		return null;
 	}
 
-	private String getMottakerId(HentForsendelseResponseTo hentForsendelseResponse) {
+	private static String getMottakerId(HentForsendelseResponseTo hentForsendelseResponse) {
 		HentForsendelseResponseTo.MottakerTo mottaker = hentForsendelseResponse.getMottaker();
 		return ofNullable(mottaker)
 				.map(HentForsendelseResponseTo.MottakerTo::getMottakerId)
 				.orElseThrow(() -> new IllegalArgumentException("Mottaker kan ikke være null"));
 	}
 
-	private URL mapLink(String url, HentForsendelseResponseTo hentForsendelseResponse) {
+	private static URL mapLink(String url, HentForsendelseResponseTo hentForsendelseResponse) {
 		try {
 			URI uri = UriComponentsBuilder.fromHttpUrl(url)
 					.path(hentForsendelseResponse.getTema() + "/" + hentForsendelseResponse.getArkivInformasjon().getArkivId())
