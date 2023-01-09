@@ -36,10 +36,15 @@ import static no.nav.dokdistdittnav.utils.DokdistUtils.classpathToString;
 public class BrukerNotifikasjonMapper {
 
 	private static final String NAMESPACE = "teamdokumenthandtering";
+	/* Fjerner for å se om det fixer testene i gha
 	private static final String VEDTAK_TEKST_FIL = classpathToString("__files/vedtak_epostvarseltekst.html");
 	private static final String VIKTIG_TEKST_FIL = classpathToString("__files/viktig_epostvarseltekst.html");
 	private static final String BESKJED_TEKST_FIL = classpathToString("__files/melding_epostvarseltekst.html");
-	private static final String AARSOPPPGAVE_TEKST_FIL = classpathToString("__files/aarsoppgave_epostvarseltekst.html");
+	private static final String AARSOPPPGAVE_TEKST_FIL = classpathToString("__files/aarsoppgave_epostvarseltekst.html");*/
+	private static final String VEDTAK_PATH = "__files/vedtak_epostvarseltekst.html";
+	private static final String VIKTIG_PATH = "__files/viktig_epostvarseltekst.html";
+	private static final String BESKJED_PATH = "__files/melding_epostvarseltekst.html";
+	private static final String AARSOPPGAVE_PATH = "__files/aarsoppgave_epostvarseltekst.html";
 	private static final String AARSOPPGAVE_DOKUMENTTYPEID = "000053";
 	private static final String VEDTAK_TITTEL = "Vedtak fra NAV";
 	private static final String VIKTIG_TITTEL = "Brev fra NAV";
@@ -91,7 +96,7 @@ public class BrukerNotifikasjonMapper {
 	}
 
 	private static String mapEpostTekst(String dokumenttypeId) {
-		return isDokumenttypeIdAarsoppgpave(dokumenttypeId) ? AARSOPPPGAVE_TEKST_FIL : BESKJED_TEKST_FIL;
+		return isDokumenttypeIdAarsoppgpave(dokumenttypeId) ? classpathToString(AARSOPPGAVE_PATH) : classpathToString(BESKJED_PATH);
 	}
 
 	private static boolean isDokumenttypeIdAarsoppgpave(String dokumenttypeId) {
@@ -144,9 +149,9 @@ public class BrukerNotifikasjonMapper {
 	private static String mapEpostVarslingsteks(DistribusjonsTypeKode distribusjonsType) {
 		switch (distribusjonsType) {
 			case VEDTAK:
-				return VEDTAK_TEKST_FIL;
+				return classpathToString(VEDTAK_PATH);
 			case VIKTIG:
-				return VIKTIG_TEKST_FIL;
+				return classpathToString(VIKTIG_PATH);
 			case ANNET:
 				break;
 		}
