@@ -8,6 +8,7 @@ import no.nav.brukernotifikasjon.schemas.input.BeskjedInput;
 import no.nav.brukernotifikasjon.schemas.input.DoneInput;
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
+import no.nav.dokdistdittnav.constants.DomainConstants;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
 import no.nav.dokdistdittnav.exception.technical.FinneIkkeURLException;
@@ -23,28 +24,25 @@ import java.util.TimeZone;
 
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
-import static no.nav.dokdistdittnav.constants.DomainConstants.BESKJED_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_AARSOPPGAVE_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_VEDTAK_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_VIKTIG_TEKST;
-import static no.nav.dokdistdittnav.constants.DomainConstants.VEDTAK_TEKST;
-import static no.nav.dokdistdittnav.constants.DomainConstants.VIKTIG_TEKST;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VEDTAK;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.classpathToString;
 
 public class BrukerNotifikasjonMapper {
 
 	private static final String NAMESPACE = "teamdokumenthandtering";
-	private static final String VEDTAK_PATH = "__files/vedtak_epostvarseltekst.html";
-	private static final String VIKTIG_PATH = "__files/viktig_epostvarseltekst.html";
-	private static final String BESKJED_PATH = "__files/melding_epostvarseltekst.html";
-	private static final String AARSOPPGAVE_PATH = "__files/aarsoppgave_epostvarseltekst.html";
+	private static final String VEDTAK_TEKST = classpathToString("__files/vedtak_epostvarseltekst.html");
+	private static final String VIKTIG_TEKST = classpathToString("__files/viktig_epostvarseltekst.html");
+	private static final String BESKJED_TEKST = classpathToString("__files/melding_epostvarseltekst.html");
+	private static final String AARSOPPPGAVE_TEKST = classpathToString("__files/aarsoppgave_epostvarseltekst.html");
 	private static final String AARSOPPGAVE_DOKUMENTTYPEID = "000053";
 	private static final String VEDTAK_TITTEL = "Vedtak fra NAV";
 	private static final String VIKTIG_TITTEL = "Brev fra NAV";
 	private static final String BESKJED_TITTEL = "Melding fra NAV";
-	private static final String AARSOPPGAVE_TITTEL = "Årsoppgave fra NAV";
+	static final String AARSOPPGAVE_TITTEL = "Årsoppgave fra NAV";
 	private static final TimeZone DEFAULT_TIME_ZONE = TimeZone.getTimeZone("Europe/Oslo");
 	private static final Integer SIKKEREHETSNIVAA = 4;
 
@@ -75,7 +73,7 @@ public class BrukerNotifikasjonMapper {
 				.withTekst(format(BESKJED_TEKST, hentForsendelseResponse.getForsendelseTittel()))
 				.withLink(mapLink(url, hentForsendelseResponse))
 				.withEksternVarsling(true)
-				.withEpostVarslingstekst(classpathToString(getEpostVarslingstekstPath(dokumenttypeId)))
+				.withEpostVarslingstekst(mapEpostTekst(dokumenttypeId))
 				.withEpostVarslingstittel(mapInternEpostVarslingstittel(dokumenttypeId))
 				.withSmsVarslingstekst(mapInternSmsVarslingstekst(dokumenttypeId))
 				.withSikkerhetsnivaa(SIKKEREHETSNIVAA)
@@ -83,18 +81,18 @@ public class BrukerNotifikasjonMapper {
 	}
 
 	private static String mapInternSmsVarslingstekst(String dokumenttypeId) {
-		return isDokumenttypeIdAarsopgpave(dokumenttypeId) ? SMS_AARSOPPGAVE_TEKST : SMS_TEKST;
+		return isDokumenttypeIdAarsoppgpave(dokumenttypeId) ? SMS_AARSOPPGAVE_TEKST : SMS_TEKST;
 	}
 
 	private static String mapInternEpostVarslingstittel(String dokumenttypeId) {
-		return isDokumenttypeIdAarsopgpave(dokumenttypeId) ? AARSOPPGAVE_TITTEL : BESKJED_TITTEL;
+		return isDokumenttypeIdAarsoppgpave(dokumenttypeId) ? AARSOPPGAVE_TITTEL : BESKJED_TITTEL;
 	}
 
-	private static String getEpostVarslingstekstPath(String dokumenttypeId) {
-		return isDokumenttypeIdAarsopgpave(dokumenttypeId) ? AARSOPPGAVE_PATH : BESKJED_PATH;
+	private static String mapEpostTekst(String dokumenttypeId) {
+		return isDokumenttypeIdAarsoppgpave(dokumenttypeId) ? AARSOPPPGAVE_TEKST : BESKJED_TEKST;
 	}
 
-	private static boolean isDokumenttypeIdAarsopgpave(String dokumenttypeId) {
+	private static boolean isDokumenttypeIdAarsoppgpave(String dokumenttypeId) {
 		return AARSOPPGAVE_DOKUMENTTYPEID.equals(dokumenttypeId);
 	}
 
@@ -144,9 +142,9 @@ public class BrukerNotifikasjonMapper {
 	private static String mapEpostVarslingsteks(DistribusjonsTypeKode distribusjonsType) {
 		switch (distribusjonsType) {
 			case VEDTAK:
-				return classpathToString(VEDTAK_PATH);
+				return VEDTAK_TEKST;
 			case VIKTIG:
-				return classpathToString(VIKTIG_PATH);
+				return VIKTIG_TEKST;
 			case ANNET:
 				break;
 		}

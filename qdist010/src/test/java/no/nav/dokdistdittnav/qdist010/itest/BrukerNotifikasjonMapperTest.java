@@ -7,6 +7,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.Collections;
 
+import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_AARSOPPGAVE_TEKST;
+import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_TEKST;
 import static no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper.mapBeskjedIntern;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.classpathToString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,14 +18,12 @@ public class BrukerNotifikasjonMapperTest {
 	private static final String AARSOPPGAVE_ID = "000053";
 	private static final String MELDING_FRA_NAV = "Melding fra NAV";
 	private static final String AARSOPPGAVE_FRA_NAV = "Årsoppgave fra NAV";
-	private static final String SMS_FRA_NAV = "Hei! Du har fått en melding fra NAV. Logg inn på nav.no for å lese den. Vennlig hilsen NAV";
-	private static final String SMS_FRA_NAV_AARSOPPGAVE = "Hei! Du har fått en årsoppgave fra NAV. Logg inn på nav.no for å lese den. Vennlig hilsen NAV";
 
 
 	@ParameterizedTest
 	@CsvSource(value = {
-			"12345" + ", " + "__files.qdist010/melding_epostvarseltekst.html" + ", " + MELDING_FRA_NAV + ", " + SMS_FRA_NAV,
-			AARSOPPGAVE_ID + ", " + "__files.qdist010/aarsoppgave_epostvarseltekst.html" + ", " + AARSOPPGAVE_FRA_NAV + ", " + SMS_FRA_NAV_AARSOPPGAVE
+			"12345" + ", " + "__files/melding_epostvarseltekst.html" + ", " + MELDING_FRA_NAV + ", " + SMS_TEKST,
+			AARSOPPGAVE_ID + ", " + "__files/aarsoppgave_epostvarseltekst.html" + ", " + AARSOPPGAVE_FRA_NAV + ", " + SMS_AARSOPPGAVE_TEKST
 	})
 	public void shouldMap(String dokumenttypeId, String epostVarslingstekstPath, String epostTittel, String smsVarslingstekst) {
 		HentForsendelseResponseTo hentForsendelseResponseTo = createHentForsendelseResponteTo(dokumenttypeId);
