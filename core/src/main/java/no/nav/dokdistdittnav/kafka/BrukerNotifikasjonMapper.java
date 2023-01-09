@@ -16,7 +16,7 @@ public class BrukerNotifikasjonMapper {
 
 	private static final String NAMESPACE = "teamdokumenthandtering";
 
-	public static NokkelInput mapNokkelIntern(String forsendelseId, String appnavn, HentForsendelseResponseTo hentForsendelseResponse) {
+	public NokkelInput mapNokkelIntern(String forsendelseId, String appnavn, HentForsendelseResponseTo hentForsendelseResponse) {
 		return new NokkelInputBuilder()
 				.withEventId(hentForsendelseResponse.getBestillingsId())
 				.withGrupperingsId(forsendelseId)
@@ -26,7 +26,7 @@ public class BrukerNotifikasjonMapper {
 				.build();
 	}
 
-	public static NokkelInput mapNokkelForKdist002(DoneEventRequest doneEventRequest, String appnavn) {
+	public NokkelInput mapNokkelForKdist002(DoneEventRequest doneEventRequest, String appnavn) {
 		return new NokkelInputBuilder()
 				.withEventId(doneEventRequest.getBestillingsId())
 				.withGrupperingsId(doneEventRequest.getForsendelseId())
@@ -37,13 +37,13 @@ public class BrukerNotifikasjonMapper {
 	}
 
 
-	public static DoneInput mapDoneInput() {
+	public DoneInput mapDoneInput() {
 		return new DoneInputBuilder()
 				.withTidspunkt(LocalDateTime.now(ZoneOffset.UTC))
 				.build();
 	}
 
-	private static String getMottakerId(HentForsendelseResponseTo hentForsendelseResponse) {
+	private String getMottakerId(HentForsendelseResponseTo hentForsendelseResponse) {
 		HentForsendelseResponseTo.MottakerTo mottaker = hentForsendelseResponse.getMottaker();
 		return ofNullable(mottaker)
 				.map(HentForsendelseResponseTo.MottakerTo::getMottakerId)

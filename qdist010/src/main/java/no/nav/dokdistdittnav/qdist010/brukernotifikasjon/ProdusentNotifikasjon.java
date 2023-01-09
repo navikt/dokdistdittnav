@@ -28,7 +28,6 @@ import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLIN
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_JOURNALPOST_ID;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VEDTAK;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VIKTIG;
-import static no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper.mapNokkelIntern;
 import static no.nav.dokdistdittnav.qdist010.Qdist010Mapper.mapBeskjedIntern;
 import static no.nav.dokdistdittnav.qdist010.Qdist010Mapper.oppretteOppgave;
 
@@ -41,6 +40,7 @@ public class ProdusentNotifikasjon {
 	private final DokdistdittnavProperties properties;
 	private final LocalTime kjernetidStart;
 	private final LocalTime kjernetidSlutt;
+	private final BrukerNotifikasjonMapper mapper;
 	private Clock clock;
 
 	@Autowired
@@ -55,6 +55,7 @@ public class ProdusentNotifikasjon {
 		this.properties = properties;
 		this.kjernetidStart = LocalTime.parse(kjernetidStart);
 		this.kjernetidSlutt = LocalTime.parse(kjernetidSlutt);
+		this.mapper = new BrukerNotifikasjonMapper();
 		this.clock = clock;
 	}
 
@@ -63,7 +64,7 @@ public class ProdusentNotifikasjon {
 		String forsendelseId = distribuerTilKanal.getForsendelseId();
 		HentForsendelseResponseTo hentForsendelseResponse = administrerForsendelse.hentForsendelse(forsendelseId);
 		log.info("Hentet forsendelse med forsendlseId={} og bestillingsId={} fra rdist002", forsendelseId, hentForsendelseResponse.getBestillingsId());
-		NokkelInput nokkelIntern = mapNokkelIntern(forsendelseId, properties.getAppnavn(), hentForsendelseResponse);
+		NokkelInput nokkelIntern = mapper.mapNokkelIntern(forsendelseId, properties.getAppnavn(), hentForsendelseResponse);
 
 		if (isJournalpostIdNotNull(hentForsendelseResponse)) {
 			exchange.setProperty(PROPERTY_JOURNALPOST_ID, hentForsendelseResponse.getArkivInformasjon().getArkivId());
