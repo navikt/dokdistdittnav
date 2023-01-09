@@ -6,6 +6,7 @@ import no.nav.brukernotifikasjon.schemas.input.BeskjedInput;
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
+import no.nav.dokdistdittnav.exception.functional.Qdist010FileNotFoundException;
 import no.nav.dokdistdittnav.exception.technical.FinneIkkeURLException;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -25,20 +26,35 @@ import static no.nav.dokdistdittnav.constants.DomainConstants.VEDTAK_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.VIKTIG_TEKST;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VEDTAK;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.classpathToString;
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 
-public class Qdist010Mapper {
+public class ForsendelseMapper {
 
-	private static String VEDTAK_TEKST_FIL = classpathToString("varseltekster/vedtak_epostvarseltekst.html");
-	private static String VIKTIG_TEKST_FIL = classpathToString("varseltekster/viktig_epostvarseltekst.html");
-	private static String BESKJED_TEKST_FIL = classpathToString("varseltekster/melding_epostvarseltekst.html");
-	private static String AARSOPPPGAVE_TEKST_FIL = classpathToString("varseltekster/aarsoppgave_epostvarseltekst.html");
+	private static String VEDTAK_TEKST_FIL;
+	private static String VIKTIG_TEKST_FIL;
+	private static String BESKJED_TEKST_FIL;
+	private static String AARSOPPPGAVE_TEKST_FIL;
 	private static final String AARSOPPGAVE_DOKUMENTTYPEID = "000053";
-	private static final String VEDTAK_TITTEL = "Vedtak fra NAV";
-	private static final String VIKTIG_TITTEL = "Brev fra NAV";
-	private static final String BESKJED_TITTEL = "Melding fra NAV";
+	static final String VEDTAK_TITTEL = "Vedtak fra NAV";
+	static final String VIKTIG_TITTEL = "Brev fra NAV";
+	static final String BESKJED_TITTEL = "Melding fra NAV";
 	static final String AARSOPPGAVE_TITTEL = "Årsoppgave fra NAV";
 	private static final Integer SIKKEREHETSNIVAA = 4;
 
+	static {
+		VEDTAK_TEKST_FIL = getFileAndAssertNotNullOrEmpty("varseltekster/vedtak_epostvarseltekst.html");
+		VIKTIG_TEKST_FIL = getFileAndAssertNotNullOrEmpty("varseltekster/viktig_epostvarseltekst.html");
+		BESKJED_TEKST_FIL = getFileAndAssertNotNullOrEmpty("varseltekster/melding_epostvarseltekst.html");
+		AARSOPPPGAVE_TEKST_FIL = getFileAndAssertNotNullOrEmpty("varseltekster/aarsoppgave_epostvarseltekst.html");
+	}
+
+	private static String getFileAndAssertNotNullOrEmpty(String path){
+		String result = classpathToString(path);
+		if(isEmpty(result)){
+			throw new Qdist010FileNotFoundException("Fant ikke filen på path: " + path);
+		}
+		return result;
+	}
 
 	public static BeskjedInput mapBeskjedIntern(String url, HentForsendelseResponseTo hentForsendelseResponse) {
 		String dokumenttypeId = hentForsendelseResponse.getDokumenter().get(0).getDokumenttypeId();

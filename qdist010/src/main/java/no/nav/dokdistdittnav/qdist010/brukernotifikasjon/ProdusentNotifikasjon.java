@@ -27,8 +27,8 @@ import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLIN
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_JOURNALPOST_ID;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VEDTAK;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VIKTIG;
-import static no.nav.dokdistdittnav.qdist010.Qdist010Mapper.mapBeskjedIntern;
-import static no.nav.dokdistdittnav.qdist010.Qdist010Mapper.oppretteOppgave;
+import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.mapBeskjedIntern;
+import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.oppretteOppgave;
 
 @Slf4j
 @Component
