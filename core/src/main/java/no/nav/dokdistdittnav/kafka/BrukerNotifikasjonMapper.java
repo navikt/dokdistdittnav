@@ -11,6 +11,9 @@ import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
 import no.nav.dokdistdittnav.exception.technical.FinneIkkeURLException;
+import org.apache.camel.language.bean.Bean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.MalformedURLException;
@@ -33,18 +36,15 @@ import static no.nav.dokdistdittnav.constants.DomainConstants.VIKTIG_TEKST;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VEDTAK;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.classpathToString;
 
+@Component
 public class BrukerNotifikasjonMapper {
 
 	private static final String NAMESPACE = "teamdokumenthandtering";
-	/* Fjerner for å se om det fixer testene i gha
-	private static final String VEDTAK_TEKST_FIL = classpathToString("__files/vedtak_epostvarseltekst.html");
-	private static final String VIKTIG_TEKST_FIL = classpathToString("__files/viktig_epostvarseltekst.html");
-	private static final String BESKJED_TEKST_FIL = classpathToString("__files/melding_epostvarseltekst.html");
-	private static final String AARSOPPPGAVE_TEKST_FIL = classpathToString("__files/aarsoppgave_epostvarseltekst.html");*/
-	private static final String VEDTAK_PATH = "__files/vedtak_epostvarseltekst.html";
-	private static final String VIKTIG_PATH = "__files/viktig_epostvarseltekst.html";
-	private static final String BESKJED_PATH = "__files/melding_epostvarseltekst.html";
-	private static final String AARSOPPGAVE_PATH = "__files/aarsoppgave_epostvarseltekst.html";
+
+	private static String VEDTAK_TEKST_FIL;
+	private static String VIKTIG_TEKST_FIL;
+	private static String BESKJED_TEKST_FIL;
+	private static String AARSOPPPGAVE_TEKST_FIL;
 	private static final String AARSOPPGAVE_DOKUMENTTYPEID = "000053";
 	private static final String VEDTAK_TITTEL = "Vedtak fra NAV";
 	private static final String VIKTIG_TITTEL = "Brev fra NAV";
@@ -53,7 +53,15 @@ public class BrukerNotifikasjonMapper {
 	private static final TimeZone DEFAULT_TIME_ZONE = TimeZone.getTimeZone("Europe/Oslo");
 	private static final Integer SIKKEREHETSNIVAA = 4;
 
-	public static NokkelInput mapNokkelIntern(String forsendelseId, String appnavn, HentForsendelseResponseTo hentForsendelseResponse) {
+	@Autowired
+	public BrukerNotifikasjonMapper() {
+		VEDTAK_TEKST_FIL = classpathToString("varseltekster/vedtak_epostvarseltekst.html");
+		VIKTIG_TEKST_FIL = classpathToString("varseltekster/viktig_epostvarseltekst.html");
+		BESKJED_TEKST_FIL = classpathToString("varseltekster/melding_epostvarseltekst.html");
+		AARSOPPPGAVE_TEKST_FIL = classpathToString("varseltekster/aarsoppgave_epostvarseltekst.html");
+	}
+
+	public NokkelInput mapNokkelIntern(String forsendelseId, String appnavn, HentForsendelseResponseTo hentForsendelseResponse) {
 		return new NokkelInputBuilder()
 				.withEventId(hentForsendelseResponse.getBestillingsId())
 				.withGrupperingsId(forsendelseId)
@@ -63,7 +71,7 @@ public class BrukerNotifikasjonMapper {
 				.build();
 	}
 
-	public static NokkelInput mapNokkelForKdist002(DoneEventRequest doneEventRequest, String appnavn) {
+	public NokkelInput mapNokkelForKdist002(DoneEventRequest doneEventRequest, String appnavn) {
 		return new NokkelInputBuilder()
 				.withEventId(doneEventRequest.getBestillingsId())
 				.withGrupperingsId(doneEventRequest.getForsendelseId())
@@ -73,7 +81,7 @@ public class BrukerNotifikasjonMapper {
 				.build();
 	}
 
-	public static BeskjedInput mapBeskjedIntern(String url, HentForsendelseResponseTo hentForsendelseResponse) {
+	public BeskjedInput mapBeskjedIntern(String url, HentForsendelseResponseTo hentForsendelseResponse) {
 		String dokumenttypeId = hentForsendelseResponse.getDokumenter().get(0).getDokumenttypeId();
 		return new BeskjedInputBuilder()
 				.withTidspunkt(LocalDateTime.now(ZoneId.of("UTC")))
@@ -87,23 +95,23 @@ public class BrukerNotifikasjonMapper {
 				.build();
 	}
 
-	private static String mapInternSmsVarslingstekst(String dokumenttypeId) {
+	private String mapInternSmsVarslingstekst(String dokumenttypeId) {
 		return isDokumenttypeIdAarsoppgpave(dokumenttypeId) ? SMS_AARSOPPGAVE_TEKST : SMS_TEKST;
 	}
 
-	private static String mapInternEpostVarslingstittel(String dokumenttypeId) {
+	private String mapInternEpostVarslingstittel(String dokumenttypeId) {
 		return isDokumenttypeIdAarsoppgpave(dokumenttypeId) ? AARSOPPGAVE_TITTEL : BESKJED_TITTEL;
 	}
 
-	private static String mapEpostTekst(String dokumenttypeId) {
-		return isDokumenttypeIdAarsoppgpave(dokumenttypeId) ? classpathToString(AARSOPPGAVE_PATH) : classpathToString(BESKJED_PATH);
+	private String mapEpostTekst(String dokumenttypeId) {
+		return isDokumenttypeIdAarsoppgpave(dokumenttypeId) ? AARSOPPPGAVE_TEKST_FIL: BESKJED_TEKST_FIL;
 	}
 
-	private static boolean isDokumenttypeIdAarsoppgpave(String dokumenttypeId) {
+	private boolean isDokumenttypeIdAarsoppgpave(String dokumenttypeId) {
 		return AARSOPPGAVE_DOKUMENTTYPEID.equals(dokumenttypeId);
 	}
 
-	public static OppgaveInput oppretteOppgave(String url, HentForsendelseResponseTo hentForsendelseResponse) {
+	public OppgaveInput oppretteOppgave(String url, HentForsendelseResponseTo hentForsendelseResponse) {
 		return new OppgaveInputBuilder()
 				.withTidspunkt(LocalDateTime.now(ZoneId.of("UTC")))
 				.withTekst(getTekst(hentForsendelseResponse))
@@ -116,13 +124,13 @@ public class BrukerNotifikasjonMapper {
 				.build();
 	}
 
-	public static DoneInput mapDoneInput() {
+	public DoneInput mapDoneInput() {
 		return new DoneInputBuilder()
 				.withTidspunkt(LocalDateTime.now(ZoneOffset.UTC))
 				.build();
 	}
 
-	private static String getTekst(HentForsendelseResponseTo hentForsendelseResponse) {
+	private String getTekst(HentForsendelseResponseTo hentForsendelseResponse) {
 		switch (hentForsendelseResponse.getDistribusjonstype()) {
 			case VEDTAK:
 				return format(VEDTAK_TEKST, hentForsendelseResponse.getForsendelseTittel());
@@ -134,7 +142,7 @@ public class BrukerNotifikasjonMapper {
 		return null;
 	}
 
-	private static String getSmsTekst(HentForsendelseResponseTo hentForsendelseResponse) {
+	private String getSmsTekst(HentForsendelseResponseTo hentForsendelseResponse) {
 		switch (hentForsendelseResponse.getDistribusjonstype()) {
 			case VEDTAK:
 				return SMS_VEDTAK_TEKST;
@@ -146,26 +154,26 @@ public class BrukerNotifikasjonMapper {
 		return null;
 	}
 
-	private static String mapEpostVarslingsteks(DistribusjonsTypeKode distribusjonsType) {
+	private String mapEpostVarslingsteks(DistribusjonsTypeKode distribusjonsType) {
 		switch (distribusjonsType) {
 			case VEDTAK:
-				return classpathToString(VEDTAK_PATH);
+				return VEDTAK_TEKST_FIL;
 			case VIKTIG:
-				return classpathToString(VIKTIG_PATH);
+				return VIKTIG_TEKST_FIL;
 			case ANNET:
 				break;
 		}
 		return null;
 	}
 
-	private static String getMottakerId(HentForsendelseResponseTo hentForsendelseResponse) {
+	private String getMottakerId(HentForsendelseResponseTo hentForsendelseResponse) {
 		HentForsendelseResponseTo.MottakerTo mottaker = hentForsendelseResponse.getMottaker();
 		return ofNullable(mottaker)
 				.map(HentForsendelseResponseTo.MottakerTo::getMottakerId)
 				.orElseThrow(() -> new IllegalArgumentException("Mottaker kan ikke være null"));
 	}
 
-	private static URL mapLink(String url, HentForsendelseResponseTo hentForsendelseResponse) {
+	private URL mapLink(String url, HentForsendelseResponseTo hentForsendelseResponse) {
 		try {
 			URI uri = UriComponentsBuilder.fromHttpUrl(url)
 					.path(hentForsendelseResponse.getTema() + "/" + hentForsendelseResponse.getArkivInformasjon().getArkivId())

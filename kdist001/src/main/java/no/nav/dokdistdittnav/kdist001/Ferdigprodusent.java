@@ -10,6 +10,7 @@ import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
+import no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.safselvbetjening.schemas.HoveddokumentLest;
 import org.apache.camel.Handler;
@@ -25,8 +26,6 @@ import static no.nav.dokdistdittnav.constants.DomainConstants.HOVEDDOKUMENT;
 import static no.nav.dokdistdittnav.constants.DomainConstants.KANAL_DITTNAV;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatus.FERDIGSTILT;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatus.OPPRETTET;
-import static no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper.mapDoneInput;
-import static no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper.mapNokkelIntern;
 
 @Slf4j
 @Component
@@ -34,6 +33,7 @@ public class Ferdigprodusent {
 
 	private static final String JOURNALPOSTID = "journalpostId";
 
+	private final BrukerNotifikasjonMapper mapper;
 	private final AdministrerForsendelse administrerForsendelse;
 	private final DokdistdittnavProperties dokdistdittnavProperties;
 	private final DokarkivConsumer dokarkivConsumer;
@@ -41,11 +41,12 @@ public class Ferdigprodusent {
 
 	@Autowired
 	public Ferdigprodusent(AdministrerForsendelse administrerForsendelse, DokdistdittnavProperties dokdistdittnavProperties,
-						   KafkaEventProducer kafkaEventProducer, DokarkivConsumer dokarkivConsumer) {
+						   KafkaEventProducer kafkaEventProducer, DokarkivConsumer dokarkivConsumer, BrukerNotifikasjonMapper brukerNotifikasjonMapper) {
 		this.administrerForsendelse = administrerForsendelse;
 		this.dokdistdittnavProperties = dokdistdittnavProperties;
 		this.kafkaEventProducer = kafkaEventProducer;
 		this.dokarkivConsumer = dokarkivConsumer;
+		this.mapper = brukerNotifikasjonMapper;
 	}
 
 	@Handler
@@ -64,8 +65,8 @@ public class Ferdigprodusent {
 			if (nonNull(hentForsendelseResponse) && isValidForsendelse(hentForsendelseResponse, hoveddokumentLest)) {
 				log.info("Hentet forsendelse med forsendelseId={} og bestillingsId={} fra dokdist databasen.", finnForsendelseResponse.getForsendelseId(), hentForsendelseResponse.getBestillingsId());
 
-				NokkelInput nokkelInput = mapNokkelIntern(finnForsendelseResponse.getForsendelseId(), dokdistdittnavProperties.getAppnavn(), hentForsendelseResponse);
-				kafkaEventProducer.publish(dokdistdittnavProperties.getBrukernotifikasjon().getTopicdone(), nokkelInput, mapDoneInput());
+				NokkelInput nokkelInput = mapper.mapNokkelIntern(finnForsendelseResponse.getForsendelseId(), dokdistdittnavProperties.getAppnavn(), hentForsendelseResponse);
+				kafkaEventProducer.publish(dokdistdittnavProperties.getBrukernotifikasjon().getTopicdone(), nokkelInput, mapper.mapDoneInput());
 				dokarkivConsumer.settTidLestHoveddokument(new JournalpostId(hoveddokumentLest.getJournalpostId()), new OppdaterDistribusjonsInfo(OffsetDateTime.now()));
 				administrerForsendelse.oppdaterVarselStatus(finnForsendelseResponse.getForsendelseId(), FERDIGSTILT.name());
 				log.info("Oppdatert forsendelse med forsendelseId={} til varselStatus={}", finnForsendelseResponse.getForsendelseId(), FERDIGSTILT);
