@@ -1,4 +1,4 @@
-package no.nav.dokdistdittnav.qdist010.itest.config;
+package no.nav.dokdistdittnav.qdist010.config;
 
 
 import com.ibm.mq.jms.MQQueue;

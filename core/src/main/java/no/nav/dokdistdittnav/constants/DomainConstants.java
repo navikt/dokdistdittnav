@@ -23,6 +23,7 @@ public class DomainConstants {
 	public static final String SMS_VIKTIG_TEKST = "Hei! Du har fått et brev fra NAV som du må lese. Logg inn på nav.no for å lese det. Vennlig hilsen NAV";
 	public static final String BESKJED_TEKST = "Du har fått en melding som gjelder %s. Les meldingen i mine saker.";
 	public static final String SMS_TEKST = "Hei! Du har fått en melding fra NAV. Logg inn på nav.no for å lese den. Vennlig hilsen NAV";
+	public static final String SMS_AARSOPPGAVE_TEKST = "Hei! Du har fått en årsoppgave fra NAV. Logg inn på nav.no for å lese den. Vennlig hilsen NAV";
 
 	private DomainConstants() {
 	}
