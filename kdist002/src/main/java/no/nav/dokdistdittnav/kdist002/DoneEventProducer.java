@@ -21,7 +21,7 @@ public class DoneEventProducer {
 
 	@Autowired
 	public DoneEventProducer(DokdistdittnavProperties properties,
-							 KafkaEventProducer kafkaEventProducer, BrukerNotifikasjonMapper mapper) {
+							 KafkaEventProducer kafkaEventProducer) {
 		this.properties = properties;
 		this.kafkaEventProducer = kafkaEventProducer;
 		this.mapper = new BrukerNotifikasjonMapper();
