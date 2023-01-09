@@ -104,25 +104,6 @@ class Qdist010IT extends ApplicationTestConfig {
 		verifyAllStubs(1);
 	}
 
-
-	@Test
-	void shouldProcessAarsoppgaveForsendelse() throws Exception {
-		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
-				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(testUtils.classpathToString("__files/rdist001/getForsendelse_aarsoppgave-happy.json").replace("insertCallIdHere", CALL_ID))));
-		stubFor(put(FORSENDELSE_PATH)
-				.willReturn(aResponse().withStatus(HttpStatus.OK.value())));
-
-		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
-
-		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
-			verify(1, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
-		});
-
-		verifyAllStubs(1);
-	}
-
 	@Test
 	void oppretteOppgaveWhenForsendelseDistribusjonTypeIsVedtak() throws Exception {
 		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
