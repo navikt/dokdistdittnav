@@ -23,20 +23,23 @@ import java.util.TimeZone;
 
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
+import static no.nav.dokdistdittnav.constants.DomainConstants.BESKJED_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_AARSOPPGAVE_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_VEDTAK_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_VIKTIG_TEKST;
+import static no.nav.dokdistdittnav.constants.DomainConstants.VEDTAK_TEKST;
+import static no.nav.dokdistdittnav.constants.DomainConstants.VIKTIG_TEKST;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VEDTAK;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.classpathToString;
 
 public class BrukerNotifikasjonMapper {
 
 	private static final String NAMESPACE = "teamdokumenthandtering";
-	private static String VEDTAK_TEKST;
-	private static String VIKTIG_TEKST;
-	private static String BESKJED_TEKST;
-	private static String AARSOPPPGAVE_TEKST;
+	private static final String VEDTAK_TEKST_FIL = classpathToString("__files/vedtak_epostvarseltekst.html");
+	private static final String VIKTIG_TEKST_FIL = classpathToString("__files/viktig_epostvarseltekst.html");
+	private static final String BESKJED_TEKST_FIL = classpathToString("__files/melding_epostvarseltekst.html");
+	private static final String AARSOPPPGAVE_TEKST_FIL = classpathToString("__files/aarsoppgave_epostvarseltekst.html");
 	private static final String AARSOPPGAVE_DOKUMENTTYPEID = "000053";
 	private static final String VEDTAK_TITTEL = "Vedtak fra NAV";
 	private static final String VIKTIG_TITTEL = "Brev fra NAV";
@@ -44,13 +47,6 @@ public class BrukerNotifikasjonMapper {
 	static final String AARSOPPGAVE_TITTEL = "Årsoppgave fra NAV";
 	private static final TimeZone DEFAULT_TIME_ZONE = TimeZone.getTimeZone("Europe/Oslo");
 	private static final Integer SIKKEREHETSNIVAA = 4;
-
-	static {
-		VEDTAK_TEKST = classpathToString("__files/vedtak_epostvarseltekst.html");
-		VIKTIG_TEKST = classpathToString("__files/viktig_epostvarseltekst.html");
-		BESKJED_TEKST = classpathToString("__files/melding_epostvarseltekst.html");
-		AARSOPPPGAVE_TEKST = classpathToString("__files/aarsoppgave_epostvarseltekst.html");
-	}
 
 	public static NokkelInput mapNokkelIntern(String forsendelseId, String appnavn, HentForsendelseResponseTo hentForsendelseResponse) {
 		return new NokkelInputBuilder()
@@ -95,7 +91,7 @@ public class BrukerNotifikasjonMapper {
 	}
 
 	private static String mapEpostTekst(String dokumenttypeId) {
-		return isDokumenttypeIdAarsoppgpave(dokumenttypeId) ? AARSOPPPGAVE_TEKST : BESKJED_TEKST;
+		return isDokumenttypeIdAarsoppgpave(dokumenttypeId) ? AARSOPPPGAVE_TEKST_FIL : BESKJED_TEKST_FIL;
 	}
 
 	private static boolean isDokumenttypeIdAarsoppgpave(String dokumenttypeId) {
@@ -148,9 +144,9 @@ public class BrukerNotifikasjonMapper {
 	private static String mapEpostVarslingsteks(DistribusjonsTypeKode distribusjonsType) {
 		switch (distribusjonsType) {
 			case VEDTAK:
-				return VEDTAK_TEKST;
+				return VEDTAK_TEKST_FIL;
 			case VIKTIG:
-				return VIKTIG_TEKST;
+				return VIKTIG_TEKST_FIL;
 			case ANNET:
 				break;
 		}
