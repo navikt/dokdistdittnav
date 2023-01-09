@@ -45,8 +45,8 @@ public class Ferdigprodusent {
 		this.administrerForsendelse = administrerForsendelse;
 		this.dokdistdittnavProperties = dokdistdittnavProperties;
 		this.kafkaEventProducer = kafkaEventProducer;
-		this.dokarkivConsumer = dokarkivConsumer;
 		this.mapper = new BrukerNotifikasjonMapper();
+		this.dokarkivConsumer = dokarkivConsumer;
 	}
 
 	@Handler

@@ -16,15 +16,15 @@ import org.springframework.stereotype.Component;
 public class DoneEventProducer {
 
 	private final DokdistdittnavProperties properties;
-	private final KafkaEventProducer kafkaEventProducer;
 	private final BrukerNotifikasjonMapper mapper;
+	private final KafkaEventProducer kafkaEventProducer;
 
 	@Autowired
 	public DoneEventProducer(DokdistdittnavProperties properties,
 							 KafkaEventProducer kafkaEventProducer) {
 		this.properties = properties;
-		this.kafkaEventProducer = kafkaEventProducer;
 		this.mapper = new BrukerNotifikasjonMapper();
+		this.kafkaEventProducer = kafkaEventProducer;
 	}
 
 	@Handler

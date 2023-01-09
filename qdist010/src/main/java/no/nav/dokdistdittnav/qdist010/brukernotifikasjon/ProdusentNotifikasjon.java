@@ -12,7 +12,6 @@ import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
 import no.nav.dokdistdittnav.exception.functional.UtenforKjernetidFunctionalException;
 import no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
-import no.nav.dokdistdittnav.qdist010.Qdist010Mapper;
 import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKanal;
 import org.apache.camel.Exchange;
 import org.apache.camel.Handler;
@@ -37,10 +36,10 @@ public class ProdusentNotifikasjon {
 
 	private final KafkaEventProducer kafkaEventProducer;
 	private final AdministrerForsendelse administrerForsendelse;
+	private final BrukerNotifikasjonMapper brukerNotifikasjonMapper;
 	private final DokdistdittnavProperties properties;
 	private final LocalTime kjernetidStart;
 	private final LocalTime kjernetidSlutt;
-	private final BrukerNotifikasjonMapper mapper;
 	private Clock clock;
 
 	@Autowired
@@ -55,7 +54,7 @@ public class ProdusentNotifikasjon {
 		this.properties = properties;
 		this.kjernetidStart = LocalTime.parse(kjernetidStart);
 		this.kjernetidSlutt = LocalTime.parse(kjernetidSlutt);
-		this.mapper = new BrukerNotifikasjonMapper();
+		this.brukerNotifikasjonMapper = new BrukerNotifikasjonMapper();
 		this.clock = clock;
 	}
 
@@ -64,7 +63,7 @@ public class ProdusentNotifikasjon {
 		String forsendelseId = distribuerTilKanal.getForsendelseId();
 		HentForsendelseResponseTo hentForsendelseResponse = administrerForsendelse.hentForsendelse(forsendelseId);
 		log.info("Hentet forsendelse med forsendlseId={} og bestillingsId={} fra rdist002", forsendelseId, hentForsendelseResponse.getBestillingsId());
-		NokkelInput nokkelIntern = mapper.mapNokkelIntern(forsendelseId, properties.getAppnavn(), hentForsendelseResponse);
+		NokkelInput nokkelIntern = brukerNotifikasjonMapper.mapNokkelIntern(forsendelseId, properties.getAppnavn(), hentForsendelseResponse);
 
 		if (isJournalpostIdNotNull(hentForsendelseResponse)) {
 			exchange.setProperty(PROPERTY_JOURNALPOST_ID, hentForsendelseResponse.getArkivInformasjon().getArkivId());
