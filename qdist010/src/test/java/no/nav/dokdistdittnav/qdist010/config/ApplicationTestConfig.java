@@ -1,4 +1,4 @@
-package no.nav.dokdistdittnav.qdist010.itest.config;
+package no.nav.dokdistdittnav.qdist010.config;
 
 import no.nav.dokdistdittnav.azure.AzureProperties;
 import no.nav.dokdistdittnav.config.properties.DokdistDittnavServiceuser;

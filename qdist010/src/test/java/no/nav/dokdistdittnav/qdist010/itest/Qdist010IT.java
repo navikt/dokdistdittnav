@@ -1,7 +1,7 @@
 package no.nav.dokdistdittnav.qdist010.itest;
 
 import no.nav.dokdistdittnav.qdist010.brukernotifikasjon.ProdusentNotifikasjon;
-import no.nav.dokdistdittnav.qdist010.itest.config.ApplicationTestConfig;
+import no.nav.dokdistdittnav.qdist010.config.ApplicationTestConfig;
 import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
