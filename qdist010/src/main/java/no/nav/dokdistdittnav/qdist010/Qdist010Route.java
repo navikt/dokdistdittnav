@@ -89,7 +89,7 @@ public class Qdist010Route extends RouteBuilder {
 				.bean(produsentNotifikasjon)
 				.log(INFO, log, "qdist010 har sendt notifikasjon for forsendelse med " + getIdsForLogging())
 				.bean(dokdistStatusUpdater)
-				.log(INFO, log, "qdist010 har sendt varsel og oppdatert forsendelseStatus=EKSPEDERT og varselStatus=OPPRETTET i dokdistDb for forsendelse med " + getIdsForLogging());
+				.log(INFO, log, "qdist010 har sendt varsel og oppdatert forsendelseStatus=BEKREFTET og varselStatus=OPPRETTET i dokdistDb for forsendelse med " + getIdsForLogging());
 	}
 
 	public static String getIdsForLogging() {
