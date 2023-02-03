@@ -49,7 +49,7 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 class Qdist010IT extends ApplicationTestConfig {
 
 	private static final String FORSENDELSE_ID = "33333";
-	private static final String FORSENDELSE_PATH = "/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=BEKREFTET" + "&varselStatus=OPPRETTET";
+	private static final String FORSENDELSE_PATH = "/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT" + "&varselStatus=OPPRETTET";
 
 	private static final ZoneId OSLO_ZONE = ZoneId.of("Europe/Oslo");
 	private static String CALL_ID;
