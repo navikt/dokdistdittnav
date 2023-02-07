@@ -24,7 +24,10 @@ import java.util.UUID;
 
 import static java.lang.String.valueOf;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
+import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.BEKREFTET;
+import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.EKSPEDERT;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.KLAR_FOR_DIST;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatus.OPPRETTET;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FEILET;
@@ -59,12 +62,27 @@ public class Kdist002Service {
 		String oldBestillingsId = extractDokdistBestillingsId(doknotifikasjonStatus.getBestillingsId());
 		FinnForsendelseResponseTo finnForsendelse = finnForsendelse(oldBestillingsId);
 
+		//Steg 3
 		if (skalInformasjonOmVarselLagres(doknotifikasjonStatus)) {
+			//Steg 3.1
 			NotifikasjonInfoTo notifikasjonInfoTo = doknotifikasjonConsumer.getNotifikasjonInfo(doknotifikasjonStatus.getBestillingsId());
 			log.info("Kdist002 oppdaterer distribusjonsinfo for notifikasjonen={} for bestillingsId={}", notifikasjonInfoTo.id(), oldBestillingsId);
-			administrerForsendelse.oppdaterVarselInfo(mapNotifikasjonBestilling(finnForsendelse.getForsendelseId(), notifikasjonInfoTo));
+			//Steg 3.2
+			String forsendelseId = finnForsendelse.getForsendelseId();
+			administrerForsendelse.oppdaterVarselInfo(mapNotifikasjonBestilling(forsendelseId, notifikasjonInfoTo));
 			log.info("Kdist002 har oppdatert distribusjonsinfo for notifikasjon med id={}", notifikasjonInfoTo.id());
+			//Steg 3.3
+			String forsendelseStatus = administrerForsendelse.hentForsendelse(forsendelseId).getForsendelseStatus();
+			if (nonNull(forsendelseStatus)) {
+				if (ForsendelseStatus.OVERSENDT.name().equals(forsendelseStatus) ||
+						BEKREFTET.name().equals(forsendelseStatus)) {
+					log.info("Kdist002 oppdaterer forsendelsesstatus med id={}", finnForsendelse.getForsendelseId());
+					administrerForsendelse.oppdaterForsendelseStatus(forsendelseId, EKSPEDERT.name());
+					log.info("Kdist002 har oppdatert forsendelsesstatus med id={} til status={}", finnForsendelse.getForsendelseId(), EKSPEDERT.name());
+				}
+			}
 		}
+		//Steg 4
 		if (!FEILET.name().equals(doknotifikasjonStatus.getStatus())) {
 			log.info("Kdist002 bestillingsId={} har ikke status feilet. Avslutter behandlingen", doknotifikasjonStatus.getBestillingsId());
 			return null;

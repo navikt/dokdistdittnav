@@ -43,7 +43,6 @@ import static org.mockito.Mockito.when;
 
 class Kdist002ServiceTest {
 
-	private DokdistdittnavProperties dokdistdittnavProperties;
 	private AdministrerForsendelse administrerForsendelse;
 	private DoknotifikasjonConsumer doknotifikasjonConsumer;
 
@@ -54,8 +53,7 @@ class Kdist002ServiceTest {
 	public void setUp() {
 		administrerForsendelse = mock(AdministrerForsendelseConsumer.class);
 		doknotifikasjonConsumer = mock(DoknotifikasjonConsumer.class);
-		dokdistdittnavProperties = dokdistdittnavProperties();
-		kdist002Service = new Kdist002Service(dokdistdittnavProperties, administrerForsendelse, doknotifikasjonConsumer);
+		kdist002Service = new Kdist002Service(dokdistdittnavProperties(), administrerForsendelse, doknotifikasjonConsumer);
 	}
 
 	@Test
@@ -65,11 +63,27 @@ class Kdist002ServiceTest {
 				.verdi(BESTILLINGSID)
 				.build())).thenReturn(finnForsendelseResponseTo());
 		when(doknotifikasjonConsumer.getNotifikasjonInfo(DOKNOTIFIKASJON_BESTILLINGSID_OLD)).thenReturn(hentNotifikasjonInfoTo());
+		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseTo());
 
 		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatusWithoutDistribusjonsId(DOKDISTDITTNAV, OVERSENDT.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
 
 		verify(administrerForsendelse, times(1)).finnForsendelse(any());
 		verify(administrerForsendelse, times(1)).oppdaterVarselInfo(any());
+		assertNull(doneEventRequest);
+	}
+	@Test
+	public void shouldUpdateForsendelsesInfo() {
+		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
+				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
+				.verdi(BESTILLINGSID)
+				.build())).thenReturn(finnForsendelseResponseTo());
+		when(doknotifikasjonConsumer.getNotifikasjonInfo(DOKNOTIFIKASJON_BESTILLINGSID_OLD)).thenReturn(hentNotifikasjonInfoTo());
+		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseTo());
+
+		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatusWithoutDistribusjonsId(DOKDISTDITTNAV, OVERSENDT.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
+
+		verify(administrerForsendelse, times(1)).finnForsendelse(any());
+		verify(administrerForsendelse, times(1)).oppdaterForsendelseStatus(any(), anyString());
 		assertNull(doneEventRequest);
 	}
 
