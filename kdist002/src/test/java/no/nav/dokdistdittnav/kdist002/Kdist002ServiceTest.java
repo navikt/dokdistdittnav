@@ -9,9 +9,12 @@ import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseResponseTo;
 import no.nav.dokdistdittnav.kafka.DoneEventRequest;
+import no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
@@ -43,7 +46,6 @@ import static org.mockito.Mockito.when;
 
 class Kdist002ServiceTest {
 
-	private DokdistdittnavProperties dokdistdittnavProperties;
 	private AdministrerForsendelse administrerForsendelse;
 	private DoknotifikasjonConsumer doknotifikasjonConsumer;
 
@@ -54,25 +56,42 @@ class Kdist002ServiceTest {
 	public void setUp() {
 		administrerForsendelse = mock(AdministrerForsendelseConsumer.class);
 		doknotifikasjonConsumer = mock(DoknotifikasjonConsumer.class);
-		dokdistdittnavProperties = dokdistdittnavProperties();
-		kdist002Service = new Kdist002Service(dokdistdittnavProperties, administrerForsendelse, doknotifikasjonConsumer);
+		kdist002Service = new Kdist002Service(dokdistdittnavProperties(), administrerForsendelse, doknotifikasjonConsumer);
 	}
 
-	@Test
-	public void shouldUpdateDistribusjonsTidspunkt() {
+	@ParameterizedTest
+	@EnumSource(value = DoknotifikasjonStatusKode.class, names = {"OVERSENDT", "FERDIGSTILT"})
+	public void shouldUpdateDistribusjonsTidspunktAndForsendelseStatus(DoknotifikasjonStatusKode statusKode) {
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
 				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
 				.verdi(BESTILLINGSID)
 				.build())).thenReturn(finnForsendelseResponseTo());
 		when(doknotifikasjonConsumer.getNotifikasjonInfo(DOKNOTIFIKASJON_BESTILLINGSID_OLD)).thenReturn(hentNotifikasjonInfoTo());
+		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseTo());
+
+		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatusWithoutDistribusjonsId(DOKDISTDITTNAV, statusKode.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
+
+		verify(administrerForsendelse, times(1)).finnForsendelse(any());
+		verify(administrerForsendelse, times(1)).oppdaterVarselInfo(any());
+		verify(administrerForsendelse, times(1)).oppdaterForsendelseStatus(any(), anyString());
+		assertNull(doneEventRequest);
+	}
+	@Test
+	public void shouldNotUpdateForsendelseStatusWhenStatusIsFEILET() {
+		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
+				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
+				.verdi(BESTILLINGSID)
+				.build())).thenReturn(finnForsendelseResponseTo());
+		when(doknotifikasjonConsumer.getNotifikasjonInfo(DOKNOTIFIKASJON_BESTILLINGSID_OLD)).thenReturn(hentNotifikasjonInfoTo());
+		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseWithForsendelseStatusFeilet());
 
 		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatusWithoutDistribusjonsId(DOKDISTDITTNAV, OVERSENDT.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
 
 		verify(administrerForsendelse, times(1)).finnForsendelse(any());
 		verify(administrerForsendelse, times(1)).oppdaterVarselInfo(any());
+		verify(administrerForsendelse, times(0)).oppdaterForsendelseStatus(any(), anyString());
 		assertNull(doneEventRequest);
 	}
-
 	@Test
 	public void shouldLogAndAvsluttBehandlingenWhenForsendelseStatusErNotFeilet() {
 		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseTo());

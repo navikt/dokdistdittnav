@@ -24,10 +24,14 @@ import java.util.UUID;
 
 import static java.lang.String.valueOf;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
+import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.BEKREFTET;
+import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.EKSPEDERT;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.KLAR_FOR_DIST;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatus.OPPRETTET;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FEILET;
+import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FERDIGSTILT;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.OVERSENDT;
 import static no.nav.dokdistdittnav.kdist002.mapper.OppdaterVarselInfoMapper.mapNotifikasjonBestilling;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.assertNotBlank;
@@ -58,12 +62,17 @@ public class Kdist002Service {
 		String oldBestillingsId = extractDokdistBestillingsId(doknotifikasjonStatus.getBestillingsId());
 		FinnForsendelseResponseTo finnForsendelse = finnForsendelse(oldBestillingsId);
 
-		if (OVERSENDT.name().equals(doknotifikasjonStatus.getStatus()) && isNull(doknotifikasjonStatus.getDistribusjonId())) {
+		if (skalInformasjonOmVarselLagres(doknotifikasjonStatus)) {
+
 			NotifikasjonInfoTo notifikasjonInfoTo = doknotifikasjonConsumer.getNotifikasjonInfo(doknotifikasjonStatus.getBestillingsId());
-			log.info("Kdist002 oppdaterer distribusjonsinfo for notifikasjonen={} for bestillingsId={}", notifikasjonInfoTo.id(), oldBestillingsId);
+			log.info("Kdist002 oppdaterer distribusjonsinfo for notifikasjonen={} for bestillingsId={} med forsendelseID={}", notifikasjonInfoTo.id(), oldBestillingsId, finnForsendelse.getForsendelseId());
+
 			administrerForsendelse.oppdaterVarselInfo(mapNotifikasjonBestilling(finnForsendelse.getForsendelseId(), notifikasjonInfoTo));
-			log.info("Kdist002 har oppdatert distribusjonsinfo for notifikasjon med id={}", notifikasjonInfoTo.id());
+			log.info("Kdist002 har oppdatert distribusjonsinfo for notifikasjonen={} for bestillingsId={} med forsendelseID={}", notifikasjonInfoTo.id(), oldBestillingsId, finnForsendelse.getForsendelseId());
+
+			oppdaterForsendelseStatus(finnForsendelse, oldBestillingsId);
 		}
+
 		if (!FEILET.name().equals(doknotifikasjonStatus.getStatus())) {
 			log.info("Kdist002 bestillingsId={} har ikke status feilet. Avslutter behandlingen", doknotifikasjonStatus.getBestillingsId());
 			return null;
@@ -73,6 +82,28 @@ public class Kdist002Service {
 		log.info("Hentet forsendelse med bestillingsId={}, varselStatus={} og forsendelseStatus={} ", hentForsendelseResponse.getBestillingsId(), hentForsendelseResponse.getVarselStatus(), hentForsendelseResponse.getForsendelseStatus());
 		return (isOpprettetVarselStatus(hentForsendelseResponse)) ?
 				createNewAndFeilRegistrerOldForsendelse(finnForsendelse.getForsendelseId(), hentForsendelseResponse, doknotifikasjonStatus) : null;
+	}
+
+	private void oppdaterForsendelseStatus(FinnForsendelseResponseTo finnForsendelse, String bestillingsId) {
+		HentForsendelseResponseTo forsendelse = administrerForsendelse.hentForsendelse(finnForsendelse.getForsendelseId());
+		if (nonNull(forsendelse)) {
+			if (skalOppdatereForsendelseStatus(forsendelse)) {
+				log.info("Kdist002 oppdaterer forsendelse med id={} til forsendelseStatus=EXPEDERT for bestillingsid={}", finnForsendelse.getForsendelseId(), bestillingsId);
+				administrerForsendelse.oppdaterForsendelseStatus(finnForsendelse.getForsendelseId(), EKSPEDERT.name());
+				log.info("Kdist002 har oppdatert forsendelsesstatus med id={} til forsendelseStatus=EXPEDERT for bestillingsid={}", finnForsendelse.getForsendelseId(), bestillingsId);
+			}
+		}
+	}
+
+	private static boolean skalOppdatereForsendelseStatus(HentForsendelseResponseTo forsendelse) {
+		return ForsendelseStatus.OVERSENDT.name().equals(forsendelse.getForsendelseStatus()) ||
+				BEKREFTET.name().equals(forsendelse.getForsendelseStatus());
+	}
+
+	private static boolean skalInformasjonOmVarselLagres(DoknotifikasjonStatus doknotifikasjonStatus) {
+		return (OVERSENDT.name().equals(doknotifikasjonStatus.getStatus()) ||
+				FERDIGSTILT.name().equals(doknotifikasjonStatus.getStatus())
+		) && isNull(doknotifikasjonStatus.getDistribusjonId());
 	}
 
 
