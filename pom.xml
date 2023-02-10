@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.7.6</version>
+		<version>2.7.8</version>
 	</parent>
 
 	<groupId>no.nav.dokdistdittnav</groupId>
@@ -27,11 +27,11 @@
 		<java.version>17</java.version>
 
 		<brukernotifikasjon.version>v2.5.2</brukernotifikasjon.version>
-		<confluent.version>7.2.1</confluent.version>
-		<teamdokumenthandtering-avro-schemas.version>357738b9</teamdokumenthandtering-avro-schemas.version>
-		<camel.version>3.19.0</camel.version>
+		<confluent.version>7.3.1</confluent.version>
+		<teamdokumenthandtering-avro-schemas.version>3aec620a</teamdokumenthandtering-avro-schemas.version>
+		<camel.version>3.20.2</camel.version>
 		<logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
-		<wmq.version>9.3.0.1</wmq.version>
+		<wmq.version>9.3.1.0</wmq.version>
 		<commons-io.version>2.11.0</commons-io.version>
 		<melding-virksomhet-dokdistfordeling.version>5-7ff79fc</melding-virksomhet-dokdistfordeling.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
