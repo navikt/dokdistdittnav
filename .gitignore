@@ -1,9 +1,6 @@
 # Maven
-target
+target/
 
 # IntelliJ IDEA
-.idea
-*.iws
+.idea/
 *.iml
-*.ipr
-*.log.*
