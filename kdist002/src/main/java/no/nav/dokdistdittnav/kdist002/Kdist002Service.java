@@ -68,7 +68,7 @@ public class Kdist002Service {
 			log.info("Kdist002 oppdaterer distribusjonsinfo for notifikasjonen={} for bestillingsId={} med forsendelseID={}", notifikasjonInfoTo.id(), oldBestillingsId, finnForsendelse.getForsendelseId());
 
 			administrerForsendelse.oppdaterVarselInfo(mapNotifikasjonBestilling(finnForsendelse.getForsendelseId(), notifikasjonInfoTo));
-			log.info("Kdist002 har oppdatert distribusjonsinfo for notifikasjonen={} for bestillingsId={} med forsendelseID={}", notifikasjonInfoTo.id(),oldBestillingsId, finnForsendelse.getForsendelseId());
+			log.info("Kdist002 har oppdatert distribusjonsinfo for notifikasjonen={} for bestillingsId={} med forsendelseID={}", notifikasjonInfoTo.id(), oldBestillingsId, finnForsendelse.getForsendelseId());
 
 			oppdaterForsendelseStatus(finnForsendelse, oldBestillingsId);
 		}
@@ -85,15 +85,19 @@ public class Kdist002Service {
 	}
 
 	private void oppdaterForsendelseStatus(FinnForsendelseResponseTo finnForsendelse, String bestillingsId) {
-		if(nonNull(administrerForsendelse.hentForsendelse(finnForsendelse.getForsendelseId()))){
-			String forsendelseStatus = administrerForsendelse.hentForsendelse(finnForsendelse.getForsendelseId()).getForsendelseStatus();
-			if (ForsendelseStatus.OVERSENDT.name().equals(forsendelseStatus) ||
-					BEKREFTET.name().equals(forsendelseStatus)) {
+		HentForsendelseResponseTo forsendelse = administrerForsendelse.hentForsendelse(finnForsendelse.getForsendelseId());
+		if (nonNull(forsendelse)) {
+			if (skalOppdatereForsendelseStatus(forsendelse)) {
 				log.info("Kdist002 oppdaterer forsendelse med id={} til forsendelseStatus=EXPEDERT for bestillingsid={}", finnForsendelse.getForsendelseId(), bestillingsId);
 				administrerForsendelse.oppdaterForsendelseStatus(finnForsendelse.getForsendelseId(), EKSPEDERT.name());
 				log.info("Kdist002 har oppdatert forsendelsesstatus med id={} til forsendelseStatus=EXPEDERT for bestillingsid={}", finnForsendelse.getForsendelseId(), bestillingsId);
 			}
 		}
+	}
+
+	private static boolean skalOppdatereForsendelseStatus(HentForsendelseResponseTo forsendelse) {
+		return ForsendelseStatus.OVERSENDT.name().equals(forsendelse.getForsendelseStatus()) ||
+				BEKREFTET.name().equals(forsendelse.getForsendelseStatus());
 	}
 
 	private static boolean skalInformasjonOmVarselLagres(DoknotifikasjonStatus doknotifikasjonStatus) {

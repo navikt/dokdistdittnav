@@ -61,7 +61,7 @@ class Kdist002ServiceTest {
 
 	@ParameterizedTest
 	@EnumSource(value = DoknotifikasjonStatusKode.class, names = {"OVERSENDT", "FERDIGSTILT"})
-	public void shouldUpdateDistribusjonsTidspunkt(DoknotifikasjonStatusKode statusKode) {
+	public void shouldUpdateDistribusjonsTidspunktAndForsendelseStatus(DoknotifikasjonStatusKode statusKode) {
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
 				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
 				.verdi(BESTILLINGSID)
@@ -77,7 +77,7 @@ class Kdist002ServiceTest {
 		assertNull(doneEventRequest);
 	}
 	@Test
-	public void shouldNotUpdateForsendelseStatus() {
+	public void shouldNotUpdateForsendelseStatusWhenStatusIsFEILET() {
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
 				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
 				.verdi(BESTILLINGSID)
