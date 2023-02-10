@@ -65,12 +65,12 @@ public class Kdist002Service {
 		if (skalInformasjonOmVarselLagres(doknotifikasjonStatus)) {
 
 			NotifikasjonInfoTo notifikasjonInfoTo = doknotifikasjonConsumer.getNotifikasjonInfo(doknotifikasjonStatus.getBestillingsId());
-			log.info("Kdist002 oppdaterer distribusjonsinfo for notifikasjonen={} for bestillingsId={}", notifikasjonInfoTo.id(), oldBestillingsId);
+			log.info("Kdist002 oppdaterer distribusjonsinfo for notifikasjonen={} for bestillingsId={} med forsendelseID={}", notifikasjonInfoTo.id(), oldBestillingsId, finnForsendelse.getForsendelseId());
 
 			administrerForsendelse.oppdaterVarselInfo(mapNotifikasjonBestilling(finnForsendelse.getForsendelseId(), notifikasjonInfoTo));
-			log.info("Kdist002 har oppdatert distribusjonsinfo for notifikasjon med id={}", notifikasjonInfoTo.id());
+			log.info("Kdist002 har oppdatert distribusjonsinfo for notifikasjonen={} for bestillingsId={} med forsendelseID={}", notifikasjonInfoTo.id(),oldBestillingsId, finnForsendelse.getForsendelseId());
 
-			oppdaterForsendelseStatus(finnForsendelse);
+			oppdaterForsendelseStatus(finnForsendelse, oldBestillingsId);
 		}
 
 		if (!FEILET.name().equals(doknotifikasjonStatus.getStatus())) {
@@ -84,14 +84,14 @@ public class Kdist002Service {
 				createNewAndFeilRegistrerOldForsendelse(finnForsendelse.getForsendelseId(), hentForsendelseResponse, doknotifikasjonStatus) : null;
 	}
 
-	private void oppdaterForsendelseStatus(FinnForsendelseResponseTo finnForsendelse) {
-		String forsendelseStatus = administrerForsendelse.hentForsendelse(finnForsendelse.getForsendelseId()).getForsendelseStatus();
-		if (nonNull(forsendelseStatus)) {
+	private void oppdaterForsendelseStatus(FinnForsendelseResponseTo finnForsendelse, String bestillingsId) {
+		if(nonNull(administrerForsendelse.hentForsendelse(finnForsendelse.getForsendelseId()))){
+			String forsendelseStatus = administrerForsendelse.hentForsendelse(finnForsendelse.getForsendelseId()).getForsendelseStatus();
 			if (ForsendelseStatus.OVERSENDT.name().equals(forsendelseStatus) ||
 					BEKREFTET.name().equals(forsendelseStatus)) {
-				log.info("Kdist002 oppdaterer forsendelsesstatus med id={}", finnForsendelse.getForsendelseId());
+				log.info("Kdist002 oppdaterer forsendelse med id={} til forsendelseStatus=EXPEDERT for bestillingsid={}", finnForsendelse.getForsendelseId(), bestillingsId);
 				administrerForsendelse.oppdaterForsendelseStatus(finnForsendelse.getForsendelseId(), EKSPEDERT.name());
-				log.info("Kdist002 har oppdatert forsendelsesstatus med id={} til status={}", finnForsendelse.getForsendelseId(), EKSPEDERT.name());
+				log.info("Kdist002 har oppdatert forsendelsesstatus med id={} til forsendelseStatus=EXPEDERT for bestillingsid={}", finnForsendelse.getForsendelseId(), bestillingsId);
 			}
 		}
 	}

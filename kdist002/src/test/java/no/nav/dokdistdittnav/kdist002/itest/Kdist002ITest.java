@@ -170,7 +170,6 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	public void shouldLogWhenVarselstatusIsNotEqualToOPPRETTET() {
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-forsendelsestatus-feilet.json", FORSENDELSE_ID, OK.value());
-		//stubPutOppdaterForsendelse(EKSPEDERT.name(), FORSENDELSE_ID, OK.value());
 
 		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name()));
 
