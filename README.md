@@ -22,4 +22,4 @@ på [Confluence-sida for dokdistdittnav](https://confluence.adeo.no/display/BOA/
 ### Førespurnadar
 
 Spørsmål om koda eller prosjektet kan stillast
-på [Slack-kanalen for \#Team Dokumentløysingar](https://nav-it.slack.com/archives/C6W9E5GPJ)
+på [Slack-kanalen for \#Team Dokumentløysingar](https://nav-it.slack.com/archives/C6W9E5GPJ).

@@ -9,9 +9,6 @@ import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDEL
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.EKSPEDERT;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatus.OPPRETTET;
 
-/**
- * @author Sigurd Midttun, Visma Consulting.
- */
 @Component
 public class DokdistStatusUpdater {
 

@@ -1,8 +1,5 @@
 package no.nav.dokdistdittnav.constants;
 
-/**
- * @author Sigurd Midttun, Visma Consulting.
- */
 public final class MdcConstants {
 
 	private MdcConstants() {

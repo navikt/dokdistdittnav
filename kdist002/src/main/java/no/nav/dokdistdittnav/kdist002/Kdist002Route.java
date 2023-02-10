@@ -23,13 +23,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static no.nav.dokdistdittnav.constants.DomainConstants.KDIST002_ID;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDELSE_ID;
-import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FEILET;
 import static org.apache.camel.Exchange.EXCEPTION_CAUGHT;
 import static org.apache.camel.LoggingLevel.ERROR;
 import static org.apache.camel.LoggingLevel.INFO;
 import static org.apache.camel.LoggingLevel.WARN;
 import static org.apache.camel.component.kafka.KafkaConstants.MANUAL_COMMIT;
-import static org.apache.camel.support.builder.PredicateBuilder.or;
 
 @Slf4j
 @Component

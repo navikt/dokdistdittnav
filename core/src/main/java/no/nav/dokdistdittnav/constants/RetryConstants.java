@@ -1,8 +1,5 @@
 package no.nav.dokdistdittnav.constants;
 
-/**
- * @author Ugur Alpay Cenar, Visma Consulting.
- */
 public final class RetryConstants {
 
 	private RetryConstants() {

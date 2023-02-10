@@ -30,10 +30,10 @@ import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 
 public class ForsendelseMapper {
 
-	private static String VEDTAK_TEKST_FIL;
-	private static String VIKTIG_TEKST_FIL;
-	private static String BESKJED_TEKST_FIL;
-	private static String AARSOPPPGAVE_TEKST_FIL;
+	private static final String VEDTAK_TEKST_FIL;
+	private static final String VIKTIG_TEKST_FIL;
+	private static final String BESKJED_TEKST_FIL;
+	private static final String AARSOPPPGAVE_TEKST_FIL;
 	private static final String AARSOPPGAVE_DOKUMENTTYPEID = "000053";
 	static final String VEDTAK_TITTEL = "Vedtak fra NAV";
 	static final String VIKTIG_TITTEL = "Brev fra NAV";

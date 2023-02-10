@@ -1,8 +1,5 @@
 package no.nav.dokdistdittnav.exception.functional;
 
-/**
- * @author Jarl Øystein Samseth, Visma Consulting
- */
 public abstract class AbstractDokdistdittnavFunctionalException extends RuntimeException {
 
 	public AbstractDokdistdittnavFunctionalException(String message) {

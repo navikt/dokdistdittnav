@@ -7,9 +7,8 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Route;
 import org.apache.camel.ValidationException;
 import org.apache.camel.support.RoutePolicySupport;
-import org.springframework.stereotype.Component;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.xml.bind.JAXBException;
 
@@ -21,9 +20,6 @@ import static no.nav.dokdistdittnav.metrics.MetricLabels.TYPE_FUNCTIONAL_EXCEPTI
 import static no.nav.dokdistdittnav.metrics.MetricLabels.TYPE_TECHNICAL_EXCEPTION;
 import static org.apache.camel.Exchange.EXCEPTION_CAUGHT;
 
-/**
- * @author Ugur Alpay Cenar, Visma Consulting.
- */
 @Component
 public class DittnavMetricsRoutePolicy extends RoutePolicySupport {
 
