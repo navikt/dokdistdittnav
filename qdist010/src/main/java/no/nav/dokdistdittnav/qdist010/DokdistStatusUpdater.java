@@ -6,12 +6,9 @@ import org.apache.camel.Handler;
 import org.springframework.stereotype.Component;
 
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDELSE_ID;
-import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.EKSPEDERT;
+import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.BEKREFTET;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatus.OPPRETTET;
 
-/**
- * @author Sigurd Midttun, Visma Consulting.
- */
 @Component
 public class DokdistStatusUpdater {
 
@@ -24,6 +21,6 @@ public class DokdistStatusUpdater {
 	@Handler
 	public void doUpdate(Exchange exchange) {
 		final String forsendelseId = exchange.getProperty(PROPERTY_FORSENDELSE_ID, String.class);
-		administrerForsendelse.oppdaterForsendelseAndVarselStatus(forsendelseId, EKSPEDERT.name(), OPPRETTET.name());
+		administrerForsendelse.oppdaterForsendelseAndVarselStatus(forsendelseId, BEKREFTET.name(), OPPRETTET.name());
 	}
 }
