@@ -17,6 +17,7 @@
 			<groupId>no.nav.dokdistdittnav</groupId>
 			<artifactId>core</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>no.nav.teamdokumenthandtering</groupId>
 			<artifactId>teamdokumenthandtering-avro-schemas</artifactId>
@@ -58,6 +59,5 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
 
 </project>

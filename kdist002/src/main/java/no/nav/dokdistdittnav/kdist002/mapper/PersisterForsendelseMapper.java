@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 import static no.nav.dokdistdittnav.utils.DokdistUtils.assertNotBlank;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.assertNotNull;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 public class PersisterForsendelseMapper {

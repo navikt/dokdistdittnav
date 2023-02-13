@@ -40,7 +40,7 @@ public class ProdusentNotifikasjon {
 	private final DokdistdittnavProperties properties;
 	private final LocalTime kjernetidStart;
 	private final LocalTime kjernetidSlutt;
-	private Clock clock;
+	private final Clock clock;
 
 	@Autowired
 	public ProdusentNotifikasjon(KafkaEventProducer kafkaEventProducer,

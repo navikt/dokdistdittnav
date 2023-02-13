@@ -25,9 +25,6 @@ import static org.apache.camel.LoggingLevel.ERROR;
 import static org.apache.camel.LoggingLevel.INFO;
 
 
-/**
- * @author Sigurd Midttun, Visma Consulting.
- */
 @Component
 public class Qdist010Route extends RouteBuilder {
 

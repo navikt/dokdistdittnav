@@ -10,9 +10,6 @@ import org.slf4j.MDC;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDELSE_ID;
 import static no.nav.dokdistdittnav.constants.MdcConstants.CALL_ID;
 
-/**
- * @author Erik Bråten, Visma Consulting.
- */
 public class IdsProcessor implements Processor {
 
 	@Override

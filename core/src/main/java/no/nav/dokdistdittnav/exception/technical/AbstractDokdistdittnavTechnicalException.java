@@ -1,8 +1,5 @@
 package no.nav.dokdistdittnav.exception.technical;
 
-/**
- * @author Jarl Øystein Samseth, Visma Consulting
- */
 public abstract class AbstractDokdistdittnavTechnicalException extends RuntimeException {
 
 	public AbstractDokdistdittnavTechnicalException(String message) {

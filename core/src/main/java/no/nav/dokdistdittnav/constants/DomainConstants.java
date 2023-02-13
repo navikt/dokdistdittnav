@@ -1,8 +1,5 @@
 package no.nav.dokdistdittnav.constants;
 
-/**
- * @author Sigurd Midttun, Visma Consulting.
- */
 public class DomainConstants {
 
 	public static final String SERVICE_ID = "qdist010";

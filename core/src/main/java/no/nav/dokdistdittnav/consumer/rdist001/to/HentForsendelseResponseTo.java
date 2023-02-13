@@ -8,9 +8,6 @@ import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonstidspunktKo
 
 import java.util.List;
 
-/**
- * @author Sigurd Midttun, Visma Consulting.
- */
 @Data
 @Builder
 public class HentForsendelseResponseTo {

@@ -1,16 +1,13 @@
 package no.nav.dokdistdittnav.qdist010.itest;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- * @author Sigurd Midttun, Visma Consulting.
- */
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public final class testUtils {
 	private testUtils() {
 	}
