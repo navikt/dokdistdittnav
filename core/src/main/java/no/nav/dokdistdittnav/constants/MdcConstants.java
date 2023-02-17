@@ -5,7 +5,7 @@ public final class MdcConstants {
 	private MdcConstants() {
 	}
 
-	public static final String CALL_ID = "callId";
+	public static final String MDC_CALL_ID = "callId";
 	public static final String DOK_CONSUMER = "dok_consumer";
 	public static final String DOKARKIV_CONSUMER = "dokarkiv_consumer";
 	public static final String DOKDIST_CONSUMER = "dokdist_consumer";

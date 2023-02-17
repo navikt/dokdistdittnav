@@ -23,8 +23,8 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static no.nav.dokdistdittnav.constants.MdcConstants.CALL_ID;
 import static no.nav.dokdistdittnav.constants.MdcConstants.DOKNOTIFIKASJON_CONSUMER;
+import static no.nav.dokdistdittnav.constants.MdcConstants.MDC_CALL_ID;
 import static no.nav.dokdistdittnav.constants.MdcConstants.PROCESS;
 import static no.nav.dokdistdittnav.constants.RetryConstants.DELAY_SHORT;
 import static no.nav.dokdistdittnav.constants.RetryConstants.MAX_ATTEMPTS_SHORT;
@@ -81,7 +81,7 @@ public class DoknotifikasjonConsumer {
 
 
 	private void createHeaders(HttpHeaders headers) {
-		headers.set(CALL_ID, MDC.get(CALL_ID));
+		headers.set(MDC_CALL_ID, MDC.get(MDC_CALL_ID));
 		headers.setContentType(MediaType.APPLICATION_JSON);
 	}
 
