@@ -21,6 +21,7 @@ public class DokdistdittnavProperties {
 	private final Doknotifikasjon doknotifikasjon = new Doknotifikasjon();
 	private final Dokarkiv dokarkiv = new Dokarkiv();
 	private final Dokdist dokdist = new Dokdist();
+	private final Dokdist dokdistadmin = new Dokdist();
 
 	@Data
 	@Validated

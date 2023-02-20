@@ -8,7 +8,7 @@ import org.apache.camel.language.xpath.XPathBuilder;
 import org.slf4j.MDC;
 
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDELSE_ID;
-import static no.nav.dokdistdittnav.constants.MdcConstants.CALL_ID;
+import static no.nav.dokdistdittnav.constants.MdcConstants.MDC_CALL_ID;
 
 public class IdsProcessor implements Processor {
 
@@ -19,13 +19,13 @@ public class IdsProcessor implements Processor {
 	}
 
 	private void setBestillingsIdAsPropertyAndAddCallIdToMdc(Exchange exchange) {
-		final String callId = exchange.getIn().getHeader(CALL_ID, String.class);
+		final String callId = exchange.getIn().getHeader(MDC_CALL_ID, String.class);
 		if (callId == null) {
 			throw new ForsendelseManglerPaakrevdHeaderFunctionalException("qdist010 har mottatt forsendelse uten påkrevd header callId");
 		} else if (callId.trim().isEmpty()) {
 			throw new ForsendelseManglerPaakrevdHeaderFunctionalException("qdist010 har mottatt forsendelse med tom header callId");
 		}
-		MDC.put(CALL_ID, callId);
+		MDC.put(MDC_CALL_ID, callId);
 	}
 
 	private void setForsendelseIdAsProperty(Exchange exchange) {

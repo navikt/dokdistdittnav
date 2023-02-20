@@ -1,7 +1,9 @@
 package no.nav.dokdistdittnav.consumer.rdist001;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.dokdistdittnav.azure.AzureProperties;
 import no.nav.dokdistdittnav.config.properties.DokdistDittnavServiceuser;
+import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.constants.RetryConstants;
 import no.nav.dokdistdittnav.consumer.dokumentdistribusjon.OppdaterVarselInfoRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FeilRegistrerForsendelseRequest;
@@ -11,12 +13,15 @@ import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseResponseTo;
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
+import no.nav.dokdistdittnav.exception.functional.DokdistadminFunctionalException;
 import no.nav.dokdistdittnav.exception.functional.Rdist001HentForsendelseFunctionalException;
 import no.nav.dokdistdittnav.exception.functional.Rdist001OppdaterForsendelseStatusFunctionalException;
 import no.nav.dokdistdittnav.exception.technical.AbstractDokdistdittnavTechnicalException;
+import no.nav.dokdistdittnav.exception.technical.DokdistadminTechnicalException;
 import no.nav.dokdistdittnav.exception.technical.Rdist001HentForsendelseTechnicalException;
 import no.nav.dokdistdittnav.exception.technical.Rdist001OppdaterForsendelseStatusTechnicalException;
 import no.nav.dokdistdittnav.metrics.Monitor;
+import no.nav.dokdistdittnav.utils.NavHeadersFilter;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,44 +33,64 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.util.Map;
+import java.util.function.Consumer;
 
 import static java.lang.String.format;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDELSE_ID;
-import static no.nav.dokdistdittnav.constants.MdcConstants.CALL_ID;
 import static no.nav.dokdistdittnav.constants.MdcConstants.DOK_CONSUMER;
+import static no.nav.dokdistdittnav.constants.MdcConstants.MDC_CALL_ID;
 import static no.nav.dokdistdittnav.constants.MdcConstants.PROCESS;
+import static no.nav.dokdistdittnav.constants.NavHeaders.NAV_CALLID;
 import static no.nav.dokdistdittnav.constants.RetryConstants.DELAY_SHORT;
 import static no.nav.dokdistdittnav.constants.RetryConstants.MAX_ATTEMPTS_SHORT;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
 @Component
 public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 
 	private final RestTemplate restTemplate;
-	private final String oppdaterVarselInfoUrl;
 	private final String administrerforsendelseV1Url;
+	private final WebClient webClient;
+	private final ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager;
 
 	@Autowired
 	public AdministrerForsendelseConsumer(RestTemplateBuilder restTemplateBuilder,
 										  final DokdistDittnavServiceuser dittnavServiceuser,
-										  @Value("${administrerforsendelse.v1.url}") String administrerforsendelseV1Url) {
+										  @Value("${administrerforsendelse.v1.url}") String administrerforsendelseV1Url,
+										  DokdistdittnavProperties dokdistdittnavProperties,
+										  WebClient webClient,
+										  ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
 		this.administrerforsendelseV1Url = administrerforsendelseV1Url;
+		this.oAuth2AuthorizedClientManager = oAuth2AuthorizedClientManager;
 		this.restTemplate = restTemplateBuilder
 				.setReadTimeout(Duration.ofSeconds(20))
 				.setConnectTimeout(Duration.ofSeconds(5))
 				.basicAuthentication(dittnavServiceuser.getUsername(), dittnavServiceuser.getPassword())
 				.build();
-		oppdaterVarselInfoUrl = UriComponentsBuilder.fromHttpUrl(administrerforsendelseV1Url+"/oppdatervarselinfo").toUriString();
+		this.webClient = webClient.mutate()
+				.baseUrl(dokdistdittnavProperties.getDokdistadmin().getBaseUri())
+				.filter(new NavHeadersFilter())
+				.defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+				.build();
 	}
 
 	@Override
@@ -187,22 +212,18 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "oppdaterVarselInfo"}, histogram = true)
 	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
 	public void oppdaterVarselInfo(OppdaterVarselInfoRequest oppdaterVarselInfo) {
-		log.info("Mottatt kall til å oppdatere varselinfo={} tilhørende forsendelseId={}", oppdaterVarselInfo.forsendelseId());
-		oppdaterVarselInfo(oppdaterVarselInfoUrl, oppdaterVarselInfo);
+		log.info("oppdaterVarselInfo oppdaterer varselinfo for forsendelse med forsendelseId={}", oppdaterVarselInfo.forsendelseId());
 
-	}
+		webClient.put()
+				.uri(uriBuilder -> uriBuilder.path("/oppdatervarselinfo").build())
+				.attributes(getOAuth2AuthorizedClient())
+				.bodyValue(oppdaterVarselInfo)
+				.retrieve()
+				.toBodilessEntity()
+				.doOnError(this::handleError)
+				.block();
 
-	private void oppdaterVarselInfo(String uri, OppdaterVarselInfoRequest oppdaterVarselInfoRequest){
-		try {
-			HttpEntity<?> entity = new HttpEntity<>(oppdaterVarselInfoRequest, createHeaders());
-			restTemplate.exchange(uri, PUT, entity, String.class);
-		} catch (HttpClientErrorException e) {
-			throw new Rdist001HentForsendelseFunctionalException(format("Kall mot rdist001 - oppdaterVarselInfo feilet med statusCode=%s, feilmelding=%s", e.getStatusCode(), e.getMessage()),
-					e);
-
-		} catch (HttpServerErrorException e) {
-			throw new Rdist001HentForsendelseTechnicalException(format("Kall mot rdist001 - oppdaterVarselInfo feilet teknisk med statusCode=%s,feilmelding=%s", e.getStatusCode(), e.getMessage()), e);
-		}
+		log.info("oppdaterVarselInfo har oppdatert varselinfo for forsendelse med forsendelseId={}", oppdaterVarselInfo.forsendelseId());
 	}
 
 	private void oppdaterForsendelse(String uri) {
@@ -222,8 +243,27 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 	private HttpHeaders createHeaders() {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.set(CALL_ID, MDC.get(CALL_ID));
+		headers.set(NAV_CALLID, MDC.get(MDC_CALL_ID));
 		return headers;
+	}
+
+	private void handleError(Throwable error) {
+		if (error instanceof WebClientResponseException response && ((WebClientResponseException) error).getStatusCode().is4xxClientError()) {
+			throw new DokdistadminFunctionalException(
+					String.format("Kall mot rdist001 feilet funksjonelt med status=%s, feilmelding=%s",
+							response.getRawStatusCode(),
+							response.getMessage()),
+					error);
+		} else {
+			throw new DokdistadminTechnicalException(
+					String.format("Kall mot rdist001 feilet teknisk med feilmelding=%s", error.getMessage()),
+					error);
+		}
+	}
+
+	private Consumer<Map<String, Object>> getOAuth2AuthorizedClient() {
+		Mono<OAuth2AuthorizedClient> clientMono = oAuth2AuthorizedClientManager.authorize(AzureProperties.getOAuth2AuthorizeRequestForAzure(AzureProperties.CLIENT_REGISTRATION_DOKDISTADMIN));
+		return ServerOAuth2AuthorizedClientExchangeFilterFunction.oauth2AuthorizedClient(clientMono.block());
 	}
 
 }

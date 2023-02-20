@@ -191,7 +191,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 		await().pollInterval(500, MILLISECONDS).atMost(2, SECONDS).untilAsserted(() -> {
 			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
-			verify(1, putRequestedFor((urlEqualTo("/administrerforsendelse/oppdatervarselinfo")))
+			verify(1, putRequestedFor((urlEqualTo("/rest/v1/administrerforsendelse/oppdatervarselinfo")))
 					.withRequestBody(containing(classpathToString("__files/rnot001/updateDistInfoRequest-happy.json"))));
 		});
 	}
@@ -248,7 +248,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	}
 
 	private void stubUpdateVarselInfo() {
-		stubFor(put("/administrerforsendelse/oppdatervarselinfo")
+		stubFor(put("/rest/v1/administrerforsendelse/oppdatervarselinfo")
 				.willReturn(aResponse().withStatus(200)));
 	}
 

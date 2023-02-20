@@ -5,9 +5,7 @@ import no.nav.dokdistdittnav.azure.AzureProperties;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.exception.technical.AbstractDokdistdittnavTechnicalException;
 import no.nav.dokdistdittnav.metrics.Monitor;
-import org.slf4j.MDC;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import no.nav.dokdistdittnav.utils.NavHeadersFilter;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -21,11 +19,12 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static no.nav.dokdistdittnav.constants.MdcConstants.CALL_ID;
 import static no.nav.dokdistdittnav.constants.MdcConstants.DOK_CONSUMER;
 import static no.nav.dokdistdittnav.constants.MdcConstants.PROCESS;
 import static no.nav.dokdistdittnav.constants.RetryConstants.DELAY_SHORT;
 import static no.nav.dokdistdittnav.constants.RetryConstants.MAX_ATTEMPTS_SHORT;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
 @Component
@@ -38,7 +37,10 @@ public class DokarkivConsumer {
 	public DokarkivConsumer(WebClient webClient,
 							DokdistdittnavProperties dokdistdittnavProperties,
 							ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
-		this.webClient = webClient;
+		this.webClient = webClient.mutate()
+				.filter(new NavHeadersFilter())
+				.defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+				.build();
 		this.dokdistdittnavProperties = dokdistdittnavProperties;
 		this.oAuth2AuthorizedClientManager = oAuth2AuthorizedClientManager;
 
@@ -50,7 +52,6 @@ public class DokarkivConsumer {
 		webClient.patch()
 				.uri(dokdistdittnavProperties.getDokarkiv().getOppdaterDistribusjonsinfoURI(journalpostId))
 				.attributes(getOAuth2AuthorizedClient())
-				.headers(this::createHeaders)
 				.bodyValue(oppdaterDistribusjonsinfo)
 				.retrieve()
 				.bodyToMono(String.class)
@@ -77,11 +78,6 @@ public class DokarkivConsumer {
 						error);
 			}
 		};
-	}
-
-	private void createHeaders(HttpHeaders headers) {
-		headers.set(CALL_ID, MDC.get(CALL_ID));
-		headers.setContentType(MediaType.APPLICATION_JSON);
 	}
 
 	private Consumer<Map<String, Object>> getOAuth2AuthorizedClient() {

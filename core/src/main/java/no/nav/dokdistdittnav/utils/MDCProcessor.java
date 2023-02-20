@@ -7,7 +7,7 @@ import org.slf4j.MDC;
 import java.util.UUID;
 
 import static java.util.Objects.isNull;
-import static no.nav.dokdistdittnav.constants.MdcConstants.CALL_ID;
+import static no.nav.dokdistdittnav.constants.MdcConstants.MDC_CALL_ID;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class MDCProcessor implements Processor {
@@ -18,13 +18,13 @@ public class MDCProcessor implements Processor {
 	}
 
 	public static void setOrGenerateCallIdToMdc(Exchange exchange) {
-		final String callId = exchange.getIn().getHeader(CALL_ID, String.class);
+		final String callId = exchange.getIn().getHeader(MDC_CALL_ID, String.class);
 		if (isNull(callId) || isBlank(callId)) {
 			String newCallId = UUID.randomUUID().toString();
-			exchange.getIn().setHeader(CALL_ID, newCallId);
-			MDC.put(CALL_ID, newCallId);
+			exchange.getIn().setHeader(MDC_CALL_ID, newCallId);
+			MDC.put(MDC_CALL_ID, newCallId);
 		} else {
-			MDC.put(CALL_ID, callId);
+			MDC.put(MDC_CALL_ID, callId);
 		}
 	}
 }
