@@ -7,9 +7,7 @@ import no.nav.dokdistdittnav.consumer.dokarkiv.DokarkivOppdaterDistribusjonsinfo
 import no.nav.dokdistdittnav.consumer.dokarkiv.DokarkivOppdaterDistribusjonsinfoTechnicalException;
 import no.nav.dokdistdittnav.exception.technical.AbstractDokdistdittnavTechnicalException;
 import no.nav.dokdistdittnav.metrics.Monitor;
-import org.slf4j.MDC;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import no.nav.dokdistdittnav.utils.NavHeadersFilter;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -24,10 +22,11 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static no.nav.dokdistdittnav.constants.MdcConstants.DOKNOTIFIKASJON_CONSUMER;
-import static no.nav.dokdistdittnav.constants.MdcConstants.MDC_CALL_ID;
 import static no.nav.dokdistdittnav.constants.MdcConstants.PROCESS;
 import static no.nav.dokdistdittnav.constants.RetryConstants.DELAY_SHORT;
 import static no.nav.dokdistdittnav.constants.RetryConstants.MAX_ATTEMPTS_SHORT;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
 @Component
@@ -40,7 +39,10 @@ public class DoknotifikasjonConsumer {
 	public DoknotifikasjonConsumer(WebClient webClient,
 								   DokdistdittnavProperties dokdistdittnavProperties,
 								   ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
-		this.webClient = webClient;
+		this.webClient = webClient.mutate()
+				.filter(new NavHeadersFilter())
+				.defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+				.build();
 		this.dokdistdittnavProperties = dokdistdittnavProperties;
 		this.oAuth2AuthorizedClientManager = oAuth2AuthorizedClientManager;
 	}
@@ -51,7 +53,6 @@ public class DoknotifikasjonConsumer {
 		return webClient.get()
 				.uri(dokdistdittnavProperties.getDoknotifikasjon().getNotifikasjonInfoURI(bestillingsId))
 				.attributes(getOAuth2AuthorizedClient())
-				.headers(this::createHeaders)
 				.retrieve()
 				.bodyToMono(NotifikasjonInfoTo.class)
 				.doOnError(handleError(bestillingsId))
@@ -77,12 +78,6 @@ public class DoknotifikasjonConsumer {
 						error);
 			}
 		};
-	}
-
-
-	private void createHeaders(HttpHeaders headers) {
-		headers.set(MDC_CALL_ID, MDC.get(MDC_CALL_ID));
-		headers.setContentType(MediaType.APPLICATION_JSON);
 	}
 
 	private Consumer<Map<String, Object>> getOAuth2AuthorizedClient() {
