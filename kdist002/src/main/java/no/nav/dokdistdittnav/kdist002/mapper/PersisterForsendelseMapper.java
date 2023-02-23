@@ -4,7 +4,6 @@ import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseRequestTo;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -18,14 +17,17 @@ public class PersisterForsendelseMapper {
 	private static final String DOKUMENTTYPE_ID = "U000001";
 	private static final String HOVEDDOKUMENT = "HOVEDDOKUMENT";
 
-	public PersisterForsendelseRequestTo map(HentForsendelseResponseTo hentForsendelseResponse) {
+	public PersisterForsendelseRequestTo map(HentForsendelseResponseTo hentForsendelseResponse, String nyBestillingsId) {
+
 		if (hentForsendelseResponse == null) {
 			throw new IllegalArgumentException("HentForsendelseResponseTo kan ikke være null");
 		}
+
 		assertThatAllRequiredFieldsArePresent(hentForsendelseResponse);
 		AtomicReference<Integer> rekkefolge = new AtomicReference<>(2);
+
 		return PersisterForsendelseRequestTo.builder()
-				.bestillingsId(UUID.randomUUID().toString())
+				.bestillingsId(nyBestillingsId)
 				.distribusjonsKanal(DISTRIBUSJON_KANAL_PRINT)
 				.distribusjonstype(hentForsendelseResponse.getDistribusjonstype())
 				.distribusjonstidspunkt(hentForsendelseResponse.getDistribusjonstidspunkt())
