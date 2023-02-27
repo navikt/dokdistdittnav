@@ -12,22 +12,28 @@ public class OppdaterVarselInfoMapper {
 	private static final String EPOST = "EPOST";
 	private static final String MOBILTELEFON = "MOBILTELEFON";
 
-	public static OppdaterVarselInfoRequest mapNotifikasjonBestilling(String bestillingsId, NotifikasjonInfoTo notifikasjonInfoTo){
-		Set<Notifikasjon> notifikasjoner = notifikasjonInfoTo.notifikasjonDistribusjoner().stream().map(distribusjon -> mapNotifikasjon(distribusjon)).collect(Collectors.toSet());
+	public static OppdaterVarselInfoRequest mapNotifikasjonBestilling(String bestillingsId, NotifikasjonInfoTo notifikasjonInfoTo) {
+		Set<Notifikasjon> notifikasjoner = notifikasjonInfoTo.notifikasjonDistribusjoner().stream()
+				.map(OppdaterVarselInfoMapper::mapNotifikasjon)
+				.collect(Collectors.toSet());
 		return new OppdaterVarselInfoRequest(bestillingsId, notifikasjoner);
 	}
 
-	private static Notifikasjon mapNotifikasjon(NotifikasjonInfoTo.NotifikasjonDistribusjonDto notifikasjonDist){
+	private static Notifikasjon mapNotifikasjon(NotifikasjonInfoTo.NotifikasjonDistribusjonDto notifikasjonDist) {
 		String kanal = notifikasjonDist.kanal();
 		return new Notifikasjon(
 				mapKanal(kanal),
 				mapTittel(kanal, notifikasjonDist.tittel()),
 				notifikasjonDist.tekst(),
-				notifikasjonDist.kontaktInfo());
+				notifikasjonDist.kontaktInfo(),
+				notifikasjonDist.sendtDato());
 	}
 
-	private static String mapTittel(String kanal, String tittel){
+	private static String mapTittel(String kanal, String tittel) {
 		return EPOST.equals(kanal) ? tittel : null;
 	}
-	private static String mapKanal(String kanal) { return EPOST.equals(kanal) ? EPOST : MOBILTELEFON; }
+
+	private static String mapKanal(String kanal) {
+		return EPOST.equals(kanal) ? EPOST : MOBILTELEFON;
+	}
 }

@@ -10,7 +10,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static no.nav.dokdistdittnav.kdist002.mapper.OppdaterVarselInfoMapper.mapNotifikasjonBestilling;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -42,7 +41,8 @@ class OppdaterVarselInfoMapperTest {
 		assertThat(oppdaterVarselInfoRequest.forsendelseId(), is(bestillingsId));
 		assertThat(oppdaterVarselInfoRequest.notifikasjoner().size(), is(2));
 		List<Notifikasjon> notifikasjoner = oppdaterVarselInfoRequest.notifikasjoner().stream()
-				.sorted(Comparator.comparing(Notifikasjon::kanal)).collect(Collectors.toList());
+				.sorted(Comparator.comparing(Notifikasjon::kanal))
+				.toList();
 		assertNotifikasjonInfoTo(notifikasjoner.get(0), EPOST, TITTEL);
 		assertNotifikasjonInfoTo(notifikasjoner.get(1), MOBILTELEFON, null);
 
@@ -53,6 +53,7 @@ class OppdaterVarselInfoMapperTest {
 		assertThat(notifikasjon.tittel(), is(tittel));
 		assertThat(notifikasjon.kontaktInfo(), is(KONTAKTINFO));
 		assertThat(notifikasjon.tekst(), is(TEKST));
+		assertThat(notifikasjon.varslingstidspunkt(), is(NOW));
 	}
 
 	public NotifikasjonInfoTo createNotifikasjonInfoTo(Set<NotifikasjonInfoTo.NotifikasjonDistribusjonDto> distribusjoner) {
