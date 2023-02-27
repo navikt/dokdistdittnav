@@ -121,13 +121,13 @@ public class Kdist002Service {
 		String nyBestillingsId = UUID.randomUUID().toString();
 		PersisterForsendelseRequestTo request = persisterForsendelseMapper.map(hentForsendelseResponse, nyBestillingsId);
 
-		log.info("Mottatt kall til å opprette ny forsendelse med bestillingsId={}", nyBestillingsId);
+		log.info("Kdist002 skal opprette ny forsendelse med bestillingsId={}, og feilregistrere forsendelse={} med bestillingsId={}", nyBestillingsId, gammelForsendelseId, gammelBestillingsId);
 		PersisterForsendelseResponseTo persisterForsendelseResponse = administrerForsendelse.persisterForsendelse(request);
 		validateOppdaterForsendelse(persisterForsendelseResponse);
-		log.info("Opprettet ny forsendelse med forsendelseId={} i dokdist databasen.", persisterForsendelseResponse.getForsendelseId());
+		log.info("Kdist002 har opprettet ny forsendelse med forsendelseId={} og bestillingsId={} i dokdist-databasen.", persisterForsendelseResponse.getForsendelseId(), nyBestillingsId);
 
 		feilregistrerForsendelse(gammelForsendelseId, nyBestillingsId, feilmelding);
-		log.info("Forsendelsen med forsendelseId={} er feilregistrert i dokdist databasen.", gammelForsendelseId);
+		log.info("Kdist002 har feilregistrert forsendelse med forsendelseId={} og bestillingsId={} i dokdist-databasen.", gammelForsendelseId, gammelBestillingsId);
 
 		administrerForsendelse.oppdaterForsendelseStatus(valueOf(persisterForsendelseResponse.getForsendelseId()), KLAR_FOR_DIST.name());
 
