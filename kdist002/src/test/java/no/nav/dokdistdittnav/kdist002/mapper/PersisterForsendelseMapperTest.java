@@ -2,7 +2,6 @@ package no.nav.dokdistdittnav.kdist002.mapper;
 
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseRequestTo;
-import no.nav.dokdistdittnav.kdist002.mapper.PersisterForsendelseMapper;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -10,13 +9,13 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PersisterForsendelseMapperTest {
 
 	private static final String OLD_BESTILLINGS_ID = UUID.randomUUID().toString();
+	private static final String NEW_BESTILLINGS_ID = UUID.randomUUID().toString();
 	private static final String BATCH_ID = "batchId";
 	private static final String BESTILLENDE_FAGSYSTEM = "bestillendeFagsystem";
 	private static final String TEMA = "FS22";
@@ -41,14 +40,13 @@ class PersisterForsendelseMapperTest {
 	private static final String ARKIV_DOKUMENTINFO_ID_1 = "arkivDokumentinfoId1";
 	private static final String ARKIV_DOKUMENTINFO_ID_2 = "arkivDokumentinfoId2";
 
-
 	private final PersisterForsendelseMapper mapper = new PersisterForsendelseMapper();
 
 	@Test
 	public void shouldMapForsendelser() {
-		PersisterForsendelseRequestTo request = mapper.map(createHentForsendelseResponse());
+		PersisterForsendelseRequestTo request = mapper.map(createHentForsendelseResponse(), NEW_BESTILLINGS_ID);
 
-		assertNotNull(request.getBestillingsId());
+		assertEquals(NEW_BESTILLINGS_ID, request.getBestillingsId());
 		assertEquals(request.getForsendelseTittel(), FORSENDELSE_TITTEL);
 		assertEquals(request.getBatchId(), BATCH_ID);
 		assertEquals(request.getDokumentProdApp(), DOKUMENT_PROD_APP);
@@ -59,16 +57,16 @@ class PersisterForsendelseMapperTest {
 		assertEquals(request.getOriginalDistribusjonId(), OLD_BESTILLINGS_ID);
 		assertPostadresseTo(request.getPostadresse());
 		assertDokument(request.getDokumenter().get(1));
-
 	}
 
 	@Test
 	public void shouldMapForsendelserWhenAdresseErNull() {
 		HentForsendelseResponseTo hentForsendelseResponse = createHentForsendelseResponse();
 		hentForsendelseResponse.setPostadresse(null);
-		PersisterForsendelseRequestTo request = mapper.map(hentForsendelseResponse);
 
-		assertNotNull(request.getBestillingsId());
+		PersisterForsendelseRequestTo request = mapper.map(hentForsendelseResponse, NEW_BESTILLINGS_ID);
+
+		assertEquals(NEW_BESTILLINGS_ID, request.getBestillingsId());
 		assertEquals(request.getForsendelseTittel(), FORSENDELSE_TITTEL);
 		assertEquals(request.getBatchId(), BATCH_ID);
 		assertEquals(request.getDokumentProdApp(), DOKUMENT_PROD_APP);
@@ -84,7 +82,7 @@ class PersisterForsendelseMapperTest {
 
 	@Test
 	public void shouldThrowExceptionIfHentForsendelseResponseIsNull() {
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> mapper.map(null));
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> mapper.map(null, NEW_BESTILLINGS_ID));
 		assertEquals(exception.getMessage(), "HentForsendelseResponseTo kan ikke være null");
 	}
 
@@ -92,13 +90,14 @@ class PersisterForsendelseMapperTest {
 	public void shouldThrowExceptionIfTemaBlank() {
 		HentForsendelseResponseTo hentForsendelseResponse = createHentForsendelseResponse();
 		hentForsendelseResponse.setTema(null);
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> mapper.map(hentForsendelseResponse));
+
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> mapper.map(hentForsendelseResponse, NEW_BESTILLINGS_ID));
 		assertEquals(exception.getMessage(), "tema kan ikke være null");
 	}
 
 	@Test
 	public void shouldThrowExceptionIfMottakerIsNull() {
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> mapper.map(createHentForsendelseResponseWithMottakerNull()));
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> mapper.map(createHentForsendelseResponseWithMottakerNull(), NEW_BESTILLINGS_ID));
 		assertEquals(exception.getMessage(), "Mottaker kan ikke være null");
 	}
 
