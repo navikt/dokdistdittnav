@@ -83,7 +83,7 @@ public class Kdist002Service {
 		log.info("Hentet forsendelse med bestillingsId={}, varselStatus={} og forsendelseStatus={} ", hentForsendelseResponse.getBestillingsId(), hentForsendelseResponse.getVarselStatus(), hentForsendelseResponse.getForsendelseStatus());
 
 		return (isOpprettetVarselStatus(hentForsendelseResponse)) ?
-				createNewAndFeilRegistrerOldForsendelse(finnForsendelse.getForsendelseId(), hentForsendelseResponse, doknotifikasjonStatus.getMelding()) : null;
+				createNewAndFeilRegistrerOldForsendelse(finnForsendelse.getForsendelseId(), hentForsendelseResponse, doknotifikasjonStatus) : null;
 	}
 
 	private void oppdaterForsendelseStatus(FinnForsendelseResponseTo finnForsendelse, String bestillingsId) {
@@ -116,7 +116,7 @@ public class Kdist002Service {
 				.build());
 	}
 
-	private DoneEventRequest createNewAndFeilRegistrerOldForsendelse(String gammelForsendelseId, HentForsendelseResponseTo hentForsendelseResponse, String feilmelding) {
+	private DoneEventRequest createNewAndFeilRegistrerOldForsendelse(String gammelForsendelseId, HentForsendelseResponseTo hentForsendelseResponse, DoknotifikasjonStatus doknotifikasjonStatus) {
 		String gammelBestillingsId = hentForsendelseResponse.getBestillingsId();
 		String nyBestillingsId = UUID.randomUUID().toString();
 		PersisterForsendelseRequestTo request = persisterForsendelseMapper.map(hentForsendelseResponse, nyBestillingsId);
@@ -126,7 +126,7 @@ public class Kdist002Service {
 		validateOppdaterForsendelse(persisterForsendelseResponse);
 		log.info("Kdist002 har opprettet ny forsendelse med forsendelseId={} og bestillingsId={} i dokdist-databasen.", persisterForsendelseResponse.getForsendelseId(), nyBestillingsId);
 
-		feilregistrerForsendelse(gammelForsendelseId, nyBestillingsId, feilmelding);
+		feilregistrerForsendelse(gammelForsendelseId, nyBestillingsId, doknotifikasjonStatus);
 		log.info("Kdist002 har feilregistrert forsendelse med forsendelseId={} og bestillingsId={} i dokdist-databasen.", gammelForsendelseId, gammelBestillingsId);
 
 		administrerForsendelse.oppdaterForsendelseStatus(valueOf(persisterForsendelseResponse.getForsendelseId()), KLAR_FOR_DIST.name());
@@ -138,13 +138,13 @@ public class Kdist002Service {
 				.build();
 	}
 
-	private void feilregistrerForsendelse(String gammelForsendelseId, String nyBestillingsId, String feilmelding) {
+	private void feilregistrerForsendelse(String gammelForsendelseId, String nyBestillingsId, DoknotifikasjonStatus doknotifikasjonStatus) {
 
 		administrerForsendelse.feilregistrerForsendelse(FeilRegistrerForsendelseRequest.builder()
 				.forsendelseId(gammelForsendelseId)
 				.type(VARSLINGSFEIL)
 				.tidspunkt(LocalDateTime.now())
-				.detaljer(feilmelding)
+				.detaljer(doknotifikasjonStatus.getMelding())
 				.resendingDistribusjonId(nyBestillingsId)
 				.build());
 	}
