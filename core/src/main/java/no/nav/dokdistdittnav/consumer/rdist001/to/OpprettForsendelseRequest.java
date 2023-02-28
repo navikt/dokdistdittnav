@@ -24,7 +24,6 @@ public class OpprettForsendelseRequest {
 	private List<DokumentTo> dokumenter;
 	private DistribusjonsTypeKode distribusjonstype;
 	private DistribusjonstidspunktKode distribusjonstidspunkt;
-	private final String varselStatus;
 
 	@Data
 	@Builder
