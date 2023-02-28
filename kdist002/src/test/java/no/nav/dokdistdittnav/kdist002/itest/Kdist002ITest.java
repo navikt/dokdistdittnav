@@ -213,7 +213,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	private void verifyAndCountForsendelse(String bestillingsId, String forsendelseStatus) {
 		verify(getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + bestillingsId)));
 		verify(getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
-		verify(postRequestedFor(urlMatching("/administrerforsendelse")));
+		verify(postRequestedFor(urlMatching("/rest/v1/administrerforsendelse")));
 		verify(putRequestedFor(urlMatching("/administrerforsendelse/feilregistrerforsendelse")));
 		verify(putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + NY_FORSENDELSE_ID + "&forsendelseStatus=" + forsendelseStatus)));
 	}
@@ -259,7 +259,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	}
 
 	private void stubPostOpprettForsendelse(String responseBody, int httpStatusValue) {
-		stubFor(post(urlEqualTo("/administrerforsendelse"))
+		stubFor(post(urlEqualTo("/rest/v1/administrerforsendelse"))
 				.willReturn(aResponse()
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withStatus(httpStatusValue)

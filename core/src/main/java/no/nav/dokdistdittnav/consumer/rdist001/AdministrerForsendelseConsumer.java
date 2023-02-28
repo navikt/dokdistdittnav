@@ -137,16 +137,21 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
 	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "opprettForsendelse"}, histogram = true)
 	public OpprettForsendelseResponse opprettForsendelse(final OpprettForsendelseRequest opprettForsendelseRequest) {
-		try {
-			HttpEntity<?> entity = new HttpEntity<>(opprettForsendelseRequest, createHeaders());
-			ResponseEntity<OpprettForsendelseResponse> response = restTemplate.exchange(administrerforsendelseV1Url, POST, entity, OpprettForsendelseResponse.class);
-			return response.getBody();
+		log.info("opprettForsendelse oppretter forsendelse med bestillingsId={}", opprettForsendelseRequest.getBestillingsId());
 
-		} catch (HttpClientErrorException e) {
-			throw new Rdist001HentForsendelseFunctionalException(String.format("Kall mot rdist001 - feilet til å opprette forsendelse med statusCode=%s, feilmelding=%s", e.getStatusCode(), e.getMessage()), e);
-		} catch (HttpServerErrorException e) {
-			throw new Rdist001HentForsendelseTechnicalException(String.format("Kall mot rdist001 - feilet til å opprette forsendelse med statusCode=%s, feilmelding=%s", e.getStatusCode(), e.getMessage()), e);
-		}
+		var response = webClient.post()
+				.attributes(getOAuth2AuthorizedClient())
+				.bodyValue(opprettForsendelseRequest)
+				.retrieve()
+				.bodyToMono(OpprettForsendelseResponse.class)
+				.doOnError(this::handleError)
+				.block();
+
+		var forsendelseId = response != null ? response.getForsendelseId() : null;
+		log.info("opprettForsendelse har opprettet forsendelse med forsendelseId={} og bestillingsId={}",
+				forsendelseId, opprettForsendelseRequest.getBestillingsId());
+
+		return response;
 	}
 
 	@Override
