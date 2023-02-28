@@ -10,10 +10,10 @@ import no.nav.dokdistdittnav.consumer.rdist001.to.FeilRegistrerForsendelseReques
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
-import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseRequestTo;
-import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseResponseTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
+import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseResponse;
 import no.nav.dokdistdittnav.kafka.DoneEventRequest;
-import no.nav.dokdistdittnav.kdist002.mapper.PersisterForsendelseMapper;
+import no.nav.dokdistdittnav.kdist002.mapper.OpprettForsendelseMapper;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import org.apache.camel.Handler;
 import org.springframework.stereotype.Component;
@@ -46,13 +46,13 @@ public class Kdist002Service {
 
 	private final DokdistdittnavProperties properties;
 	private final AdministrerForsendelse administrerForsendelse;
-	private final PersisterForsendelseMapper persisterForsendelseMapper;
+	private final OpprettForsendelseMapper opprettForsendelseMapper;
 	private final DoknotifikasjonConsumer doknotifikasjonConsumer;
 
 	public Kdist002Service(DokdistdittnavProperties properties, AdministrerForsendelse administrerForsendelse, DoknotifikasjonConsumer doknotifikasjonConsumer) {
 		this.properties = properties;
 		this.administrerForsendelse = administrerForsendelse;
-		this.persisterForsendelseMapper = new PersisterForsendelseMapper();
+		this.opprettForsendelseMapper = new OpprettForsendelseMapper();
 		this.doknotifikasjonConsumer = doknotifikasjonConsumer;
 	}
 
@@ -119,17 +119,17 @@ public class Kdist002Service {
 	private DoneEventRequest createNewAndFeilRegistrerOldForsendelse(String gammelForsendelseId, HentForsendelseResponseTo hentForsendelseResponse, DoknotifikasjonStatus doknotifikasjonStatus) {
 		String gammelBestillingsId = hentForsendelseResponse.getBestillingsId();
 		String nyBestillingsId = UUID.randomUUID().toString();
-		PersisterForsendelseRequestTo request = persisterForsendelseMapper.map(hentForsendelseResponse, nyBestillingsId);
+		OpprettForsendelseRequest request = opprettForsendelseMapper.map(hentForsendelseResponse, nyBestillingsId);
 
 		log.info("Kdist002 skal opprette ny forsendelse med bestillingsId={}, og feilregistrere forsendelse={} med bestillingsId={}", nyBestillingsId, gammelForsendelseId, gammelBestillingsId);
-		PersisterForsendelseResponseTo persisterForsendelseResponse = administrerForsendelse.persisterForsendelse(request);
-		validateOppdaterForsendelse(persisterForsendelseResponse);
-		log.info("Kdist002 har opprettet ny forsendelse med forsendelseId={} og bestillingsId={} i dokdist-databasen.", persisterForsendelseResponse.getForsendelseId(), nyBestillingsId);
+		OpprettForsendelseResponse opprettForsendelseResponse = administrerForsendelse.opprettForsendelse(request);
+		validateOppdaterForsendelse(opprettForsendelseResponse);
+		log.info("Kdist002 har opprettet ny forsendelse med forsendelseId={} og bestillingsId={} i dokdist-databasen.", opprettForsendelseResponse.getForsendelseId(), nyBestillingsId);
 
 		feilregistrerForsendelse(gammelForsendelseId, nyBestillingsId, doknotifikasjonStatus);
 		log.info("Kdist002 har feilregistrert forsendelse med forsendelseId={} og bestillingsId={} i dokdist-databasen.", gammelForsendelseId, gammelBestillingsId);
 
-		administrerForsendelse.oppdaterForsendelseStatus(valueOf(persisterForsendelseResponse.getForsendelseId()), KLAR_FOR_DIST.name());
+		administrerForsendelse.oppdaterForsendelseStatus(valueOf(opprettForsendelseResponse.getForsendelseId()), KLAR_FOR_DIST.name());
 
 		return DoneEventRequest.builder()
 				.forsendelseId(gammelForsendelseId)
@@ -163,9 +163,9 @@ public class Kdist002Service {
 				!ForsendelseStatus.FEILET.name().equals(hentForsendelseResponse.getForsendelseStatus());
 	}
 
-	private void validateOppdaterForsendelse(PersisterForsendelseResponseTo request) {
-		assertNotNull("PersisterForsendelseResponseTo", request);
-		assertNotBlank("PersisterForsendelseResponseTo.ForsendelseId", valueOf(request.getForsendelseId()));
+	private void validateOppdaterForsendelse(OpprettForsendelseResponse request) {
+		assertNotNull("OpprettForsendelseResponse", request);
+		assertNotBlank("OpprettForsendelseResponse.ForsendelseId", valueOf(request.getForsendelseId()));
 	}
 
 	private void validateFinnForsendelse(FinnForsendelseResponseTo finnForsendelseResponseTo) {

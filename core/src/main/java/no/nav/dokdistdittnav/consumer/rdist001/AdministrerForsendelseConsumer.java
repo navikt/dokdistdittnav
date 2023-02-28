@@ -10,8 +10,8 @@ import no.nav.dokdistdittnav.consumer.rdist001.to.FeilRegistrerForsendelseReques
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
-import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseRequestTo;
-import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseResponseTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
+import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseResponse;
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
 import no.nav.dokdistdittnav.exception.functional.DokdistadminFunctionalException;
 import no.nav.dokdistdittnav.exception.functional.Rdist001HentForsendelseFunctionalException;
@@ -135,11 +135,11 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 
 	@Override
 	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
-	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "persisterForsendelse"}, histogram = true)
-	public PersisterForsendelseResponseTo persisterForsendelse(final PersisterForsendelseRequestTo persisterForsendelseRequestTo) {
+	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "opprettForsendelse"}, histogram = true)
+	public OpprettForsendelseResponse opprettForsendelse(final OpprettForsendelseRequest opprettForsendelseRequest) {
 		try {
-			HttpEntity<?> entity = new HttpEntity<>(persisterForsendelseRequestTo, createHeaders());
-			ResponseEntity<PersisterForsendelseResponseTo> response = restTemplate.exchange(administrerforsendelseV1Url, POST, entity, PersisterForsendelseResponseTo.class);
+			HttpEntity<?> entity = new HttpEntity<>(opprettForsendelseRequest, createHeaders());
+			ResponseEntity<OpprettForsendelseResponse> response = restTemplate.exchange(administrerforsendelseV1Url, POST, entity, OpprettForsendelseResponse.class);
 			return response.getBody();
 
 		} catch (HttpClientErrorException e) {

@@ -9,7 +9,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class PersisterForsendelseRequestTo {
+public class OpprettForsendelseRequest {
 	private String bestillingsId;
 	private String distribusjonsKanal;
 	private String bestillendeFagsystem;

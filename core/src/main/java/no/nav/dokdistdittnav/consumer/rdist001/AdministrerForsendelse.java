@@ -5,8 +5,8 @@ import no.nav.dokdistdittnav.consumer.rdist001.to.FeilRegistrerForsendelseReques
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
-import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseRequestTo;
-import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseResponseTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
+import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseResponse;
 
 public interface AdministrerForsendelse {
 
@@ -22,7 +22,7 @@ public interface AdministrerForsendelse {
 
 	FinnForsendelseResponseTo finnForsendelse(final FinnForsendelseRequestTo finnForsendelseRequestTo);
 
-	PersisterForsendelseResponseTo persisterForsendelse(final PersisterForsendelseRequestTo forsendelseRequestTo);
+	OpprettForsendelseResponse opprettForsendelse(final OpprettForsendelseRequest forsendelseRequestTo);
 
 	void feilregistrerForsendelse(FeilRegistrerForsendelseRequest feilRegistrerForsendelse);
 }

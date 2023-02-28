@@ -29,13 +29,13 @@ public final class DokdistUtils {
 	}
 
 	public static void assertNotNull(String feltnavn, Object obj) {
-		if(isNull(obj)) {
+		if (isNull(obj)) {
 			throw new IllegalArgumentException(format("%s kan ikke være null", feltnavn));
 		}
 	}
 
 	public static void assertNotBlank(String feltnavn, String value) {
-		if(isBlank(value)) {
+		if (isBlank(value)) {
 			throw new IllegalArgumentException(format("%s kan ikke være null", feltnavn));
 		}
 	}
