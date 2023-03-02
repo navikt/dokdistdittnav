@@ -7,6 +7,7 @@ import lombok.Data;
 @Builder
 public class DoneEventRequest {
 	private String bestillingsId;
-	private String forsendelseId;
+	private String dittnavFeiletForsendelseId;
+	private String printForsendelseId;
 	private String mottakerId;
 }
