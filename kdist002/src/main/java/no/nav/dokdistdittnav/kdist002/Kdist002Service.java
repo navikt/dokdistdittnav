@@ -131,16 +131,21 @@ public class Kdist002Service {
 		log.info("Kdist002 skal opprette ny forsendelse med bestillingsId={}, og feilregistrere forsendelse={} med bestillingsId={}", nyBestillingsId, gammelForsendelseId, gammelBestillingsId);
 		PersisterForsendelseResponseTo persisterForsendelseResponse = administrerForsendelse.persisterForsendelse(request);
 		validateOppdaterForsendelse(persisterForsendelseResponse);
-		log.info("Kdist002 har opprettet ny forsendelse med forsendelseId={} og bestillingsId={} i dokdist-databasen.", persisterForsendelseResponse.getForsendelseId(), nyBestillingsId);
+
+		String nyForsendelseId = persisterForsendelseResponse.getForsendelseId().toString();
+
+		log.info("Kdist002 har opprettet ny forsendelse med forsendelseId={} og bestillingsId={} i dokdist-databasen.", nyForsendelseId, nyBestillingsId);
 
 		feilregistrerForsendelse(gammelForsendelseId, nyBestillingsId, doknotifikasjonStatus);
 		log.info("Kdist002 har feilregistrert forsendelse med forsendelseId={} og bestillingsId={} i dokdist-databasen.", gammelForsendelseId, gammelBestillingsId);
 
-		administrerForsendelse.oppdaterForsendelseStatus(valueOf(persisterForsendelseResponse.getForsendelseId()), KLAR_FOR_DIST.name());
+		administrerForsendelse.oppdaterForsendelseStatus(nyForsendelseId, KLAR_FOR_DIST.name());
 
 		return DoneEventRequest.builder()
-				.forsendelseId(gammelForsendelseId)
-				.bestillingsId(gammelBestillingsId)
+				.dittnavFeiletForsendelseId(gammelForsendelseId)
+				.printForsendelseId(nyForsendelseId)
+				.dittnavBestillingsId(gammelBestillingsId)
+				.printBestillingsId(nyBestillingsId)
 				.mottakerId(getMottakerId(hentForsendelseResponse))
 				.build();
 	}

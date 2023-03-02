@@ -21,8 +21,10 @@ import javax.xml.bind.JAXBContext;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static no.nav.dokdistdittnav.constants.DomainConstants.KDIST002_ID;
-import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
-import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDELSE_ID;
+import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_DITTNAV_BESTILLINGS_ID;
+import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_DITTNAV_FEILET_FORSENDELSE_ID;
+import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_PRINT_BESTILLINGS_ID;
+import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_PRINT_FORSENDELSE_ID;
 import static org.apache.camel.Exchange.EXCEPTION_CAUGHT;
 import static org.apache.camel.LoggingLevel.ERROR;
 import static org.apache.camel.LoggingLevel.INFO;
@@ -103,8 +105,11 @@ public class Kdist002Route extends RouteBuilder {
 					.otherwise()
 						.process(exchange -> {
 							DoneEventRequest doneEventRequest = exchange.getIn().getBody(DoneEventRequest.class);
-							exchange.setProperty(PROPERTY_FORSENDELSE_ID, doneEventRequest.getForsendelseId());
-							exchange.setProperty(PROPERTY_BESTILLINGS_ID, doneEventRequest.getBestillingsId());
+							exchange.setProperty(PROPERTY_DITTNAV_FEILET_FORSENDELSE_ID, doneEventRequest.getDittnavFeiletForsendelseId());
+							exchange.setProperty(PROPERTY_PRINT_FORSENDELSE_ID, doneEventRequest.getPrintForsendelseId());
+							exchange.setProperty(PROPERTY_DITTNAV_BESTILLINGS_ID, doneEventRequest.getDittnavBestillingsId());
+							exchange.setProperty(PROPERTY_PRINT_BESTILLINGS_ID, doneEventRequest.getPrintBestillingsId());
+
 						})
 						.multicast()
 						.to("direct:" + QDIST009)
@@ -117,26 +122,31 @@ public class Kdist002Route extends RouteBuilder {
 				.process(exchange -> {
 					DoneEventRequest doneEventRequest = exchange.getIn().getBody(DoneEventRequest.class);
 					DistribuerTilKanal distribuerTilKanal = new DistribuerTilKanal();
-					distribuerTilKanal.setForsendelseId(doneEventRequest.getForsendelseId());
+					distribuerTilKanal.setForsendelseId(doneEventRequest.getPrintForsendelseId());
 					exchange.getIn().setBody(distribuerTilKanal);
 				})
 				.marshal(new JaxbDataFormat(JAXBContext.newInstance(DistribuerTilKanal.class)))
 				.convertBodyTo(String.class, UTF_8.toString())
 				.to("jms:" + qdist009.getQueueName())
-				.log(INFO, log, "Kdist002 skrevet forsendelse med " + getIdsForLogging() + " på kø QDIST009.")
+				.log(INFO, log, "Kdist002 skrevet forsendelse med " + getIdsForLoggingPrint() + " på kø QDIST009.")
 				.end();
 
 		from("direct:" + DONE_EVENT)
 				.id(DONE_EVENT)
 				.bean(doneEventProducer)
-				.log(INFO, "Kdist002 skrevet hendelse med " + getIdsForLogging() + " til topic=" + dittnavProperties.getBrukernotifikasjon().getTopicdone())
+				.log(INFO, "Kdist002 skrevet hendelse med " + getIdsForLoggingDittnav() + " til topic=" + dittnavProperties.getBrukernotifikasjon().getTopicdone())
 				.end();
 		//@formatter:on
 	}
 
-	private static String getIdsForLogging() {
-		return "bestillingsId=${exchangeProperty." + PROPERTY_BESTILLINGS_ID + "}, " +
-				"forsendelseId=${exchangeProperty." + PROPERTY_FORSENDELSE_ID + "}";
+	private static String getIdsForLoggingDittnav() {
+		return "dittnavBestillingsId=${exchangeProperty." + PROPERTY_DITTNAV_BESTILLINGS_ID + "}, " +
+				"dittnavFeiletForsendelseId=${exchangeProperty." + PROPERTY_DITTNAV_FEILET_FORSENDELSE_ID + "}";
+	}
+
+	private static String getIdsForLoggingPrint() {
+		return "printBestillingsId=${exchangeProperty." + PROPERTY_PRINT_BESTILLINGS_ID + "}, " +
+			   "printForsendelseId=${exchangeProperty." + PROPERTY_PRINT_FORSENDELSE_ID + "}";
 	}
 
 	private void defaultKafkaManualCommit(Exchange exchange) {

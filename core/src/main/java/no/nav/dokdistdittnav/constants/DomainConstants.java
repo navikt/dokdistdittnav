@@ -11,7 +11,12 @@ public class DomainConstants {
 
 	public static final String PROPERTY_JOURNALPOST_ID = "journalpostId";
 	public static final String PROPERTY_BESTILLINGS_ID = "bestillingsId";
+	public static final String PROPERTY_DITTNAV_BESTILLINGS_ID = "dittnavBestillingsId";
+	public static final String PROPERTY_PRINT_BESTILLINGS_ID = "printBestillingsId";
 	public static final String PROPERTY_FORSENDELSE_ID = "forsendelseId";
+	public static final String PROPERTY_DITTNAV_FEILET_FORSENDELSE_ID = "dittnavFeiletForsendelseId";
+	public static final String PROPERTY_PRINT_FORSENDELSE_ID = "printForsendelseId";
+
 
 	public static final String VEDTAK_TEKST = "Du har fått et vedtak som gjelder %s. Les vedtaket i mine saker.";
 	public static final String SMS_VEDTAK_TEKST = "Hei! Du har fått et vedtak fra NAV. Logg inn på nav.no for å lese det. Vennlig hilsen NAV";
