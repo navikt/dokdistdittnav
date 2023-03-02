@@ -11,6 +11,8 @@ public class DomainConstants {
 
 	public static final String PROPERTY_JOURNALPOST_ID = "journalpostId";
 	public static final String PROPERTY_BESTILLINGS_ID = "bestillingsId";
+	public static final String PROPERTY_DITTNAV_BESTILLINGS_ID = "dittnavBestillingsId";
+	public static final String PROPERTY_PRINT_BESTILLINGS_ID = "printBestillingsId";
 	public static final String PROPERTY_FORSENDELSE_ID = "forsendelseId";
 	public static final String PROPERTY_DITTNAV_FEILET_FORSENDELSE_ID = "dittnavFeiletForsendelseId";
 	public static final String PROPERTY_PRINT_FORSENDELSE_ID = "printForsendelseId";

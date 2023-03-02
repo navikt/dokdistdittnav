@@ -27,7 +27,7 @@ public class BrukerNotifikasjonMapper {
 
 	public NokkelInput mapNokkelForKdist002(DoneEventRequest doneEventRequest, String appnavn) {
 		return new NokkelInputBuilder()
-				.withEventId(doneEventRequest.getBestillingsId())
+				.withEventId(doneEventRequest.getDittnavBestillingsId())
 				.withGrupperingsId(doneEventRequest.getDittnavFeiletForsendelseId())
 				.withFodselsnummer(doneEventRequest.getMottakerId())
 				.withNamespace(NAMESPACE)

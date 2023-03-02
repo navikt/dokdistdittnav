@@ -21,8 +21,9 @@ import javax.xml.bind.JAXBContext;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static no.nav.dokdistdittnav.constants.DomainConstants.KDIST002_ID;
-import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
+import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_DITTNAV_BESTILLINGS_ID;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_DITTNAV_FEILET_FORSENDELSE_ID;
+import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_PRINT_BESTILLINGS_ID;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_PRINT_FORSENDELSE_ID;
 import static org.apache.camel.Exchange.EXCEPTION_CAUGHT;
 import static org.apache.camel.LoggingLevel.ERROR;
@@ -106,7 +107,9 @@ public class Kdist002Route extends RouteBuilder {
 							DoneEventRequest doneEventRequest = exchange.getIn().getBody(DoneEventRequest.class);
 							exchange.setProperty(PROPERTY_DITTNAV_FEILET_FORSENDELSE_ID, doneEventRequest.getDittnavFeiletForsendelseId());
 							exchange.setProperty(PROPERTY_PRINT_FORSENDELSE_ID, doneEventRequest.getPrintForsendelseId());
-							exchange.setProperty(PROPERTY_BESTILLINGS_ID, doneEventRequest.getBestillingsId());
+							exchange.setProperty(PROPERTY_DITTNAV_BESTILLINGS_ID, doneEventRequest.getDittnavBestillingsId());
+							exchange.setProperty(PROPERTY_PRINT_BESTILLINGS_ID, doneEventRequest.getPrintBestillingsId());
+
 						})
 						.multicast()
 						.to("direct:" + QDIST009)
@@ -137,12 +140,13 @@ public class Kdist002Route extends RouteBuilder {
 	}
 
 	private static String getIdsForLoggingDittnav() {
-		return "bestillingsId=${exchangeProperty." + PROPERTY_BESTILLINGS_ID + "}, " +
+		return "dittnavBestillingsId=${exchangeProperty." + PROPERTY_DITTNAV_BESTILLINGS_ID + "}, " +
 				"dittnavFeiletForsendelseId=${exchangeProperty." + PROPERTY_DITTNAV_FEILET_FORSENDELSE_ID + "}";
 	}
 
 	private static String getIdsForLoggingPrint() {
-		return "printForsendelseId=${exchangeProperty." + PROPERTY_PRINT_FORSENDELSE_ID + "}";
+		return "printBestillingsId=${exchangeProperty." + PROPERTY_PRINT_BESTILLINGS_ID + "}, " +
+			   "printForsendelseId=${exchangeProperty." + PROPERTY_PRINT_FORSENDELSE_ID + "}";
 	}
 
 	private void defaultKafkaManualCommit(Exchange exchange) {

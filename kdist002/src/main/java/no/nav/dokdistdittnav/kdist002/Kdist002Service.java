@@ -144,7 +144,8 @@ public class Kdist002Service {
 		return DoneEventRequest.builder()
 				.dittnavFeiletForsendelseId(gammelForsendelseId)
 				.printForsendelseId(nyForsendelseId)
-				.bestillingsId(gammelBestillingsId)
+				.dittnavBestillingsId(gammelBestillingsId)
+				.printBestillingsId(nyBestillingsId)
 				.mottakerId(getMottakerId(hentForsendelseResponse))
 				.build();
 	}
