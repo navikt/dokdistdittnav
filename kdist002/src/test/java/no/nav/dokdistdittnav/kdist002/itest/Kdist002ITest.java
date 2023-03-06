@@ -47,8 +47,8 @@ import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.INFO;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.OVERSENDT;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.classpathToString;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.OK;
@@ -62,9 +62,14 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	private static final String DOKNOTIFIKASJON_BESTILLINGSID = "B-dokdistdittnav-811c0c5d-e74c-491a-8b8c-d94075c822c3";
 	private static final String BESTILLINGSID = "811c0c5d-e74c-491a-8b8c-d94075c822c3";
 	private static final String DOKNOTIFIKASJON_STATUS_TOPIC = "aapen-dok-notifikasjon-status";
+	private static final String DONE_EVENT_TOPIC = "done-test";
 	private static final String MELDING = "Altinn feilet";
 	private static final String DOKDISTDPI = "dokdistdpi";
 	private static final String DOKDISTDITTNAV = "dokdistdittnav";
+
+	private static final String DONEEVENT_DITTNAV_BESTILLINGSID = "811c0c5d-e74c-491a-8b8c-d94075c822c3";
+	private static final String DONEEVENT_DITTNAV_FORSENDELSEID = "1720847";
+	private static final String DONEEVENT_DITTNAV_MOTTAKERID = "22222222222";
 
 	@Autowired
 	private KafkaEventProducer kafkaEventProducer;
@@ -86,12 +91,12 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	@BeforeEach
 	void setUp() {
 		DefaultKafkaConsumerFactory<String, Object> consumerFactory = new DefaultKafkaConsumerFactory<>(getConsumerProperties());
-		ContainerProperties containerProperties = new ContainerProperties("aapen-dok-notifikasjon-status");
+		ContainerProperties containerProperties = new ContainerProperties(DOKNOTIFIKASJON_STATUS_TOPIC, DONE_EVENT_TOPIC);
 		container = new KafkaMessageListenerContainer<>(consumerFactory, containerProperties);
 		records = new LinkedBlockingQueue<>();
 		container.setupMessageListener((MessageListener<String, Object>) e -> records.add(e));
 		container.start();
-		ContainerTestUtils.waitForAssignment(container, embeddedKafkaBroker.getPartitionsPerTopic());
+		ContainerTestUtils.waitForAssignment(container, embeddedKafkaBroker.getTopics().size() * embeddedKafkaBroker.getPartitionsPerTopic());
 		stubFor(post("/azure_token")
 				.willReturn(aResponse()
 						.withStatus(OK.value())
@@ -128,8 +133,19 @@ public class Kdist002ITest extends ApplicationTestConfig {
 		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name()));
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
+			//Sjekk at riktig forsendelseId blir sendt til qdist009/print
 			String message = receive(qdist009);
-			assertNotNull(message);
+			assertThat(message).contains(NY_FORSENDELSE_ID);
+
+			//Sjekk at riktig forsendelseId blir sendt til brukernotifikasjon via kafka hendelse
+			assertThat(records.stream())
+					.filteredOn(it -> DONE_EVENT_TOPIC.equals(it.topic()))
+					.hasSize(1)
+					.extracting(ConsumerRecord::key)
+					.asString()
+					.contains(DONEEVENT_DITTNAV_BESTILLINGSID,
+							DONEEVENT_DITTNAV_FORSENDELSEID,
+							DONEEVENT_DITTNAV_MOTTAKERID);
 		});
 
 		verifyAndCountForsendelse(BESTILLINGSID, KLAR_FOR_DIST.name());
