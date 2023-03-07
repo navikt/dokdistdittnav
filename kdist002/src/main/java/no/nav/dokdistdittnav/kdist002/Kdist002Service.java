@@ -88,12 +88,19 @@ public class Kdist002Service {
 
 	private void oppdaterForsendelseStatus(FinnForsendelseResponseTo finnForsendelse, String bestillingsId) {
 		HentForsendelseResponseTo forsendelse = administrerForsendelse.hentForsendelse(finnForsendelse.getForsendelseId());
+
 		if (nonNull(forsendelse)) {
 			if (skalOppdatereForsendelseStatus(forsendelse)) {
-				log.info("Kdist002 oppdaterer forsendelse med id={} til forsendelseStatus=EXPEDERT for bestillingsid={}", finnForsendelse.getForsendelseId(), bestillingsId);
+				log.info("Kdist002 oppdaterer forsendelse med forsendelseId={} til forsendelseStatus=EKSPEDERT for bestillingsid={}", finnForsendelse.getForsendelseId(), bestillingsId);
 				administrerForsendelse.oppdaterForsendelseStatus(finnForsendelse.getForsendelseId(), EKSPEDERT.name());
-				log.info("Kdist002 har oppdatert forsendelsesstatus med id={} til forsendelseStatus=EXPEDERT for bestillingsid={}", finnForsendelse.getForsendelseId(), bestillingsId);
+				log.info("Kdist002 har oppdatert forsendelsesstatus med forsendelseId={} til forsendelseStatus=EKSPEDERT for bestillingsid={}", finnForsendelse.getForsendelseId(), bestillingsId);
+			} else {
+				log.info("Kdist002 skal ikke oppdatere forsendelsestatus på forsendelse med forsendelseId={}, bestillingsId={} og forsendelsestatus={}",
+						finnForsendelse.getForsendelseId(), bestillingsId, forsendelse.getForsendelseStatus());
 			}
+		} else {
+			log.info("Kdist002 kan ikke oppdatere forsendelsestatus på forsendelse med forsendelseId={} og bestillingsId={}, siden forsendelse er null",
+					finnForsendelse.getForsendelseId(), bestillingsId);
 		}
 	}
 
@@ -124,16 +131,21 @@ public class Kdist002Service {
 		log.info("Kdist002 skal opprette ny forsendelse med bestillingsId={}, og feilregistrere forsendelse={} med bestillingsId={}", nyBestillingsId, gammelForsendelseId, gammelBestillingsId);
 		OpprettForsendelseResponse opprettForsendelseResponse = administrerForsendelse.opprettForsendelse(request);
 		validateOppdaterForsendelse(opprettForsendelseResponse);
+
+		String nyForsendelseId = opprettForsendelseResponse.getForsendelseId().toString();
+
 		log.info("Kdist002 har opprettet ny forsendelse med forsendelseId={} og bestillingsId={} i dokdist-databasen.", opprettForsendelseResponse.getForsendelseId(), nyBestillingsId);
 
 		feilregistrerForsendelse(gammelForsendelseId, nyBestillingsId, doknotifikasjonStatus);
 		log.info("Kdist002 har feilregistrert forsendelse med forsendelseId={} og bestillingsId={} i dokdist-databasen.", gammelForsendelseId, gammelBestillingsId);
 
-		administrerForsendelse.oppdaterForsendelseStatus(valueOf(opprettForsendelseResponse.getForsendelseId()), KLAR_FOR_DIST.name());
+		administrerForsendelse.oppdaterForsendelseStatus(nyForsendelseId, KLAR_FOR_DIST.name());
 
 		return DoneEventRequest.builder()
-				.forsendelseId(gammelForsendelseId)
-				.bestillingsId(gammelBestillingsId)
+				.dittnavFeiletForsendelseId(gammelForsendelseId)
+				.printForsendelseId(nyForsendelseId)
+				.dittnavBestillingsId(gammelBestillingsId)
+				.printBestillingsId(nyBestillingsId)
 				.mottakerId(getMottakerId(hentForsendelseResponse))
 				.build();
 	}

@@ -30,7 +30,7 @@ public class DoneEventProducer {
 	@Handler
 	public void sendDoneEvent(DoneEventRequest doneEventRequest) {
 		NokkelInput nokkelInput = mapper.mapNokkelForKdist002(doneEventRequest, properties.getAppnavn());
-		log.info("Kdist002 mottatt hendelse med eventId/bestillingsId={} til å skrive til (topic={})", doneEventRequest.getForsendelseId(), properties.getBrukernotifikasjon().getTopicdone());
+		log.info("Kdist002 mottatt hendelse med eventId/bestillingsId={} til å skrive til (topic={})", doneEventRequest.getDittnavFeiletForsendelseId(), properties.getBrukernotifikasjon().getTopicdone());
 		kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicdone(), nokkelInput, mapper.mapDoneInput());
 	}
 }
