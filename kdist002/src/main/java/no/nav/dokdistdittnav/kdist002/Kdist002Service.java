@@ -134,7 +134,7 @@ public class Kdist002Service {
 
 		String nyForsendelseId = opprettForsendelseResponse.getForsendelseId().toString();
 
-		log.info("Kdist002 har opprettet ny forsendelse med forsendelseId={} og bestillingsId={} i dokdist-databasen.", opprettForsendelseResponse.getForsendelseId(), nyBestillingsId);
+		log.info("Kdist002 har opprettet ny forsendelse med forsendelseId={} og bestillingsId={} i dokdist-databasen.", nyForsendelseId, nyBestillingsId);
 
 		feilregistrerForsendelse(gammelForsendelseId, nyBestillingsId, doknotifikasjonStatus);
 		log.info("Kdist002 har feilregistrert forsendelse med forsendelseId={} og bestillingsId={} i dokdist-databasen.", gammelForsendelseId, gammelBestillingsId);
