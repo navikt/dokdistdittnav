@@ -9,7 +9,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class PersisterForsendelseRequestTo {
+public class OpprettForsendelseRequest {
 	private String bestillingsId;
 	private String distribusjonsKanal;
 	private String bestillendeFagsystem;
@@ -24,7 +24,6 @@ public class PersisterForsendelseRequestTo {
 	private List<DokumentTo> dokumenter;
 	private DistribusjonsTypeKode distribusjonstype;
 	private DistribusjonstidspunktKode distribusjonstidspunkt;
-	private final String varselStatus;
 
 	@Data
 	@Builder

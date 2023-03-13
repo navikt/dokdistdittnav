@@ -1,7 +1,7 @@
 package no.nav.dokdistdittnav.kdist002.mapper;
 
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
-import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseRequestTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class PersisterForsendelseMapperTest {
+class OpprettForsendelseMapperTest {
 
 	private static final String OLD_BESTILLINGS_ID = UUID.randomUUID().toString();
 	private static final String NEW_BESTILLINGS_ID = UUID.randomUUID().toString();
@@ -40,11 +40,11 @@ class PersisterForsendelseMapperTest {
 	private static final String ARKIV_DOKUMENTINFO_ID_1 = "arkivDokumentinfoId1";
 	private static final String ARKIV_DOKUMENTINFO_ID_2 = "arkivDokumentinfoId2";
 
-	private final PersisterForsendelseMapper mapper = new PersisterForsendelseMapper();
+	private final OpprettForsendelseMapper mapper = new OpprettForsendelseMapper();
 
 	@Test
 	public void shouldMapForsendelser() {
-		PersisterForsendelseRequestTo request = mapper.map(createHentForsendelseResponse(), NEW_BESTILLINGS_ID);
+		OpprettForsendelseRequest request = mapper.map(createHentForsendelseResponse(), NEW_BESTILLINGS_ID);
 
 		assertEquals(NEW_BESTILLINGS_ID, request.getBestillingsId());
 		assertEquals(request.getForsendelseTittel(), FORSENDELSE_TITTEL);
@@ -64,7 +64,7 @@ class PersisterForsendelseMapperTest {
 		HentForsendelseResponseTo hentForsendelseResponse = createHentForsendelseResponse();
 		hentForsendelseResponse.setPostadresse(null);
 
-		PersisterForsendelseRequestTo request = mapper.map(hentForsendelseResponse, NEW_BESTILLINGS_ID);
+		OpprettForsendelseRequest request = mapper.map(hentForsendelseResponse, NEW_BESTILLINGS_ID);
 
 		assertEquals(NEW_BESTILLINGS_ID, request.getBestillingsId());
 		assertEquals(request.getForsendelseTittel(), FORSENDELSE_TITTEL);
@@ -101,7 +101,7 @@ class PersisterForsendelseMapperTest {
 		assertEquals(exception.getMessage(), "Mottaker kan ikke være null");
 	}
 
-	private void assertPostadresseTo(PersisterForsendelseRequestTo.PostadresseTo postadresse) {
+	private void assertPostadresseTo(OpprettForsendelseRequest.PostadresseTo postadresse) {
 		assertEquals(postadresse.getAdresselinje1(), ADRESSELINJE_1);
 		assertEquals(postadresse.getAdresselinje2(), ADRESSELINJE_2);
 		assertEquals(postadresse.getAdresselinje3(), ADRESSELINJE_3);
@@ -110,7 +110,7 @@ class PersisterForsendelseMapperTest {
 		assertEquals(postadresse.getLandkode(), LAND);
 	}
 
-	private void assertDokument(PersisterForsendelseRequestTo.DokumentTo dokumentTo) {
+	private void assertDokument(OpprettForsendelseRequest.DokumentTo dokumentTo) {
 
 		assertEquals(dokumentTo.getDokumenttypeId(), DOKUMENTTYPE_ID_2);
 		assertEquals(dokumentTo.getDokumentObjektReferanse(), OBJEKT_REFERANSE_2);

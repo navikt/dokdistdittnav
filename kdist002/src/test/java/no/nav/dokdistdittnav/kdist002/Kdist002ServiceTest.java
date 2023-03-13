@@ -6,8 +6,8 @@ import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelseConsumer;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
-import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseRequestTo;
-import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseResponseTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
+import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseResponse;
 import no.nav.dokdistdittnav.kafka.DoneEventRequest;
 import no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
@@ -99,7 +99,7 @@ class Kdist002ServiceTest {
 				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
 				.verdi(BESTILLINGSID)
 				.build())).thenReturn(finnForsendelseResponseTo());
-		when(administrerForsendelse.persisterForsendelse(any(PersisterForsendelseRequestTo.class))).thenReturn(PersisterForsendelseResponseTo.builder()
+		when(administrerForsendelse.opprettForsendelse(any(OpprettForsendelseRequest.class))).thenReturn(OpprettForsendelseResponse.builder()
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
 
@@ -115,7 +115,7 @@ class Kdist002ServiceTest {
 				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
 				.verdi(BESTILLINGSID)
 				.build())).thenReturn(finnForsendelseResponseTo());
-		when(administrerForsendelse.persisterForsendelse(any(PersisterForsendelseRequestTo.class))).thenReturn(PersisterForsendelseResponseTo.builder()
+		when(administrerForsendelse.opprettForsendelse(any(OpprettForsendelseRequest.class))).thenReturn(OpprettForsendelseResponse.builder()
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
 
@@ -132,7 +132,7 @@ class Kdist002ServiceTest {
 				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
 				.verdi(BESTILLINGSID)
 				.build())).thenReturn(finnForsendelseResponseTo());
-		when(administrerForsendelse.persisterForsendelse(any(PersisterForsendelseRequestTo.class))).thenReturn(PersisterForsendelseResponseTo.builder()
+		when(administrerForsendelse.opprettForsendelse(any(OpprettForsendelseRequest.class))).thenReturn(OpprettForsendelseResponse.builder()
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
 
@@ -149,7 +149,7 @@ class Kdist002ServiceTest {
 				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
 				.verdi(BESTILLINGSID)
 				.build())).thenReturn(finnForsendelseResponseTo());
-		when(administrerForsendelse.persisterForsendelse(any(PersisterForsendelseRequestTo.class))).thenReturn(PersisterForsendelseResponseTo.builder()
+		when(administrerForsendelse.opprettForsendelse(any(OpprettForsendelseRequest.class))).thenReturn(OpprettForsendelseResponse.builder()
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
 
@@ -165,7 +165,7 @@ class Kdist002ServiceTest {
 				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
 				.verdi(BESTILLINGSID)
 				.build())).thenReturn(finnForsendelseResponseTo());
-		when(administrerForsendelse.persisterForsendelse(any(PersisterForsendelseRequestTo.class))).thenReturn(PersisterForsendelseResponseTo.builder()
+		when(administrerForsendelse.opprettForsendelse(any(OpprettForsendelseRequest.class))).thenReturn(OpprettForsendelseResponse.builder()
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
 
@@ -181,7 +181,7 @@ class Kdist002ServiceTest {
 				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
 				.verdi(BESTILLINGSID)
 				.build())).thenReturn(finnForsendelseResponseTo());
-		when(administrerForsendelse.persisterForsendelse(any(PersisterForsendelseRequestTo.class))).thenReturn(PersisterForsendelseResponseTo.builder()
+		when(administrerForsendelse.opprettForsendelse(any(OpprettForsendelseRequest.class))).thenReturn(OpprettForsendelseResponse.builder()
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
 
@@ -197,7 +197,7 @@ class Kdist002ServiceTest {
 				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
 				.verdi(BESTILLINGSID)
 				.build())).thenReturn(null);
-		when(administrerForsendelse.persisterForsendelse(any(PersisterForsendelseRequestTo.class))).thenReturn(PersisterForsendelseResponseTo.builder()
+		when(administrerForsendelse.opprettForsendelse(any(OpprettForsendelseRequest.class))).thenReturn(OpprettForsendelseResponse.builder()
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
 
@@ -217,7 +217,7 @@ class Kdist002ServiceTest {
 				.build())).thenReturn(finnForsendelseResponseTo());
 		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseTo);
 
-		when(administrerForsendelse.persisterForsendelse(any(PersisterForsendelseRequestTo.class))).thenReturn(PersisterForsendelseResponseTo.builder()
+		when(administrerForsendelse.opprettForsendelse(any(OpprettForsendelseRequest.class))).thenReturn(OpprettForsendelseResponse.builder()
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
 

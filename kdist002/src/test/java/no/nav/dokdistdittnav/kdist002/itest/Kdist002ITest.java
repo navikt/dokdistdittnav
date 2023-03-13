@@ -100,7 +100,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 		stubFor(post("/azure_token")
 				.willReturn(aResponse()
 						.withStatus(OK.value())
-						.withHeader(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile("azure/token_response_dummy.json")));
 	}
 
@@ -126,7 +126,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	public void shouldFeilRegistrerForsendelseOgOppdaterForsendelse() {
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json", FORSENDELSE_ID, OK.value());
-		stubPostPersisterForsendelse("__files/rdist001/persisterForsendelseResponse-happy.json", HttpStatus.OK.value());
+		stubPostOpprettForsendelse("__files/rdist001/opprettForsendelseResponse-happy.json", OK.value());
 		stubPutFeilregistrerforsendelse(OK.value());
 		stubPutOppdaterForsendelse(KLAR_FOR_DIST.name(), NY_FORSENDELSE_ID, OK.value());
 
@@ -155,7 +155,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	public void shouldAvsluttBehandlingenWhenBestillerIdIsNotDittnavAndStatusIsNotFeilet() {
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json", FORSENDELSE_ID, OK.value());
-		stubPostPersisterForsendelse("__files/rdist001/persisterForsendelseResponse-happy.json", HttpStatus.OK.value());
+		stubPostOpprettForsendelse("__files/rdist001/opprettForsendelseResponse-happy.json", OK.value());
 		stubPutFeilregistrerforsendelse(OK.value());
 		stubPutOppdaterForsendelse(KLAR_FOR_DIST.name(), NY_FORSENDELSE_ID, OK.value());
 
@@ -170,7 +170,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	public void shouldAvsluttBehandlingenWhenBestillerIdIsNotDittnavAndStatusFeilet() {
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json", FORSENDELSE_ID, OK.value());
-		stubPostPersisterForsendelse("__files/rdist001/persisterForsendelseResponse-happy.json", HttpStatus.OK.value());
+		stubPostOpprettForsendelse("__files/rdist001/opprettForsendelseResponse-happy.json", OK.value());
 		stubPutFeilregistrerforsendelse(OK.value());
 		stubPutOppdaterForsendelse(KLAR_FOR_DIST.name(), NY_FORSENDELSE_ID, OK.value());
 
@@ -229,7 +229,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	private void verifyAndCountForsendelse(String bestillingsId, String forsendelseStatus) {
 		verify(getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + bestillingsId)));
 		verify(getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
-		verify(postRequestedFor(urlMatching("/administrerforsendelse")));
+		verify(postRequestedFor(urlMatching("/rest/v1/administrerforsendelse")));
 		verify(putRequestedFor(urlMatching("/administrerforsendelse/feilregistrerforsendelse")));
 		verify(putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + NY_FORSENDELSE_ID + "&forsendelseStatus=" + forsendelseStatus)));
 	}
@@ -274,8 +274,8 @@ public class Kdist002ITest extends ApplicationTestConfig {
 						.withBody(classpathToString(responseBody))));
 	}
 
-	private void stubPostPersisterForsendelse(String responseBody, int httpStatusValue) {
-		stubFor(post(urlEqualTo("/administrerforsendelse"))
+	private void stubPostOpprettForsendelse(String responseBody, int httpStatusValue) {
+		stubFor(post(urlEqualTo("/rest/v1/administrerforsendelse"))
 				.willReturn(aResponse()
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withStatus(httpStatusValue)

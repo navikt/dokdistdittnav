@@ -10,8 +10,8 @@ import no.nav.dokdistdittnav.consumer.rdist001.to.FeilRegistrerForsendelseReques
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
-import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseRequestTo;
-import no.nav.dokdistdittnav.consumer.rdist001.to.PersisterForsendelseResponseTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
+import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseResponse;
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
 import no.nav.dokdistdittnav.exception.functional.DokdistadminFunctionalException;
 import no.nav.dokdistdittnav.exception.functional.Rdist001HentForsendelseFunctionalException;
@@ -59,7 +59,6 @@ import static no.nav.dokdistdittnav.constants.RetryConstants.DELAY_SHORT;
 import static no.nav.dokdistdittnav.constants.RetryConstants.MAX_ATTEMPTS_SHORT;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -135,18 +134,23 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 
 	@Override
 	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
-	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "persisterForsendelse"}, histogram = true)
-	public PersisterForsendelseResponseTo persisterForsendelse(final PersisterForsendelseRequestTo persisterForsendelseRequestTo) {
-		try {
-			HttpEntity<?> entity = new HttpEntity<>(persisterForsendelseRequestTo, createHeaders());
-			ResponseEntity<PersisterForsendelseResponseTo> response = restTemplate.exchange(administrerforsendelseV1Url, POST, entity, PersisterForsendelseResponseTo.class);
-			return response.getBody();
+	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "opprettForsendelse"}, histogram = true)
+	public OpprettForsendelseResponse opprettForsendelse(final OpprettForsendelseRequest opprettForsendelseRequest) {
+		log.info("opprettForsendelse oppretter forsendelse med bestillingsId={}", opprettForsendelseRequest.getBestillingsId());
 
-		} catch (HttpClientErrorException e) {
-			throw new Rdist001HentForsendelseFunctionalException(String.format("Kall mot rdist001 - feilet til å opprette forsendelse med statusCode=%s, feilmelding=%s", e.getStatusCode(), e.getMessage()), e);
-		} catch (HttpServerErrorException e) {
-			throw new Rdist001HentForsendelseTechnicalException(String.format("Kall mot rdist001 - feilet til å opprette forsendelse med statusCode=%s, feilmelding=%s", e.getStatusCode(), e.getMessage()), e);
-		}
+		var response = webClient.post()
+				.attributes(getOAuth2AuthorizedClient())
+				.bodyValue(opprettForsendelseRequest)
+				.retrieve()
+				.bodyToMono(OpprettForsendelseResponse.class)
+				.doOnError(this::handleError)
+				.block();
+
+		var forsendelseId = response != null ? response.getForsendelseId() : null;
+		log.info("opprettForsendelse har opprettet forsendelse med forsendelseId={} og bestillingsId={}",
+				forsendelseId, opprettForsendelseRequest.getBestillingsId());
+
+		return response;
 	}
 
 	@Override
