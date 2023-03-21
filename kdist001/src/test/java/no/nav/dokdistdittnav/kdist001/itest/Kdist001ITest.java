@@ -45,6 +45,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	private static final String JOURNALPOST_ID = "153781366";
 	private static final String FORSENDELSE_ID = "1720847";
 	private static final String URL_OPPDATERFORSENDELSE = "/administrerforsendelse?forsendelseId=1720847&varselStatus=FERDIGSTILT";
+	private static final String URL_HENTFORSENDELSE = "/rest/v1/administrerforsendelse/" + FORSENDELSE_ID;
 
 	@Autowired
 	private KafkaEventProducer kafkaEventProducer;
@@ -73,7 +74,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
 			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?journalpostId=" + JOURNALPOST_ID)));
-			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+			verify(1, getRequestedFor(urlEqualTo(URL_HENTFORSENDELSE)));
 			verify(1, putRequestedFor(urlEqualTo(URL_OPPDATERFORSENDELSE)));
 			verify(1, patchRequestedFor(urlMatching(".*/oppdaterDistribusjonsinfo")).withHeader("Authorization", matching("Bearer .*")));
 		});
@@ -93,7 +94,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
 			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?journalpostId=" + JOURNALPOST_ID)));
-			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+			verify(1, getRequestedFor(urlEqualTo(URL_HENTFORSENDELSE)));
 		});
 		verify(0, patchRequestedFor(urlMatching(".*/oppdaterDistribusjonsinfo")));
 	}
@@ -113,7 +114,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
 			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?journalpostId=" + JOURNALPOST_ID)));
-			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+			verify(1, getRequestedFor(urlEqualTo(URL_HENTFORSENDELSE)));
 		});
 	}
 
@@ -131,12 +132,12 @@ public class Kdist001ITest extends ApplicationTestConfig {
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
 			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?journalpostId=" + JOURNALPOST_ID)));
-			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+			verify(1, getRequestedFor(urlEqualTo(URL_HENTFORSENDELSE)));
 		});
 	}
 
 	private void stubGetHentForsendelse(String responsebody, String forsendelseId, int httpStatusvalue) {
-		stubFor(get("/administrerforsendelse/" + forsendelseId).willReturn(aResponse().withStatus(httpStatusvalue)
+		stubFor(get(urlEqualTo("/rest/v1/administrerforsendelse/" + forsendelseId)).willReturn(aResponse().withStatus(httpStatusvalue)
 				.withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
 				.withBody(classpathToString(responsebody))));
 	}

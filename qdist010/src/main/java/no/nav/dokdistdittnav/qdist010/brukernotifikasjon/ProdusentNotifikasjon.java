@@ -8,7 +8,7 @@ import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonstidspunktKode;
-import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import no.nav.dokdistdittnav.exception.functional.UtenforKjernetidFunctionalException;
 import no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
@@ -61,7 +61,7 @@ public class ProdusentNotifikasjon {
 	@Handler
 	public void oppretteOppgaveEllerBeskjed(DistribuerTilKanal distribuerTilKanal, Exchange exchange) {
 		String forsendelseId = distribuerTilKanal.getForsendelseId();
-		HentForsendelseResponseTo hentForsendelseResponse = administrerForsendelse.hentForsendelse(forsendelseId);
+		HentForsendelseResponse hentForsendelseResponse = administrerForsendelse.hentForsendelse(forsendelseId);
 		log.info("Hentet forsendelse med forsendlseId={} og bestillingsId={} fra rdist002", forsendelseId, hentForsendelseResponse.getBestillingsId());
 		NokkelInput nokkelIntern = brukerNotifikasjonMapper.mapNokkelIntern(forsendelseId, properties.getAppnavn(), hentForsendelseResponse);
 
@@ -78,7 +78,7 @@ public class ProdusentNotifikasjon {
 		}
 	}
 
-	private void behandleForsendelse(HentForsendelseResponseTo hentForsendelseResponse, NokkelInput nokkelIntern){
+	private void behandleForsendelse(HentForsendelseResponse hentForsendelseResponse, NokkelInput nokkelIntern){
 		if (erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype()) && isJournalpostIdNotNull(hentForsendelseResponse)) {
 			OppgaveInput oppgaveIntern = oppretteOppgave(properties.getBrukernotifikasjon().getLink(), hentForsendelseResponse);
 			log.info("Opprettet eventType OPPGAVE med eventId/bestillingsId={}", hentForsendelseResponse.getBestillingsId());
@@ -106,7 +106,7 @@ public class ProdusentNotifikasjon {
 		return nonNull(distribusjonsType) && ((VIKTIG.equals(distribusjonsType) || VEDTAK.equals(distribusjonsType)));
 	}
 
-	private boolean isJournalpostIdNotNull(HentForsendelseResponseTo hentForsendelseResponse) {
+	private boolean isJournalpostIdNotNull(HentForsendelseResponse hentForsendelseResponse) {
 		return hentForsendelseResponse.getArkivInformasjon() != null && hentForsendelseResponse.getArkivInformasjon().getArkivId() != null;
 	}
 }

@@ -9,7 +9,7 @@ import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FeilRegistrerForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
-import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseResponse;
 import no.nav.dokdistdittnav.kafka.DoneEventRequest;
@@ -79,7 +79,7 @@ public class Kdist002Service {
 		}
 
 		validateFinnForsendelse(finnForsendelse);
-		HentForsendelseResponseTo hentForsendelseResponse = administrerForsendelse.hentForsendelse(finnForsendelse.getForsendelseId());
+		HentForsendelseResponse hentForsendelseResponse = administrerForsendelse.hentForsendelse(finnForsendelse.getForsendelseId());
 		log.info("Hentet forsendelse med bestillingsId={}, varselStatus={} og forsendelseStatus={} ", hentForsendelseResponse.getBestillingsId(), hentForsendelseResponse.getVarselStatus(), hentForsendelseResponse.getForsendelseStatus());
 
 		return (isOpprettetVarselStatus(hentForsendelseResponse)) ?
@@ -87,7 +87,7 @@ public class Kdist002Service {
 	}
 
 	private void oppdaterForsendelseStatus(FinnForsendelseResponseTo finnForsendelse, String bestillingsId) {
-		HentForsendelseResponseTo forsendelse = administrerForsendelse.hentForsendelse(finnForsendelse.getForsendelseId());
+		HentForsendelseResponse forsendelse = administrerForsendelse.hentForsendelse(finnForsendelse.getForsendelseId());
 
 		if (nonNull(forsendelse)) {
 			if (skalOppdatereForsendelseStatus(forsendelse)) {
@@ -104,7 +104,7 @@ public class Kdist002Service {
 		}
 	}
 
-	private static boolean skalOppdatereForsendelseStatus(HentForsendelseResponseTo forsendelse) {
+	private static boolean skalOppdatereForsendelseStatus(HentForsendelseResponse forsendelse) {
 		return ForsendelseStatus.OVERSENDT.name().equals(forsendelse.getForsendelseStatus()) ||
 				BEKREFTET.name().equals(forsendelse.getForsendelseStatus());
 	}
@@ -123,7 +123,7 @@ public class Kdist002Service {
 				.build());
 	}
 
-	private DoneEventRequest createNewAndFeilRegistrerOldForsendelse(String gammelForsendelseId, HentForsendelseResponseTo hentForsendelseResponse, DoknotifikasjonStatus doknotifikasjonStatus) {
+	private DoneEventRequest createNewAndFeilRegistrerOldForsendelse(String gammelForsendelseId, HentForsendelseResponse hentForsendelseResponse, DoknotifikasjonStatus doknotifikasjonStatus) {
 		String gammelBestillingsId = hentForsendelseResponse.getBestillingsId();
 		String nyBestillingsId = UUID.randomUUID().toString();
 		OpprettForsendelseRequest request = opprettForsendelseMapper.map(hentForsendelseResponse, nyBestillingsId);
@@ -161,16 +161,16 @@ public class Kdist002Service {
 				.build());
 	}
 
-	private String getMottakerId(HentForsendelseResponseTo hentForsendelseResponseTo) {
-		return Optional.ofNullable(hentForsendelseResponseTo.getMottaker())
-				.map(HentForsendelseResponseTo.MottakerTo::getMottakerId).orElseThrow(() -> new IllegalArgumentException("MottakerId kan ikke være null"));
+	private String getMottakerId(HentForsendelseResponse hentForsendelseResponse) {
+		return Optional.ofNullable(hentForsendelseResponse.getMottaker())
+				.map(HentForsendelseResponse.MottakerTo::getMottakerId).orElseThrow(() -> new IllegalArgumentException("MottakerId kan ikke være null"));
 	}
 
 	private String extractDokdistBestillingsId(String doknotifikasjonBestillingsId) {
 		return substring(doknotifikasjonBestillingsId, doknotifikasjonBestillingsId.length() - 36);
 	}
 
-	private boolean isOpprettetVarselStatus(HentForsendelseResponseTo hentForsendelseResponse) {
+	private boolean isOpprettetVarselStatus(HentForsendelseResponse hentForsendelseResponse) {
 		return OPPRETTET.name().equals(hentForsendelseResponse.getVarselStatus()) &&
 				!ForsendelseStatus.FEILET.name().equals(hentForsendelseResponse.getForsendelseStatus());
 	}

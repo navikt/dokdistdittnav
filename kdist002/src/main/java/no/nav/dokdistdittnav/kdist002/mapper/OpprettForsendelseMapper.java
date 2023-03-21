@@ -1,6 +1,6 @@
 package no.nav.dokdistdittnav.kdist002.mapper;
 
-import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
 
 import java.util.List;
@@ -17,10 +17,10 @@ public class OpprettForsendelseMapper {
 	private static final String DOKUMENTTYPE_ID = "U000001";
 	private static final String HOVEDDOKUMENT = "HOVEDDOKUMENT";
 
-	public OpprettForsendelseRequest map(HentForsendelseResponseTo hentForsendelseResponse, String nyBestillingsId) {
+	public OpprettForsendelseRequest map(HentForsendelseResponse hentForsendelseResponse, String nyBestillingsId) {
 
 		if (hentForsendelseResponse == null) {
-			throw new IllegalArgumentException("HentForsendelseResponseTo kan ikke være null");
+			throw new IllegalArgumentException("HentForsendelseResponse kan ikke være null");
 		}
 
 		assertThatAllRequiredFieldsArePresent(hentForsendelseResponse);
@@ -54,7 +54,7 @@ public class OpprettForsendelseMapper {
 				.build();
 	}
 
-	private OpprettForsendelseRequest.DokumentTo mapDokument(HentForsendelseResponseTo.DokumentTo dokumentTo, Integer rekkefolge) {
+	private OpprettForsendelseRequest.DokumentTo mapDokument(HentForsendelseResponse.DokumentTo dokumentTo, Integer rekkefolge) {
 		return OpprettForsendelseRequest.DokumentTo.builder()
 				.tilknyttetSom(dokumentTo.getTilknyttetSom())
 				.dokumentObjektReferanse(dokumentTo.getDokumentObjektReferanse())
@@ -64,7 +64,7 @@ public class OpprettForsendelseMapper {
 				.build();
 	}
 
-	private OpprettForsendelseRequest.PostadresseTo mapPostadresse(HentForsendelseResponseTo.PostadresseTo postadresseTo) {
+	private OpprettForsendelseRequest.PostadresseTo mapPostadresse(HentForsendelseResponse.PostadresseTo postadresseTo) {
 		return isEmpty(postadresseTo) ? null : OpprettForsendelseRequest.PostadresseTo.builder()
 				.adresselinje1(postadresseTo.getAdresselinje1())
 				.adresselinje2(postadresseTo.getAdresselinje2())
@@ -75,14 +75,14 @@ public class OpprettForsendelseMapper {
 				.build();
 	}
 
-	private OpprettForsendelseRequest.ArkivInformasjonTo mapArkivInformasjonTo(HentForsendelseResponseTo.ArkivInformasjonTo arkivInformasjonTo) {
+	private OpprettForsendelseRequest.ArkivInformasjonTo mapArkivInformasjonTo(HentForsendelseResponse.ArkivInformasjonTo arkivInformasjonTo) {
 		return OpprettForsendelseRequest.ArkivInformasjonTo.builder()
 				.arkivSystem(arkivInformasjonTo.getArkivSystem())
 				.arkivId(arkivInformasjonTo.getArkivId())
 				.build();
 	}
 
-	private OpprettForsendelseRequest.MottakerTo mapMottakerTo(HentForsendelseResponseTo.MottakerTo mottakerTo) {
+	private OpprettForsendelseRequest.MottakerTo mapMottakerTo(HentForsendelseResponse.MottakerTo mottakerTo) {
 		assertNotNull("Mottaker", mottakerTo);
 		return OpprettForsendelseRequest.MottakerTo.builder()
 				.mottakerId(mottakerTo.getMottakerId())
@@ -95,7 +95,7 @@ public class OpprettForsendelseMapper {
 		return HOVEDDOKUMENT.equals(tilknyttetSom);
 	}
 
-	private void assertThatAllRequiredFieldsArePresent(HentForsendelseResponseTo forsendelseResponse) {
+	private void assertThatAllRequiredFieldsArePresent(HentForsendelseResponse forsendelseResponse) {
 		assertNotBlank("bestillingsId", forsendelseResponse.getBestillingsId());
 		assertNotBlank("bestillendeFagsystem", forsendelseResponse.getBestillendeFagsystem());
 		assertNotBlank("tema", forsendelseResponse.getTema());
@@ -118,7 +118,7 @@ public class OpprettForsendelseMapper {
 
 	}
 
-	private void assertDokument(HentForsendelseResponseTo.DokumentTo dokumentTo, HentForsendelseResponseTo.ArkivInformasjonTo arkivInformasjonTo) {
+	private void assertDokument(HentForsendelseResponse.DokumentTo dokumentTo, HentForsendelseResponse.ArkivInformasjonTo arkivInformasjonTo) {
 		assertNotBlank("dokumenter.dokument.tilknyttetSom", dokumentTo.getTilknyttetSom());
 		assertNotBlank("dokumenter.dokument.dokumentObjektReferanse", dokumentTo.getDokumentObjektReferanse());
 		assertNotBlank("dokumenter.dokument.dokumenttypeId", dokumentTo.getDokumenttypeId());
@@ -127,7 +127,7 @@ public class OpprettForsendelseMapper {
 		}
 	}
 
-	private void assertThatAtLeastOneDocumentIsPresent(List<HentForsendelseResponseTo.DokumentTo> dokumentToList) {
+	private void assertThatAtLeastOneDocumentIsPresent(List<HentForsendelseResponse.DokumentTo> dokumentToList) {
 		if (dokumentToList == null || dokumentToList.isEmpty()) {
 			throw new IllegalArgumentException("Ugyldig input: Feltet dokumenter må være en liste som inneholder minst ett dokumnet");
 		}

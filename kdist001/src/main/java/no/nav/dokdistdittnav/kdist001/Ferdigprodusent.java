@@ -9,7 +9,7 @@ import no.nav.dokdistdittnav.consumer.dokarkiv.OppdaterDistribusjonsInfo;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
-import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.safselvbetjening.schemas.HoveddokumentLest;
@@ -60,7 +60,7 @@ public class Ferdigprodusent {
 
 		if (nonNull(finnForsendelseResponse) && nonNull(finnForsendelseResponse.getForsendelseId())) {
 
-			HentForsendelseResponseTo hentForsendelseResponse = administrerForsendelse.hentForsendelse(requireNonNull(finnForsendelseResponse.getForsendelseId(), format("Fant ikke forsendelse med journalpostId=%s", hoveddokumentLest.getJournalpostId())));
+			HentForsendelseResponse hentForsendelseResponse = administrerForsendelse.hentForsendelse(requireNonNull(finnForsendelseResponse.getForsendelseId(), format("Fant ikke forsendelse med journalpostId=%s", hoveddokumentLest.getJournalpostId())));
 
 			if (nonNull(hentForsendelseResponse) && isValidForsendelse(hentForsendelseResponse, hoveddokumentLest)) {
 				log.info("Hentet forsendelse med forsendelseId={} og bestillingsId={} fra dokdist databasen.", finnForsendelseResponse.getForsendelseId(), hentForsendelseResponse.getBestillingsId());
@@ -75,15 +75,15 @@ public class Ferdigprodusent {
 
 	}
 
-	private boolean isValidForsendelse(HentForsendelseResponseTo hentForsendelseResponse, HoveddokumentLest hoveddokumentLest) {
+	private boolean isValidForsendelse(HentForsendelseResponse hentForsendelseResponse, HoveddokumentLest hoveddokumentLest) {
 		return isValidStatusAndKanal(hentForsendelseResponse) && isHovedDokument(hentForsendelseResponse, hoveddokumentLest);
 	}
 
-	private boolean isValidStatusAndKanal(HentForsendelseResponseTo hentForsendelseResponse) {
+	private boolean isValidStatusAndKanal(HentForsendelseResponse hentForsendelseResponse) {
 		return OPPRETTET.name().equals(hentForsendelseResponse.getVarselStatus()) && KANAL_DITTNAV.equals(hentForsendelseResponse.getDistribusjonKanal());
 	}
 
-	public boolean isHovedDokument(HentForsendelseResponseTo hentForsendelseResponse, HoveddokumentLest hoveddokumentLest) {
+	public boolean isHovedDokument(HentForsendelseResponse hentForsendelseResponse, HoveddokumentLest hoveddokumentLest) {
 		return nonNull(hentForsendelseResponse.getDokumenter()) && hentForsendelseResponse.getDokumenter().stream()
 				.filter(dokument -> HOVEDDOKUMENT.equals(dokument.getTilknyttetSom()))
 				.anyMatch(dokument -> dokument.getArkivDokumentInfoId().equals(hoveddokumentLest.getDokumentInfoId())

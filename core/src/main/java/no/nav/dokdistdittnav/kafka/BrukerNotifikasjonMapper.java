@@ -4,7 +4,7 @@ import no.nav.brukernotifikasjon.schemas.builders.DoneInputBuilder;
 import no.nav.brukernotifikasjon.schemas.builders.NokkelInputBuilder;
 import no.nav.brukernotifikasjon.schemas.input.DoneInput;
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
-import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -15,7 +15,7 @@ public class BrukerNotifikasjonMapper {
 
 	private static final String NAMESPACE = "teamdokumenthandtering";
 
-	public NokkelInput mapNokkelIntern(String forsendelseId, String appnavn, HentForsendelseResponseTo hentForsendelseResponse) {
+	public NokkelInput mapNokkelIntern(String forsendelseId, String appnavn, HentForsendelseResponse hentForsendelseResponse) {
 		return new NokkelInputBuilder()
 				.withEventId(hentForsendelseResponse.getBestillingsId())
 				.withGrupperingsId(forsendelseId)
@@ -42,10 +42,10 @@ public class BrukerNotifikasjonMapper {
 				.build();
 	}
 
-	private String getMottakerId(HentForsendelseResponseTo hentForsendelseResponse) {
-		HentForsendelseResponseTo.MottakerTo mottaker = hentForsendelseResponse.getMottaker();
+	private String getMottakerId(HentForsendelseResponse hentForsendelseResponse) {
+		HentForsendelseResponse.MottakerTo mottaker = hentForsendelseResponse.getMottaker();
 		return ofNullable(mottaker)
-				.map(HentForsendelseResponseTo.MottakerTo::getMottakerId)
+				.map(HentForsendelseResponse.MottakerTo::getMottakerId)
 				.orElseThrow(() -> new IllegalArgumentException("Mottaker kan ikke være null"));
 	}
 

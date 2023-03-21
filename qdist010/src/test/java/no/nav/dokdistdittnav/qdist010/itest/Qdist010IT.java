@@ -3,7 +3,6 @@ package no.nav.dokdistdittnav.qdist010.itest;
 import no.nav.dokdistdittnav.qdist010.brukernotifikasjon.ProdusentNotifikasjon;
 import no.nav.dokdistdittnav.qdist010.config.ApplicationTestConfig;
 import org.apache.activemq.command.ActiveMQTextMessage;
-import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,19 +29,24 @@ import java.util.concurrent.TimeUnit;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static no.nav.dokdistdittnav.constants.RetryConstants.MAX_ATTEMPTS_SHORT;
+import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 
 @ActiveProfiles("itest")
@@ -50,6 +54,7 @@ class Qdist010IT extends ApplicationTestConfig {
 
 	private static final String FORSENDELSE_ID = "33333";
 	private static final String FORSENDELSE_PATH = "/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=OVERSENDT" + "&varselStatus=OPPRETTET";
+	private static final String HENTFORSENDELSE_PATH = "/rest/v1/administrerforsendelse/" + FORSENDELSE_ID;
 
 	private static final ZoneId OSLO_ZONE = ZoneId.of("Europe/Oslo");
 	private static String CALL_ID;
@@ -75,6 +80,12 @@ class Qdist010IT extends ApplicationTestConfig {
 	@BeforeEach
 	public void setupBefore() {
 		CALL_ID = UUID.randomUUID().toString();
+
+		stubFor(post("/azure_token")
+				.willReturn(aResponse()
+						.withStatus(OK.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile("azure/token_response_dummy.json")));
 	}
 
 	@Bean
@@ -88,16 +99,14 @@ class Qdist010IT extends ApplicationTestConfig {
 
 	@Test
 	void shouldProcessForsendelse() throws Exception {
-		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
-				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(testUtils.classpathToString("__files/rdist001/getForsendelse_withAdresse-happy.json").replace("insertCallIdHere", CALL_ID))));
+		stubHentForsendelse(OK, "rdist001/getForsendelse_withAdresse-happy.json");
 		stubFor(put(FORSENDELSE_PATH)
-				.willReturn(aResponse().withStatus(HttpStatus.OK.value())));
+				.willReturn(aResponse().withStatus(OK.value())));
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
 			verify(1, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
 		});
 
@@ -106,32 +115,28 @@ class Qdist010IT extends ApplicationTestConfig {
 
 	@Test
 	void oppretteOppgaveWhenForsendelseDistribusjonTypeIsVedtak() throws Exception {
-		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
-				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(testUtils.classpathToString("__files/rdist001/forsendelse_distribusjontype_vedtak.json").replace("insertCallIdHere", CALL_ID))));
+		stubHentForsendelse(OK, "rdist001/forsendelse_distribusjontype_vedtak.json");
 		stubFor(put(FORSENDELSE_PATH)
-				.willReturn(aResponse().withStatus(HttpStatus.OK.value())));
+				.willReturn(aResponse().withStatus(OK.value())));
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
 			verify(1, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
 		});
 	}
 
 	@Test
 	void sendBeskjedWhenForsendelseDistribusjonTypeIsNull() throws Exception {
-		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
-				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(testUtils.classpathToString("__files/rdist001/forsendelse_distribusjontype_null.json").replace("insertCallIdHere", CALL_ID))));
+		stubHentForsendelse(OK, "rdist001/forsendelse_distribusjontype_null.json");
 		stubFor(put(FORSENDELSE_PATH)
-				.willReturn(aResponse().withStatus(HttpStatus.OK.value())));
+				.willReturn(aResponse().withStatus(OK.value())));
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
 			verify(1, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
 		});
 	}
@@ -194,8 +199,7 @@ class Qdist010IT extends ApplicationTestConfig {
 
 	@Test
 	void shouldThrowRdist001HentForsendelseFunctionalException() throws Exception {
-		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID)
-				.willReturn(aResponse().withStatus(HttpStatus.NOT_FOUND.value())));
+		stubHentForsendelse(NOT_FOUND, "");
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
@@ -205,14 +209,13 @@ class Qdist010IT extends ApplicationTestConfig {
 			assertEquals(resultOnQdist010FunksjonellFeilQueue, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
-		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
 		verify(0, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")));
 	}
 
 	@Test
 	void shouldThrowRdist001HentForsendelseTechnicalException() throws Exception {
-		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID)
-				.willReturn(aResponse().withStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())));
+		stubHentForsendelse(INTERNAL_SERVER_ERROR, "");
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
@@ -222,15 +225,13 @@ class Qdist010IT extends ApplicationTestConfig {
 			assertEquals(resultOnQdist010BackoutQueue, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
-		verify(MAX_ATTEMPTS_SHORT, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+		verify(MAX_ATTEMPTS_SHORT, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
 		verify(0, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")));
 	}
 
 	@Test
 	void shouldThrowRdist001HentForsendelseFunctionalExceptionUtenArkivInformasjon() throws Exception {
-		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
-				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(testUtils.classpathToString("__files/rdist001/getForsendelse_utenArkivInformasjon.json").replace("insertCallIdHere", CALL_ID))));
+		stubHentForsendelse(OK, "rdist001/getForsendelse_utenArkivInformasjon.json");
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
@@ -240,14 +241,12 @@ class Qdist010IT extends ApplicationTestConfig {
 			assertEquals(resultOnQdist010FunksjonellFeilQueue, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
-		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
 	}
 
 	@Test
 	void shouldThrowInvalidForsendelseStatusException() throws Exception {
-		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
-				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(testUtils.classpathToString("__files/rdist001/getForsendelse_oversendtForsendelseStatus.json").replace("insertCallIdHere", CALL_ID))));
+		stubHentForsendelse(OK, "rdist001/getForsendelse_oversendtForsendelseStatus.json");
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
@@ -257,15 +256,13 @@ class Qdist010IT extends ApplicationTestConfig {
 			assertEquals(resultOnQdist010FunksjonellFeilQueue, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
-		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
 		verify(1, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
 	}
 
 	@Test
 	void shouldThrowTkat020FunctionalException() throws Exception {
-		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
-				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(testUtils.classpathToString("__files/rdist001/getForsendelse_withAdresse-happy.json").replace("insertCallIdHere", CALL_ID))));
+		stubHentForsendelse(OK, "rdist001/getForsendelse_withAdresse-happy.json");
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
@@ -275,14 +272,12 @@ class Qdist010IT extends ApplicationTestConfig {
 			assertEquals(resultOnQdist010FunksjonellFeilQueue, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
-		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
 	}
 
 	@Test
 	void shouldThrowTkat020FunctionalExceptionUtenDokumentProduksjonsInfo() throws Exception {
-		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
-				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(testUtils.classpathToString("__files/rdist001/getForsendelse_withAdresse-happy.json").replace("insertCallIdHere", CALL_ID))));
+		stubHentForsendelse(OK, "rdist001/getForsendelse_withAdresse-happy.json");
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
@@ -292,14 +287,12 @@ class Qdist010IT extends ApplicationTestConfig {
 			assertEquals(resultOnQdist010FunksjonellFeilQueue, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
-		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
 	}
 
 	@Test
 	void shouldThrowRdist001OppdaterForsendelseStatusFunctionalException() throws Exception {
-		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
-				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(testUtils.classpathToString("__files/rdist001/getForsendelse_withAdresse-happy.json").replace("insertCallIdHere", CALL_ID))));
+		stubHentForsendelse(OK, "rdist001/getForsendelse_withAdresse-happy.json");
 		stubFor(put("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")
 				.willReturn(aResponse().withStatus(HttpStatus.NOT_FOUND.value())));
 
@@ -316,9 +309,7 @@ class Qdist010IT extends ApplicationTestConfig {
 
 	@Test
 	void shouldThrowRdist001OppdaterForsendelseStatusTechnicalException() throws Exception {
-		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
-				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(testUtils.classpathToString("__files/rdist001/getForsendelse_withAdresse-happy.json").replace("insertCallIdHere", CALL_ID))));
+		stubHentForsendelse(OK, "rdist001/getForsendelse_withAdresse-happy.json");
 		stubFor(put(FORSENDELSE_PATH)
 				.willReturn(aResponse().withStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())));
 
@@ -330,7 +321,7 @@ class Qdist010IT extends ApplicationTestConfig {
 			assertEquals(resultOnQdist010BackoutQueue, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
-		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
 		verify(3, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
 	}
 
@@ -343,11 +334,9 @@ class Qdist010IT extends ApplicationTestConfig {
 		Clock fixedClock = Clock.fixed(todayMidnight.toInstant(ZoneOffset.UTC), OSLO_ZONE);
 		ReflectionTestUtils.setField(produsentNotifikasjon, "clock", fixedClock);
 
-		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
-				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(testUtils.classpathToString("__files/rdist001/getForsendelse_withKjernetid.json").replace("insertCallIdHere", CALL_ID))));
+		stubHentForsendelse(OK, "rdist001/getForsendelse_withKjernetid.json");
 		stubFor(put(FORSENDELSE_PATH)
-				.willReturn(aResponse().withStatus(HttpStatus.OK.value())));
+				.willReturn(aResponse().withStatus(OK.value())));
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
@@ -357,7 +346,7 @@ class Qdist010IT extends ApplicationTestConfig {
 			assertEquals(resultOnQdist010UtenforKjernetidQueue, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
-		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
 	}
 
 	@Test
@@ -369,11 +358,9 @@ class Qdist010IT extends ApplicationTestConfig {
 		Clock fixedClock = Clock.fixed(todayMidnight.atZone(OSLO_ZONE).toInstant(), OSLO_ZONE);
 		ReflectionTestUtils.setField(produsentNotifikasjon, "clock", fixedClock);
 
-		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
-				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(testUtils.classpathToString("__files/rdist001/getForsendelse_withKjernetid.json").replace("insertCallIdHere", CALL_ID))));
+		stubHentForsendelse(OK, "rdist001/getForsendelse_withKjernetid.json");
 		stubFor(put(FORSENDELSE_PATH)
-				.willReturn(aResponse().withStatus(HttpStatus.OK.value())));
+				.willReturn(aResponse().withStatus(OK.value())));
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
@@ -383,25 +370,31 @@ class Qdist010IT extends ApplicationTestConfig {
 			assertEquals(resultOnQdist010UtenforKjernetidQueue, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
-		verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
 	}
 
 	@Test
 	void innenforKjernetidFunctionalException() throws Exception {
-		stubFor(get("/administrerforsendelse/" + FORSENDELSE_ID).willReturn(aResponse().withStatus(HttpStatus.OK.value())
-				.withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.withBody(testUtils.classpathToString("__files/rdist001/getForsendelse_withKjernetid.json").replace("insertCallIdHere", CALL_ID))));
-		stubFor(put(FORSENDELSE_PATH)
-				.willReturn(aResponse().withStatus(HttpStatus.OK.value())));
+		stubHentForsendelse(OK, "rdist001/getForsendelse_withKjernetid.json");
+ 		stubFor(put(FORSENDELSE_PATH)
+				.willReturn(aResponse().withStatus(OK.value())));
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
 			verify(1, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
 		});
 
 		verifyAllStubs(1);
+	}
+
+	private void stubHentForsendelse(HttpStatus status, String responseBodyFile) {
+		stubFor(get(HENTFORSENDELSE_PATH)
+				.willReturn(aResponse()
+						.withStatus(status.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile(responseBodyFile)));
 	}
 
 	private void sendStringMessage(Queue queue, final String message) {
@@ -441,7 +434,7 @@ class Qdist010IT extends ApplicationTestConfig {
 	}
 
 	private void verifyAllStubs(int count) {
-		verify(count, getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+		verify(count, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
 		verify(count, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
 	}
 

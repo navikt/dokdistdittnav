@@ -9,7 +9,7 @@ import no.nav.dokdistdittnav.consumer.dokumentdistribusjon.OppdaterVarselInfoReq
 import no.nav.dokdistdittnav.consumer.rdist001.to.FeilRegistrerForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
-import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseResponse;
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
@@ -28,7 +28,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
@@ -95,19 +94,23 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 	@Override
 	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = RetryConstants.MULTIPLIER_SHORT))
 	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "hentForsendelse"}, histogram = true)
-	public HentForsendelseResponseTo hentForsendelse(final String forsendelseId) {
-		try {
-			HttpEntity<?> entity = new HttpEntity<>(createHeaders());
-			HentForsendelseResponseTo forsendelse = restTemplate.exchange(this.administrerforsendelseV1Url + "/" + forsendelseId, HttpMethod.GET, entity, HentForsendelseResponseTo.class)
-					.getBody();
-			return forsendelse;
-		} catch (HttpClientErrorException e) {
-			throw new Rdist001HentForsendelseFunctionalException(format("Kall mot rdist001 - hentForsendelse feilet funksjonelt med statusKode=%s, feilmelding=%s", e
-					.getStatusCode(), e.getMessage()), e);
-		} catch (HttpServerErrorException e) {
-			throw new Rdist001HentForsendelseTechnicalException(format("Kall mot rdist001 - hentForsendelse feilet teknisk med statusKode=%s, feilmelding=%s", e
-					.getStatusCode(), e.getMessage()), e);
-		}
+	public HentForsendelseResponse hentForsendelse(final String forsendelseId) {
+
+		log.info("hentForsendelse henter forsendelse med forsendelseId={}", forsendelseId);
+
+		var response = webClient.get()
+				.uri(uriBuilder -> uriBuilder
+						.path("/{forsendelseId}")
+						.build(forsendelseId))
+				.attributes(getOAuth2AuthorizedClient())
+				.retrieve()
+				.bodyToMono(HentForsendelseResponse.class)
+				.doOnError(this::handleError)
+				.block();
+
+		log.info("hentForsendelse har hentet forsendelse med forsendelseId={}", forsendelseId);
+
+		return response;
 	}
 
 	@Override
