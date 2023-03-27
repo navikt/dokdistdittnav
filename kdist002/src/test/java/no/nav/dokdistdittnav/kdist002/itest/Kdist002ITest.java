@@ -10,8 +10,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
@@ -70,6 +68,8 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	private static final String DONEEVENT_DITTNAV_BESTILLINGSID = "811c0c5d-e74c-491a-8b8c-d94075c822c3";
 	private static final String DONEEVENT_DITTNAV_FORSENDELSEID = "1720847";
 	private static final String DONEEVENT_DITTNAV_MOTTAKERID = "22222222222";
+
+	private static final String HENTFORSENDELSE_URL = "/rest/v1/administrerforsendelse/" + FORSENDELSE_ID;
 
 	@Autowired
 	private KafkaEventProducer kafkaEventProducer;
@@ -190,7 +190,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
 			verify(getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
-			verify(getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+			verify(getRequestedFor(urlEqualTo(HENTFORSENDELSE_URL)));
 		});
 	}
 
@@ -222,20 +222,20 @@ public class Kdist002ITest extends ApplicationTestConfig {
 			assertTrue(record != null);
 			assertTrue(record.value().toString().contains(MELDING));
 			verify(getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
-			verify(getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+			verify(getRequestedFor(urlEqualTo(HENTFORSENDELSE_URL)));
 		});
 	}
 
 	private void verifyAndCountForsendelse(String bestillingsId, String forsendelseStatus) {
 		verify(getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + bestillingsId)));
-		verify(getRequestedFor(urlEqualTo("/administrerforsendelse/" + FORSENDELSE_ID)));
+		verify(getRequestedFor(urlEqualTo(HENTFORSENDELSE_URL)));
 		verify(postRequestedFor(urlMatching("/rest/v1/administrerforsendelse")));
 		verify(putRequestedFor(urlMatching("/administrerforsendelse/feilregistrerforsendelse")));
 		verify(putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + NY_FORSENDELSE_ID + "&forsendelseStatus=" + forsendelseStatus)));
 	}
 
 	private void stubGetHentForsendelse(String responsebody, String forsendelseId, int httpStatusvalue) {
-		stubFor(get("/administrerforsendelse/" + forsendelseId)
+		stubFor(get(HENTFORSENDELSE_URL)
 				.willReturn(aResponse()
 						.withStatus(httpStatusvalue)
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)

@@ -5,7 +5,7 @@ import no.nav.dokdistdittnav.consumer.doknotifikasjon.DoknotifikasjonConsumer;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelseConsumer;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
-import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseResponse;
 import no.nav.dokdistdittnav.kafka.DoneEventRequest;
@@ -26,7 +26,8 @@ import static no.nav.dokdistdittnav.kdist002.TestUtils.DOKNOTIFIKASJON_BESTILLIN
 import static no.nav.dokdistdittnav.kdist002.TestUtils.FORSENDELSE_ID;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.MELDING;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.finnForsendelseResponseTo;
-import static no.nav.dokdistdittnav.kdist002.TestUtils.hentForsendelseResponseTo;
+import static no.nav.dokdistdittnav.kdist002.TestUtils.hentForsendelseResponse;
+import static no.nav.dokdistdittnav.kdist002.TestUtils.hentForsendelseResponseUtenMottaker;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.hentForsendelseResponseWithForsendelseStatusFeilet;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.hentNotifikasjonInfoTo;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FEILET;
@@ -67,7 +68,7 @@ class Kdist002ServiceTest {
 				.verdi(BESTILLINGSID)
 				.build())).thenReturn(finnForsendelseResponseTo());
 		when(doknotifikasjonConsumer.getNotifikasjonInfo(DOKNOTIFIKASJON_BESTILLINGSID_OLD)).thenReturn(hentNotifikasjonInfoTo());
-		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseTo());
+		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponse());
 
 		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatusWithoutDistribusjonsId(DOKDISTDITTNAV, statusKode.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
 
@@ -94,7 +95,7 @@ class Kdist002ServiceTest {
 	}
 	@Test
 	public void shouldLogAndAvsluttBehandlingenWhenForsendelseStatusErNotFeilet() {
-		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseTo());
+		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponse());
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
 				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
 				.verdi(BESTILLINGSID)
@@ -110,7 +111,7 @@ class Kdist002ServiceTest {
 
 	@Test
 	public void shouldExtractOldBestillingsIdFraDoknotifikasjonStatusEvent() {
-		when(administrerForsendelse.hentForsendelse(FORSENDELSE_ID)).thenReturn(hentForsendelseResponseTo());
+		when(administrerForsendelse.hentForsendelse(FORSENDELSE_ID)).thenReturn(hentForsendelseResponse());
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
 				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
 				.verdi(BESTILLINGSID)
@@ -122,12 +123,12 @@ class Kdist002ServiceTest {
 		DoneEventRequest doneEventRequest = kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD));
 
 		assertNotNull(doneEventRequest);
-		assertEquals(hentForsendelseResponseTo().getMottaker().getMottakerId(), doneEventRequest.getMottakerId());
+		assertEquals(hentForsendelseResponse().getMottaker().getMottakerId(), doneEventRequest.getMottakerId());
 	}
 
 	@Test
 	public void shouldExtractNewBestillingsIdFraDoknotifikasjonStatusEvent() {
-		when(administrerForsendelse.hentForsendelse(FORSENDELSE_ID)).thenReturn(hentForsendelseResponseTo());
+		when(administrerForsendelse.hentForsendelse(FORSENDELSE_ID)).thenReturn(hentForsendelseResponse());
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
 				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
 				.verdi(BESTILLINGSID)
@@ -139,12 +140,12 @@ class Kdist002ServiceTest {
 		DoneEventRequest doneEventRequest = kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID_NEW));
 
 		assertNotNull(doneEventRequest);
-		assertEquals(hentForsendelseResponseTo().getMottaker().getMottakerId(), doneEventRequest.getMottakerId());
+		assertEquals(hentForsendelseResponse().getMottaker().getMottakerId(), doneEventRequest.getMottakerId());
 	}
 
 	@Test
 	public void shouldLogAndAvsluttBehandlingenWhenForsendelseStatusErNotFeiletAndBestillerIdIsNotDokdistdittnav() {
-		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseTo());
+		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponse());
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
 				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
 				.verdi(BESTILLINGSID)
@@ -160,7 +161,7 @@ class Kdist002ServiceTest {
 
 	@Test
 	public void shouldLogAndAvsluttBehandlingenWhenNotifikasjonStatusErNotFeiletAndBestillerIdIsNotDokdistdittnav() {
-		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseTo());
+		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponse());
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
 				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
 				.verdi(BESTILLINGSID)
@@ -192,7 +193,7 @@ class Kdist002ServiceTest {
 
 	@Test
 	public void shouldThrowExceptionIfFinnForsendelseReturnsNull() {
-		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseTo());
+		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponse());
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
 				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
 				.verdi(BESTILLINGSID)
@@ -209,13 +210,13 @@ class Kdist002ServiceTest {
 
 	@Test
 	public void throwsExceptionWhenHentForsendleseWithoutMottakerInfo() {
-		HentForsendelseResponseTo hentForsendelseResponseTo = hentForsendelseResponseTo();
-		hentForsendelseResponseTo.setMottaker(null);
+		HentForsendelseResponse hentForsendelseResponse = hentForsendelseResponseUtenMottaker();
+
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
 				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
 				.verdi(BESTILLINGSID)
 				.build())).thenReturn(finnForsendelseResponseTo());
-		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseTo);
+		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponse);
 
 		when(administrerForsendelse.opprettForsendelse(any(OpprettForsendelseRequest.class))).thenReturn(OpprettForsendelseResponse.builder()
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))

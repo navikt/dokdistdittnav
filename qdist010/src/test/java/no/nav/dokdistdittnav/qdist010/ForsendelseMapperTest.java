@@ -3,7 +3,7 @@ package no.nav.dokdistdittnav.qdist010;
 import no.nav.brukernotifikasjon.schemas.input.BeskjedInput;
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode;
-import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -35,8 +35,8 @@ public class ForsendelseMapperTest {
 			AARSOPPGAVE_ID + ", " + "varseltekster/aarsoppgave_epostvarseltekst.html" + ", " + AARSOPPGAVE_FRA_NAV + ", " + SMS_AARSOPPGAVE_TEKST
 	})
 	public void shouldMap(String dokumenttypeId, String epostVarslingstekstPath, String epostTittel, String smsVarslingstekst) {
-		HentForsendelseResponseTo hentForsendelseResponseTo = createHentForsendelseResponteTo(dokumenttypeId, ANNET);
-		BeskjedInput beskjedInput = mapBeskjedIntern("https://url.no", hentForsendelseResponseTo);
+		HentForsendelseResponse hentForsendelseResponse = createHentForsendelseResponteTo(dokumenttypeId, ANNET);
+		BeskjedInput beskjedInput = mapBeskjedIntern("https://url.no", hentForsendelseResponse);
 
 
 		assertEquals(beskjedInput.getEpostVarslingstekst(), classpathToString(epostVarslingstekstPath));
@@ -50,8 +50,8 @@ public class ForsendelseMapperTest {
 			"VEDTAK" + ", "+ "varseltekster/vedtak_epostvarseltekst.html" + ", " + VEDTAK_TITTEL + ", " + "du har fått et vedtak som gjelder:" + ", " + SMS_VEDTAK_TEKST
 	})
 	public void shouldMapOppgave(String kode, String epostPath, String expectedEpostTittel, String expectedTittel, String expectedSmsTekst) {
-		HentForsendelseResponseTo hentForsendelseResponseTo = createHentForsendelseResponteTo("123456", DistribusjonsTypeKode.valueOf(kode));
-		OppgaveInput oppgaveInput = oppretteOppgave("https://url.no", hentForsendelseResponseTo);
+		HentForsendelseResponse hentForsendelseResponse = createHentForsendelseResponteTo("123456", DistribusjonsTypeKode.valueOf(kode));
+		OppgaveInput oppgaveInput = oppretteOppgave("https://url.no", hentForsendelseResponse);
 
 
 		assertThat(oppgaveInput.getTekst().contains(expectedTittel));
@@ -60,8 +60,8 @@ public class ForsendelseMapperTest {
 		assertEquals(oppgaveInput.getSmsVarslingstekst(), expectedSmsTekst);
 	}
 
-	private HentForsendelseResponseTo createHentForsendelseResponteTo(String dokumenttypeId, DistribusjonsTypeKode kode) {
-		return HentForsendelseResponseTo.builder()
+	private HentForsendelseResponse createHentForsendelseResponteTo(String dokumenttypeId, DistribusjonsTypeKode kode) {
+		return HentForsendelseResponse.builder()
 				.forsendelseTittel("tittel")
 				.distribusjonstype(kode)
 				.tema("GEN")
@@ -70,13 +70,13 @@ public class ForsendelseMapperTest {
 				.build();
 	}
 
-	private HentForsendelseResponseTo.ArkivInformasjonTo createArkivInformasjon() {
-		return HentForsendelseResponseTo.ArkivInformasjonTo.builder()
+	private HentForsendelseResponse.ArkivInformasjonTo createArkivInformasjon() {
+		return HentForsendelseResponse.ArkivInformasjonTo.builder()
 				.arkivId("ARKIV").build();
 	}
 
-	private HentForsendelseResponseTo.DokumentTo createDokument(String dokumenttypeId) {
-		return HentForsendelseResponseTo.DokumentTo.builder()
+	private HentForsendelseResponse.DokumentTo createDokument(String dokumenttypeId) {
+		return HentForsendelseResponse.DokumentTo.builder()
 				.arkivDokumentInfoId("123")
 				.dokumentObjektReferanse("REFERANSE")
 				.tilknyttetSom("HOVEDDOKUMENT")

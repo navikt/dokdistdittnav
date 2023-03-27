@@ -7,7 +7,7 @@ import lombok.SneakyThrows;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.consumer.doknotifikasjon.NotifikasjonInfoTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
-import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.ClassPathResource;
 
@@ -33,9 +33,14 @@ public class TestUtils {
 		return dokdistdittnavProperties;
 	}
 
-	public static HentForsendelseResponseTo hentForsendelseResponseTo() {
+	public static HentForsendelseResponse hentForsendelseResponse() {
 		String forsendelseString = classpathToString("__files/rdist001/hentForsendelseresponse-happy.json");
-		return objectMapper(forsendelseString, HentForsendelseResponseTo.class);
+		return objectMapper(forsendelseString, HentForsendelseResponse.class);
+	}
+
+	public static HentForsendelseResponse hentForsendelseResponseUtenMottaker() {
+		String forsendelseString = classpathToString("__files/rdist001/hentForsendelseresponse-uten-mottaker.json");
+		return objectMapper(forsendelseString, HentForsendelseResponse.class);
 	}
 
 	public static NotifikasjonInfoTo hentNotifikasjonInfoTo() {
@@ -43,9 +48,9 @@ public class TestUtils {
 		return objectMapper(forsendelseString, NotifikasjonInfoTo.class);
 	}
 
-	public static HentForsendelseResponseTo hentForsendelseResponseWithForsendelseStatusFeilet() {
+	public static HentForsendelseResponse hentForsendelseResponseWithForsendelseStatusFeilet() {
 		String forsendelseString = classpathToString("__files/rdist001/forsendelseresponse-with-forsendelsestatus-feil.json");
-		return objectMapper(forsendelseString, HentForsendelseResponseTo.class);
+		return objectMapper(forsendelseString, HentForsendelseResponse.class);
 	}
 
 	public static FinnForsendelseResponseTo finnForsendelseResponseTo() {

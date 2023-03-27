@@ -4,13 +4,13 @@ import no.nav.dokdistdittnav.consumer.dokumentdistribusjon.OppdaterVarselInfoReq
 import no.nav.dokdistdittnav.consumer.rdist001.to.FeilRegistrerForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
-import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseResponse;
 
 public interface AdministrerForsendelse {
 
-	HentForsendelseResponseTo hentForsendelse(final String forsendelseId);
+	HentForsendelseResponse hentForsendelse(final String forsendelseId);
 
 	void oppdaterForsendelseStatus(String forsendelseId, String forsendelseStatus);
 

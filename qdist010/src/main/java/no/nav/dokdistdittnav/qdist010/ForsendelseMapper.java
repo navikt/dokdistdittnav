@@ -5,7 +5,7 @@ import no.nav.brukernotifikasjon.schemas.builders.OppgaveInputBuilder;
 import no.nav.brukernotifikasjon.schemas.input.BeskjedInput;
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode;
-import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import no.nav.dokdistdittnav.exception.functional.Qdist010FileNotFoundException;
 import no.nav.dokdistdittnav.exception.technical.FinneIkkeURLException;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -56,7 +56,7 @@ public class ForsendelseMapper {
 		return result;
 	}
 
-	public static BeskjedInput mapBeskjedIntern(String url, HentForsendelseResponseTo hentForsendelseResponse) {
+	public static BeskjedInput mapBeskjedIntern(String url, HentForsendelseResponse hentForsendelseResponse) {
 		String dokumenttypeId = hentForsendelseResponse.getDokumenter().get(0).getDokumenttypeId();
 		return new BeskjedInputBuilder()
 				.withTidspunkt(LocalDateTime.now(ZoneId.of("UTC")))
@@ -86,7 +86,7 @@ public class ForsendelseMapper {
 		return AARSOPPGAVE_DOKUMENTTYPEID.equals(dokumenttypeId);
 	}
 
-	public static OppgaveInput oppretteOppgave(String url, HentForsendelseResponseTo hentForsendelseResponse) {
+	public static OppgaveInput oppretteOppgave(String url, HentForsendelseResponse hentForsendelseResponse) {
 		return new OppgaveInputBuilder()
 				.withTidspunkt(LocalDateTime.now(ZoneId.of("UTC")))
 				.withTekst(getTekst(hentForsendelseResponse))
@@ -100,7 +100,7 @@ public class ForsendelseMapper {
 	}
 
 
-	private static String getTekst(HentForsendelseResponseTo hentForsendelseResponse) {
+	private static String getTekst(HentForsendelseResponse hentForsendelseResponse) {
 		switch (hentForsendelseResponse.getDistribusjonstype()) {
 			case VEDTAK:
 				return format(VEDTAK_TEKST, hentForsendelseResponse.getForsendelseTittel());
@@ -112,7 +112,7 @@ public class ForsendelseMapper {
 		return null;
 	}
 
-	private static String getSmsTekst(HentForsendelseResponseTo hentForsendelseResponse) {
+	private static String getSmsTekst(HentForsendelseResponse hentForsendelseResponse) {
 		switch (hentForsendelseResponse.getDistribusjonstype()) {
 			case VEDTAK:
 				return SMS_VEDTAK_TEKST;
@@ -136,7 +136,7 @@ public class ForsendelseMapper {
 		return null;
 	}
 
-	private static URL mapLink(String url, HentForsendelseResponseTo hentForsendelseResponse) {
+	private static URL mapLink(String url, HentForsendelseResponse hentForsendelseResponse) {
 		try {
 			URI uri = UriComponentsBuilder.fromHttpUrl(url)
 					.path(hentForsendelseResponse.getTema() + "/" + hentForsendelseResponse.getArkivInformasjon().getArkivId())

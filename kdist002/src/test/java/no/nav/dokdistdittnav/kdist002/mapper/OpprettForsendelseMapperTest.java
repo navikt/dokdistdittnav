@@ -1,6 +1,6 @@
 package no.nav.dokdistdittnav.kdist002.mapper;
 
-import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponseTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
 import org.junit.jupiter.api.Test;
 
@@ -61,8 +61,7 @@ class OpprettForsendelseMapperTest {
 
 	@Test
 	public void shouldMapForsendelserWhenAdresseErNull() {
-		HentForsendelseResponseTo hentForsendelseResponse = createHentForsendelseResponse();
-		hentForsendelseResponse.setPostadresse(null);
+		HentForsendelseResponse hentForsendelseResponse = createHentForsendelseResponseWithPostadresseNull();
 
 		OpprettForsendelseRequest request = mapper.map(hentForsendelseResponse, NEW_BESTILLINGS_ID);
 
@@ -83,13 +82,12 @@ class OpprettForsendelseMapperTest {
 	@Test
 	public void shouldThrowExceptionIfHentForsendelseResponseIsNull() {
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> mapper.map(null, NEW_BESTILLINGS_ID));
-		assertEquals(exception.getMessage(), "HentForsendelseResponseTo kan ikke være null");
+		assertEquals(exception.getMessage(), "HentForsendelseResponse kan ikke være null");
 	}
 
 	@Test
 	public void shouldThrowExceptionIfTemaBlank() {
-		HentForsendelseResponseTo hentForsendelseResponse = createHentForsendelseResponse();
-		hentForsendelseResponse.setTema(null);
+		HentForsendelseResponse hentForsendelseResponse = createHentForsendelseResponseWithTemaNull();
 
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> mapper.map(hentForsendelseResponse, NEW_BESTILLINGS_ID));
 		assertEquals(exception.getMessage(), "tema kan ikke være null");
@@ -119,30 +117,30 @@ class OpprettForsendelseMapperTest {
 		assertEquals(dokumentTo.getArkivDokumentInfoId(), ARKIV_DOKUMENTINFO_ID_2);
 	}
 
-	private HentForsendelseResponseTo createHentForsendelseResponseWithMottakerNull() {
-		return HentForsendelseResponseTo.builder()
+	private HentForsendelseResponse createHentForsendelseResponseWithMottakerNull() {
+		return HentForsendelseResponse.builder()
 				.bestillingsId(OLD_BESTILLINGS_ID)
 				.tema(TEMA)
 				.bestillendeFagsystem(BESTILLENDE_FAGSYSTEM)
 				.batchId(BATCH_ID)
 				.forsendelseTittel(FORSENDELSE_TITTEL)
 				.dokumentProdApp(DOKUMENT_PROD_APP)
-				.arkivInformasjon(HentForsendelseResponseTo.ArkivInformasjonTo.builder()
+				.arkivInformasjon(HentForsendelseResponse.ArkivInformasjonTo.builder()
 						.arkivId(ARKIV_ID).build())
 				.mottaker(null)
 				.postadresse(createPostadresse())
 				.dokumenter(createDokument()).build();
 	}
 
-	public static HentForsendelseResponseTo createHentForsendelseResponse() {
-		return HentForsendelseResponseTo.builder()
+	public static HentForsendelseResponse createHentForsendelseResponse() {
+		return HentForsendelseResponse.builder()
 				.bestillingsId(OLD_BESTILLINGS_ID)
 				.tema(TEMA)
 				.bestillendeFagsystem(BESTILLENDE_FAGSYSTEM)
 				.batchId(BATCH_ID)
 				.forsendelseTittel(FORSENDELSE_TITTEL)
 				.dokumentProdApp(DOKUMENT_PROD_APP)
-				.arkivInformasjon(HentForsendelseResponseTo.ArkivInformasjonTo.builder()
+				.arkivInformasjon(HentForsendelseResponse.ArkivInformasjonTo.builder()
 						.arkivSystem(ARKIV_SYSTEM)
 						.arkivId(ARKIV_ID).build())
 				.mottaker(createMottakerTo())
@@ -150,22 +148,54 @@ class OpprettForsendelseMapperTest {
 				.dokumenter(createDokument()).build();
 	}
 
-	private static List<HentForsendelseResponseTo.DokumentTo> createDokument() {
+	public static HentForsendelseResponse createHentForsendelseResponseWithPostadresseNull() {
+		return HentForsendelseResponse.builder()
+				.bestillingsId(OLD_BESTILLINGS_ID)
+				.tema(TEMA)
+				.bestillendeFagsystem(BESTILLENDE_FAGSYSTEM)
+				.batchId(BATCH_ID)
+				.forsendelseTittel(FORSENDELSE_TITTEL)
+				.dokumentProdApp(DOKUMENT_PROD_APP)
+				.arkivInformasjon(HentForsendelseResponse.ArkivInformasjonTo.builder()
+						.arkivSystem(ARKIV_SYSTEM)
+						.arkivId(ARKIV_ID).build())
+				.mottaker(createMottakerTo())
+				.postadresse(null)
+				.dokumenter(createDokument()).build();
+	}
+
+	public static HentForsendelseResponse createHentForsendelseResponseWithTemaNull() {
+		return HentForsendelseResponse.builder()
+				.bestillingsId(OLD_BESTILLINGS_ID)
+				.tema(null)
+				.bestillendeFagsystem(BESTILLENDE_FAGSYSTEM)
+				.batchId(BATCH_ID)
+				.forsendelseTittel(FORSENDELSE_TITTEL)
+				.dokumentProdApp(DOKUMENT_PROD_APP)
+				.arkivInformasjon(HentForsendelseResponse.ArkivInformasjonTo.builder()
+						.arkivSystem(ARKIV_SYSTEM)
+						.arkivId(ARKIV_ID).build())
+				.mottaker(createMottakerTo())
+				.postadresse(createPostadresse())
+				.dokumenter(createDokument()).build();
+	}
+
+	private static List<HentForsendelseResponse.DokumentTo> createDokument() {
 
 		return Arrays.asList(
-				HentForsendelseResponseTo.DokumentTo.builder()
+				HentForsendelseResponse.DokumentTo.builder()
 						.dokumenttypeId(DOKUMENTTYPE_ID_1)
 						.dokumentObjektReferanse(OBJEKT_REFERANSE_1)
 						.tilknyttetSom(TILKNYTTET_SOM_HOVEDDOK)
 						.arkivDokumentInfoId(ARKIV_DOKUMENTINFO_ID_1)
 						.build(),
-				HentForsendelseResponseTo.DokumentTo.builder()
+				HentForsendelseResponse.DokumentTo.builder()
 						.dokumenttypeId(DOKUMENTTYPE_ID_2)
 						.dokumentObjektReferanse(OBJEKT_REFERANSE_2)
 						.tilknyttetSom(TILKNYTTET_SOM_VEDLEGG)
 						.arkivDokumentInfoId(ARKIV_DOKUMENTINFO_ID_2)
 						.build(),
-				HentForsendelseResponseTo.DokumentTo.builder()
+				HentForsendelseResponse.DokumentTo.builder()
 						.dokumenttypeId("1234")
 						.dokumentObjektReferanse(OBJEKT_REFERANSE_1)
 						.tilknyttetSom(TILKNYTTET_SOM_VEDLEGG)
@@ -175,8 +205,8 @@ class OpprettForsendelseMapperTest {
 
 	}
 
-	private static HentForsendelseResponseTo.PostadresseTo createPostadresse() {
-		return HentForsendelseResponseTo.PostadresseTo.builder()
+	private static HentForsendelseResponse.PostadresseTo createPostadresse() {
+		return HentForsendelseResponse.PostadresseTo.builder()
 				.adresselinje1(ADRESSELINJE_1)
 				.adresselinje2(ADRESSELINJE_2)
 				.adresselinje3(ADRESSELINJE_3)
@@ -186,8 +216,8 @@ class OpprettForsendelseMapperTest {
 				.build();
 	}
 
-	private static HentForsendelseResponseTo.MottakerTo createMottakerTo() {
-		return HentForsendelseResponseTo.MottakerTo.builder()
+	private static HentForsendelseResponse.MottakerTo createMottakerTo() {
+		return HentForsendelseResponse.MottakerTo.builder()
 				.mottakerNavn(MOTTAKER_ID_NAVN)
 				.mottakerId(MOTTAKER_ID)
 				.mottakerType("PERSON")
