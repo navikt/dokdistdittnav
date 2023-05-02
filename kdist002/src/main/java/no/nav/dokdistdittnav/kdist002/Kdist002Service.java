@@ -10,6 +10,7 @@ import no.nav.dokdistdittnav.consumer.rdist001.to.FeilRegistrerForsendelseReques
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
+import no.nav.dokdistdittnav.consumer.rdist001.to.OppdaterForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseResponse;
 import no.nav.dokdistdittnav.kafka.DoneEventRequest;
@@ -92,7 +93,9 @@ public class Kdist002Service {
 		if (nonNull(forsendelse)) {
 			if (skalOppdatereForsendelseStatus(forsendelse)) {
 				log.info("Kdist002 oppdaterer forsendelse med forsendelseId={} til forsendelseStatus=EKSPEDERT for bestillingsid={}", finnForsendelse.getForsendelseId(), bestillingsId);
-				administrerForsendelse.oppdaterForsendelseStatus(finnForsendelse.getForsendelseId(), EKSPEDERT.name());
+				administrerForsendelse.oppdaterForsendelse(OppdaterForsendelseRequest.builder()
+						.forsendelseId(Long.valueOf(finnForsendelse.getForsendelseId()))
+						.forsendelseStatus(EKSPEDERT.name()).build());
 				log.info("Kdist002 har oppdatert forsendelsesstatus med forsendelseId={} til forsendelseStatus=EKSPEDERT for bestillingsid={}", finnForsendelse.getForsendelseId(), bestillingsId);
 			} else {
 				log.info("Kdist002 skal ikke oppdatere forsendelsestatus på forsendelse med forsendelseId={}, bestillingsId={} og forsendelsestatus={}",
@@ -132,18 +135,19 @@ public class Kdist002Service {
 		OpprettForsendelseResponse opprettForsendelseResponse = administrerForsendelse.opprettForsendelse(request);
 		validateOppdaterForsendelse(opprettForsendelseResponse);
 
-		String nyForsendelseId = opprettForsendelseResponse.getForsendelseId().toString();
+		Long nyForsendelseId = opprettForsendelseResponse.getForsendelseId();
 
 		log.info("Kdist002 har opprettet ny forsendelse med forsendelseId={} og bestillingsId={} i dokdist-databasen.", nyForsendelseId, nyBestillingsId);
 
 		feilregistrerForsendelse(gammelForsendelseId, nyBestillingsId, doknotifikasjonStatus);
 		log.info("Kdist002 har feilregistrert forsendelse med forsendelseId={} og bestillingsId={} i dokdist-databasen.", gammelForsendelseId, gammelBestillingsId);
 
-		administrerForsendelse.oppdaterForsendelseStatus(nyForsendelseId, KLAR_FOR_DIST.name());
+		administrerForsendelse.oppdaterForsendelse(OppdaterForsendelseRequest.builder()
+				.forsendelseId(nyForsendelseId).forsendelseStatus(KLAR_FOR_DIST.name()).build());
 
 		return DoneEventRequest.builder()
 				.dittnavFeiletForsendelseId(gammelForsendelseId)
-				.printForsendelseId(nyForsendelseId)
+				.printForsendelseId(valueOf(nyForsendelseId))
 				.dittnavBestillingsId(gammelBestillingsId)
 				.printBestillingsId(nyBestillingsId)
 				.mottakerId(getMottakerId(hentForsendelseResponse))

@@ -53,7 +53,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 class Qdist010IT extends ApplicationTestConfig {
 
 	private static final String FORSENDELSE_ID = "33333";
-	private static final String FORSENDELSE_PATH = "/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=OVERSENDT" + "&varselStatus=OPPRETTET";
+	private static final String OPPDATERFORSENDELSE_PATH = "/rest/v1/administrerforsendelse/oppdaterforsendelse";
 	private static final String HENTFORSENDELSE_PATH = "/rest/v1/administrerforsendelse/" + FORSENDELSE_ID;
 
 	private static final ZoneId OSLO_ZONE = ZoneId.of("Europe/Oslo");
@@ -100,14 +100,14 @@ class Qdist010IT extends ApplicationTestConfig {
 	@Test
 	void shouldProcessForsendelse() throws Exception {
 		stubHentForsendelse(OK, "rdist001/getForsendelse_withAdresse-happy.json");
-		stubFor(put(FORSENDELSE_PATH)
+		stubFor(put(OPPDATERFORSENDELSE_PATH)
 				.willReturn(aResponse().withStatus(OK.value())));
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
 			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
-			verify(1, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
+			verify(1, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
 		});
 
 		verifyAllStubs(1);
@@ -116,28 +116,28 @@ class Qdist010IT extends ApplicationTestConfig {
 	@Test
 	void oppretteOppgaveWhenForsendelseDistribusjonTypeIsVedtak() throws Exception {
 		stubHentForsendelse(OK, "rdist001/forsendelse_distribusjontype_vedtak.json");
-		stubFor(put(FORSENDELSE_PATH)
+		stubFor(put(OPPDATERFORSENDELSE_PATH)
 				.willReturn(aResponse().withStatus(OK.value())));
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
 			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
-			verify(1, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
+			verify(1, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
 		});
 	}
 
 	@Test
 	void sendBeskjedWhenForsendelseDistribusjonTypeIsNull() throws Exception {
 		stubHentForsendelse(OK, "rdist001/forsendelse_distribusjontype_null.json");
-		stubFor(put(FORSENDELSE_PATH)
+		stubFor(put(OPPDATERFORSENDELSE_PATH)
 				.willReturn(aResponse().withStatus(OK.value())));
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
 			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
-			verify(1, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
+			verify(1, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
 		});
 	}
 
@@ -210,7 +210,7 @@ class Qdist010IT extends ApplicationTestConfig {
 		});
 
 		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
-		verify(0, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")));
+		verify(0, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
 	}
 
 	@Test
@@ -226,7 +226,7 @@ class Qdist010IT extends ApplicationTestConfig {
 		});
 
 		verify(MAX_ATTEMPTS_SHORT, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
-		verify(0, putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")));
+		verify(0, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
 	}
 
 	@Test
@@ -257,7 +257,7 @@ class Qdist010IT extends ApplicationTestConfig {
 		});
 
 		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
-		verify(1, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
+		verify(1, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
 	}
 
 	@Test
@@ -310,7 +310,7 @@ class Qdist010IT extends ApplicationTestConfig {
 	@Test
 	void shouldThrowRdist001OppdaterForsendelseStatusTechnicalException() throws Exception {
 		stubHentForsendelse(OK, "rdist001/getForsendelse_withAdresse-happy.json");
-		stubFor(put(FORSENDELSE_PATH)
+		stubFor(put(OPPDATERFORSENDELSE_PATH)
 				.willReturn(aResponse().withStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())));
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
@@ -322,7 +322,7 @@ class Qdist010IT extends ApplicationTestConfig {
 		});
 
 		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
-		verify(3, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
+		verify(3, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
 	}
 
 	@Test
@@ -335,7 +335,7 @@ class Qdist010IT extends ApplicationTestConfig {
 		ReflectionTestUtils.setField(produsentNotifikasjon, "clock", fixedClock);
 
 		stubHentForsendelse(OK, "rdist001/getForsendelse_withKjernetid.json");
-		stubFor(put(FORSENDELSE_PATH)
+		stubFor(put(OPPDATERFORSENDELSE_PATH)
 				.willReturn(aResponse().withStatus(OK.value())));
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
@@ -359,7 +359,7 @@ class Qdist010IT extends ApplicationTestConfig {
 		ReflectionTestUtils.setField(produsentNotifikasjon, "clock", fixedClock);
 
 		stubHentForsendelse(OK, "rdist001/getForsendelse_withKjernetid.json");
-		stubFor(put(FORSENDELSE_PATH)
+		stubFor(put(OPPDATERFORSENDELSE_PATH)
 				.willReturn(aResponse().withStatus(OK.value())));
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
@@ -376,14 +376,14 @@ class Qdist010IT extends ApplicationTestConfig {
 	@Test
 	void innenforKjernetidFunctionalException() throws Exception {
 		stubHentForsendelse(OK, "rdist001/getForsendelse_withKjernetid.json");
- 		stubFor(put(FORSENDELSE_PATH)
+ 		stubFor(put(OPPDATERFORSENDELSE_PATH)
 				.willReturn(aResponse().withStatus(OK.value())));
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
 			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
-			verify(1, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
+			verify(1, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
 		});
 
 		verifyAllStubs(1);
@@ -435,7 +435,7 @@ class Qdist010IT extends ApplicationTestConfig {
 
 	private void verifyAllStubs(int count) {
 		verify(count, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
-		verify(count, putRequestedFor(urlEqualTo(FORSENDELSE_PATH)));
+		verify(count, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
 	}
 
 }

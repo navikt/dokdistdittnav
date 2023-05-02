@@ -1,13 +1,14 @@
 package no.nav.dokdistdittnav.qdist010;
 
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
+import no.nav.dokdistdittnav.consumer.rdist001.to.OppdaterForsendelseRequest;
+import no.nav.dokdistdittnav.consumer.rdist001.to.VarselStatusCode;
 import org.apache.camel.Exchange;
 import org.apache.camel.Handler;
 import org.springframework.stereotype.Component;
 
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDELSE_ID;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.OVERSENDT;
-import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatus.OPPRETTET;
 
 @Component
 public class DokdistStatusUpdater {
@@ -20,7 +21,11 @@ public class DokdistStatusUpdater {
 
 	@Handler
 	public void doUpdate(Exchange exchange) {
-		final String forsendelseId = exchange.getProperty(PROPERTY_FORSENDELSE_ID, String.class);
-		administrerForsendelse.oppdaterForsendelseAndVarselStatus(forsendelseId, OVERSENDT.name(), OPPRETTET.name());
+		final Long forsendelseId = exchange.getProperty(PROPERTY_FORSENDELSE_ID, Long.class);
+		administrerForsendelse.oppdaterForsendelse(OppdaterForsendelseRequest.builder()
+				.forsendelseId(forsendelseId)
+				.forsendelseStatus(OVERSENDT.name())
+				.varselStatus(VarselStatusCode.OPPRETTET)
+				.build());
 	}
 }

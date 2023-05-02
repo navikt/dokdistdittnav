@@ -10,15 +10,14 @@ import no.nav.dokdistdittnav.consumer.rdist001.to.FeilRegistrerForsendelseReques
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
+import no.nav.dokdistdittnav.consumer.rdist001.to.OppdaterForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseResponse;
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
 import no.nav.dokdistdittnav.exception.functional.DokdistadminFunctionalException;
-import no.nav.dokdistdittnav.exception.functional.Rdist001HentForsendelseFunctionalException;
 import no.nav.dokdistdittnav.exception.functional.Rdist001OppdaterForsendelseStatusFunctionalException;
 import no.nav.dokdistdittnav.exception.technical.AbstractDokdistdittnavTechnicalException;
 import no.nav.dokdistdittnav.exception.technical.DokdistadminTechnicalException;
-import no.nav.dokdistdittnav.exception.technical.Rdist001HentForsendelseTechnicalException;
 import no.nav.dokdistdittnav.exception.technical.Rdist001OppdaterForsendelseStatusTechnicalException;
 import no.nav.dokdistdittnav.metrics.Monitor;
 import no.nav.dokdistdittnav.utils.NavHeadersFilter;
@@ -49,7 +48,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static java.lang.String.format;
-import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDELSE_ID;
 import static no.nav.dokdistdittnav.constants.MdcConstants.DOK_CONSUMER;
 import static no.nav.dokdistdittnav.constants.MdcConstants.MDC_CALL_ID;
 import static no.nav.dokdistdittnav.constants.MdcConstants.PROCESS;
@@ -177,41 +175,16 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 
 	@Override
 	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
-	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "oppdaterForsendelseStatus"}, histogram = true)
-	public void oppdaterForsendelseStatus(String forsendelseId, String forsendelseStatus) {
-		String uri = UriComponentsBuilder.fromHttpUrl(administrerforsendelseV1Url)
-				.queryParam(PROPERTY_FORSENDELSE_ID, forsendelseId)
-				.queryParam("forsendelseStatus", forsendelseStatus)
-				.toUriString();
-		log.info("Mottatt kall til å oppdatere forsendelse med forsendelseId={} til forsendelseStatus={}", forsendelseId, forsendelseStatus);
-		oppdaterForsendelse(uri);
+	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "oppdaterForsendelse"}, histogram = true)
+	public void oppdaterForsendelse(OppdaterForsendelseRequest oppdaterForsendelseRequest) {
 
-	}
-
-	@Override
-	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
-	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "oppdaterForsendelseAndVarselStatus"}, histogram = true)
-	public void oppdaterForsendelseAndVarselStatus(String forsendelseId, String forsendelseStatus, String varselStatus) {
-		String uri = UriComponentsBuilder.fromHttpUrl(administrerforsendelseV1Url)
-				.queryParam(PROPERTY_FORSENDELSE_ID, forsendelseId)
-				.queryParam("forsendelseStatus", forsendelseStatus)
-				.queryParam("varselStatus", varselStatus)
-				.toUriString();
-		log.info("Mottatt kall til å oppdatere forsendelse med forsendelseId={} til forsendelseStatus={} og varselStatus={}", forsendelseId, forsendelseStatus, varselStatus);
-		oppdaterForsendelse(uri);
-
-	}
-
-	@Override
-	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
-	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "oppdaterVarselStatus"}, histogram = true)
-	public void oppdaterVarselStatus(String forsendelseId, String varselStatus) {
-		String uri = UriComponentsBuilder.fromHttpUrl(administrerforsendelseV1Url)
-				.queryParam(PROPERTY_FORSENDELSE_ID, forsendelseId)
-				.queryParam("varselStatus", varselStatus)
-				.toUriString();
-		log.info("Mottatt kall til å oppdatere forsendelse med forsendelseId={} til varselStatus={}", forsendelseId, varselStatus);
-		oppdaterForsendelse(uri);
+		webClient.put()
+				.uri("/oppdaterforsendelse")
+				.bodyValue(oppdaterForsendelseRequest)
+				.retrieve()
+				.toBodilessEntity()
+				.doOnError(this::handleError)
+				.block();
 
 	}
 
@@ -232,20 +205,6 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 
 		log.info("oppdaterVarselInfo har oppdatert varselinfo for forsendelse med forsendelseId={}", oppdaterVarselInfo.forsendelseId());
 	}
-
-	private void oppdaterForsendelse(String uri) {
-		try {
-			HttpEntity<?> entity = new HttpEntity<>(createHeaders());
-			restTemplate.exchange(uri, PUT, entity, String.class);
-		} catch (HttpClientErrorException e) {
-			throw new Rdist001HentForsendelseFunctionalException(format("Kall mot rdist001 - oppdaterForsendelse feilet med statusCode=%s, feilmelding=%s", e.getStatusCode(), e.getMessage()),
-					e);
-
-		} catch (HttpServerErrorException e) {
-			throw new Rdist001HentForsendelseTechnicalException(format("Kall mot rdist001 - oppdaterForsendelse feilet teknisk med statusCode=%s,feilmelding=%s", e.getStatusCode(), e.getMessage()), e);
-		}
-	}
-
 
 	private HttpHeaders createHeaders() {
 		HttpHeaders headers = new HttpHeaders();
