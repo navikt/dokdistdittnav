@@ -1,12 +1,8 @@
 package no.nav.dokdistdittnav.consumer.rdist001.to;
 
-import lombok.Builder;
-import lombok.Data;
+import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatusCode;
 
-@Data
-@Builder
-public class OppdaterForsendelseRequest {
-	private Long forsendelseId;
-	private String forsendelseStatus;
-	private VarselStatusCode varselStatus;
+public record OppdaterForsendelseRequest(Long forsendelseId,
+										 String forsendelseStatus,
+										 VarselStatusCode varselStatus) {
 }

@@ -70,6 +70,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	private static final String DONEEVENT_DITTNAV_MOTTAKERID = "22222222222";
 
 	private static final String HENTFORSENDELSE_URL = "/rest/v1/administrerforsendelse/" + FORSENDELSE_ID;
+	private static final String OPPDATERFORSENDELSE_URL = "/rest/v1/administrerforsendelse/oppdaterforsendelse";
 
 	@Autowired
 	private KafkaEventProducer kafkaEventProducer;
@@ -148,7 +149,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 							DONEEVENT_DITTNAV_MOTTAKERID);
 		});
 
-		verifyAndCountForsendelse(BESTILLINGSID, KLAR_FOR_DIST.name());
+		verifyAndCountForsendelse(BESTILLINGSID);
 	}
 
 	@Test
@@ -226,12 +227,12 @@ public class Kdist002ITest extends ApplicationTestConfig {
 		});
 	}
 
-	private void verifyAndCountForsendelse(String bestillingsId, String forsendelseStatus) {
+	private void verifyAndCountForsendelse(String bestillingsId) {
 		verify(getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + bestillingsId)));
 		verify(getRequestedFor(urlEqualTo(HENTFORSENDELSE_URL)));
 		verify(postRequestedFor(urlMatching("/rest/v1/administrerforsendelse")));
 		verify(putRequestedFor(urlMatching("/administrerforsendelse/feilregistrerforsendelse")));
-		verify(putRequestedFor(urlEqualTo("/administrerforsendelse?forsendelseId=" + NY_FORSENDELSE_ID + "&forsendelseStatus=" + forsendelseStatus)));
+		verify(putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_URL)));
 	}
 
 	private void stubGetHentForsendelse(String responsebody, String forsendelseId, int httpStatusvalue) {
@@ -251,7 +252,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	}
 
 	private void stubPutOppdaterForsendelse(String forsendelseStatus, String forsendelseId, int httpStatusvalue) {
-		stubFor(put("/administrerforsendelse?forsendelseId=" + forsendelseId + "&forsendelseStatus=" + forsendelseStatus)
+		stubFor(put(OPPDATERFORSENDELSE_URL)
 				.willReturn(aResponse().withStatus(httpStatusvalue)));
 
 	}
