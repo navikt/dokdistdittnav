@@ -175,6 +175,7 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 
 		webClient.put()
 				.uri("/oppdaterforsendelse")
+				.attributes(getOAuth2AuthorizedClient())
 				.bodyValue(oppdaterForsendelse)
 				.retrieve()
 				.toBodilessEntity()
