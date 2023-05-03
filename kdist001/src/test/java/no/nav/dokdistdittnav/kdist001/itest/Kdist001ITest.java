@@ -32,7 +32,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatusCode.FERDIGSTILT;
 import static org.awaitility.Awaitility.await;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
@@ -63,7 +62,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	public void shouldReadMessageFromLestavmottakerTopicen() {
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json", FORSENDELSE_ID, OK.value());
-		stubPutOppdaterForsendelse(FERDIGSTILT.name(), FORSENDELSE_ID, OK.value());
+		stubPutOppdaterForsendelse(OK.value());
 		stubPatchOppdaterDistribusjonsinfo(JOURNALPOST_ID, OK.value());
 
 		HoveddokumentLest hoveddokumentLest = HoveddokumentLest.newBuilder()
@@ -103,7 +102,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	public void shouldReadMessageFromLestavmottakerTopicenAndLogWhenDokdistkanalIsNotDITTNAV() {
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-kanal-sdp.json", FORSENDELSE_ID, OK.value());
-		stubPutOppdaterForsendelse(FERDIGSTILT.name(), FORSENDELSE_ID, OK.value());
+		stubPutOppdaterForsendelse(OK.value());
 
 		HoveddokumentLest hoveddokumentLest = HoveddokumentLest.newBuilder()
 				.setDokumentInfoId(DOKUMENTINFO_ID)
@@ -122,7 +121,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	public void hentForsendelseWithNullRekkefølgeReturnNoContent() {
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelse_rekkefølge_feil.json", FORSENDELSE_ID, NO_CONTENT.value());
-		stubPutOppdaterForsendelse(FERDIGSTILT.name(), FORSENDELSE_ID, OK.value());
+		stubPutOppdaterForsendelse(OK.value());
 
 		HoveddokumentLest hoveddokumentLest = HoveddokumentLest.newBuilder()
 				.setDokumentInfoId(DOKUMENTINFO_ID)
@@ -149,8 +148,8 @@ public class Kdist001ITest extends ApplicationTestConfig {
 						.withBody(classpathToString(responseBody))));
 	}
 
-	private void stubPutOppdaterForsendelse(String varselStatus, String forsendelseId, int httpStatusvalue) {
-		stubFor(put("/administrerforsendelse?forsendelseId=" + forsendelseId + "&varselStatus=" + varselStatus)
+	private void stubPutOppdaterForsendelse(int httpStatusvalue) {
+		stubFor(put(URL_OPPDATERFORSENDELSE)
 				.willReturn(aResponse().withStatus(httpStatusvalue)));
 
 	}
