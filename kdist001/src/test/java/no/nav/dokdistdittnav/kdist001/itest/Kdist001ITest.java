@@ -32,7 +32,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatus.FERDIGSTILT;
 import static org.awaitility.Awaitility.await;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
@@ -44,7 +43,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	private static final String DOKUMENTINFOID_2 = "111111";
 	private static final String JOURNALPOST_ID = "153781366";
 	private static final String FORSENDELSE_ID = "1720847";
-	private static final String URL_OPPDATERFORSENDELSE = "/administrerforsendelse?forsendelseId=1720847&varselStatus=FERDIGSTILT";
+	private static final String URL_OPPDATERFORSENDELSE = "/rest/v1/administrerforsendelse/oppdaterforsendelse";
 	private static final String URL_HENTFORSENDELSE = "/rest/v1/administrerforsendelse/" + FORSENDELSE_ID;
 
 	@Autowired
@@ -63,7 +62,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	public void shouldReadMessageFromLestavmottakerTopicen() {
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json", FORSENDELSE_ID, OK.value());
-		stubPutOppdaterForsendelse(FERDIGSTILT.name(), FORSENDELSE_ID, OK.value());
+		stubPutOppdaterForsendelse(OK.value());
 		stubPatchOppdaterDistribusjonsinfo(JOURNALPOST_ID, OK.value());
 
 		HoveddokumentLest hoveddokumentLest = HoveddokumentLest.newBuilder()
@@ -73,8 +72,8 @@ public class Kdist001ITest extends ApplicationTestConfig {
 		putMessageOnKafkaTopic(hoveddokumentLest);
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?journalpostId=" + JOURNALPOST_ID)));
 			verify(1, getRequestedFor(urlEqualTo(URL_HENTFORSENDELSE)));
+			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?journalpostId=" + JOURNALPOST_ID)));
 			verify(1, putRequestedFor(urlEqualTo(URL_OPPDATERFORSENDELSE)));
 			verify(1, patchRequestedFor(urlMatching(".*/oppdaterDistribusjonsinfo")).withHeader("Authorization", matching("Bearer .*")));
 		});
@@ -103,7 +102,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	public void shouldReadMessageFromLestavmottakerTopicenAndLogWhenDokdistkanalIsNotDITTNAV() {
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-kanal-sdp.json", FORSENDELSE_ID, OK.value());
-		stubPutOppdaterForsendelse(FERDIGSTILT.name(), FORSENDELSE_ID, OK.value());
+		stubPutOppdaterForsendelse(OK.value());
 
 		HoveddokumentLest hoveddokumentLest = HoveddokumentLest.newBuilder()
 				.setDokumentInfoId(DOKUMENTINFO_ID)
@@ -122,7 +121,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	public void hentForsendelseWithNullRekkefølgeReturnNoContent() {
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelse_rekkefølge_feil.json", FORSENDELSE_ID, NO_CONTENT.value());
-		stubPutOppdaterForsendelse(FERDIGSTILT.name(), FORSENDELSE_ID, OK.value());
+		stubPutOppdaterForsendelse(OK.value());
 
 		HoveddokumentLest hoveddokumentLest = HoveddokumentLest.newBuilder()
 				.setDokumentInfoId(DOKUMENTINFO_ID)
@@ -149,8 +148,8 @@ public class Kdist001ITest extends ApplicationTestConfig {
 						.withBody(classpathToString(responseBody))));
 	}
 
-	private void stubPutOppdaterForsendelse(String varselStatus, String forsendelseId, int httpStatusvalue) {
-		stubFor(put("/administrerforsendelse?forsendelseId=" + forsendelseId + "&varselStatus=" + varselStatus)
+	private void stubPutOppdaterForsendelse(int httpStatusvalue) {
+		stubFor(put(URL_OPPDATERFORSENDELSE)
 				.willReturn(aResponse().withStatus(httpStatusvalue)));
 
 	}
@@ -163,7 +162,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	}
 
 	private void stubPatchOppdaterDistribusjonsinfo(String forsendelseId, int httpStatusvalue) {
-		stubFor(patch(urlMatching("/"+ forsendelseId + "/oppdaterDistribusjonsinfo"))
+		stubFor(patch(urlMatching("/" + forsendelseId + "/oppdaterDistribusjonsinfo"))
 				.willReturn(aResponse().withStatus(httpStatusvalue)));
 
 	}

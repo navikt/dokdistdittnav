@@ -10,6 +10,7 @@ import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
+import no.nav.dokdistdittnav.consumer.rdist001.to.OppdaterForsendelseRequest;
 import no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.safselvbetjening.schemas.HoveddokumentLest;
@@ -24,8 +25,8 @@ import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static no.nav.dokdistdittnav.constants.DomainConstants.HOVEDDOKUMENT;
 import static no.nav.dokdistdittnav.constants.DomainConstants.KANAL_DITTNAV;
-import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatus.FERDIGSTILT;
-import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatus.OPPRETTET;
+import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatusCode.FERDIGSTILT;
+import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatusCode.OPPRETTET;
 
 @Slf4j
 @Component
@@ -63,13 +64,12 @@ public class Ferdigprodusent {
 			HentForsendelseResponse hentForsendelseResponse = administrerForsendelse.hentForsendelse(requireNonNull(finnForsendelseResponse.getForsendelseId(), format("Fant ikke forsendelse med journalpostId=%s", hoveddokumentLest.getJournalpostId())));
 
 			if (nonNull(hentForsendelseResponse) && isValidForsendelse(hentForsendelseResponse, hoveddokumentLest)) {
-				log.info("Hentet forsendelse med forsendelseId={} og bestillingsId={} fra dokdist databasen.", finnForsendelseResponse.getForsendelseId(), hentForsendelseResponse.getBestillingsId());
 
 				NokkelInput nokkelInput = mapper.mapNokkelIntern(finnForsendelseResponse.getForsendelseId(), dokdistdittnavProperties.getAppnavn(), hentForsendelseResponse);
 				kafkaEventProducer.publish(dokdistdittnavProperties.getBrukernotifikasjon().getTopicdone(), nokkelInput, mapper.mapDoneInput());
 				dokarkivConsumer.settTidLestHoveddokument(new JournalpostId(hoveddokumentLest.getJournalpostId()), new OppdaterDistribusjonsInfo(OffsetDateTime.now()));
-				administrerForsendelse.oppdaterVarselStatus(finnForsendelseResponse.getForsendelseId(), FERDIGSTILT.name());
-				log.info("Oppdatert forsendelse med forsendelseId={} til varselStatus={}", finnForsendelseResponse.getForsendelseId(), FERDIGSTILT);
+				administrerForsendelse.oppdaterForsendelse(new OppdaterForsendelseRequest(Long.valueOf(finnForsendelseResponse.getForsendelseId()),
+						null, FERDIGSTILT));
 			}
 		}
 

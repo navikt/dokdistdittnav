@@ -6,6 +6,7 @@ import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelseConsumer;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
+import no.nav.dokdistdittnav.consumer.rdist001.to.OppdaterForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseResponse;
 import no.nav.dokdistdittnav.kafka.DoneEventRequest;
@@ -74,9 +75,10 @@ class Kdist002ServiceTest {
 
 		verify(administrerForsendelse, times(1)).finnForsendelse(any());
 		verify(administrerForsendelse, times(1)).oppdaterVarselInfo(any());
-		verify(administrerForsendelse, times(1)).oppdaterForsendelseStatus(any(), anyString());
+		verify(administrerForsendelse, times(1)).oppdaterForsendelse(any(OppdaterForsendelseRequest.class));
 		assertNull(doneEventRequest);
 	}
+
 	@Test
 	public void shouldNotUpdateForsendelseStatusWhenStatusIsFEILET() {
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
@@ -90,9 +92,10 @@ class Kdist002ServiceTest {
 
 		verify(administrerForsendelse, times(1)).finnForsendelse(any());
 		verify(administrerForsendelse, times(1)).oppdaterVarselInfo(any());
-		verify(administrerForsendelse, times(0)).oppdaterForsendelseStatus(any(), anyString());
+		verify(administrerForsendelse, times(0)).oppdaterForsendelse(any(OppdaterForsendelseRequest.class));
 		assertNull(doneEventRequest);
 	}
+
 	@Test
 	public void shouldLogAndAvsluttBehandlingenWhenForsendelseStatusErNotFeilet() {
 		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponse());
