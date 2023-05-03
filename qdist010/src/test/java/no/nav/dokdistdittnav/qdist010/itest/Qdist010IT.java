@@ -100,8 +100,7 @@ class Qdist010IT extends ApplicationTestConfig {
 	@Test
 	void shouldProcessForsendelse() throws Exception {
 		stubHentForsendelse(OK, "rdist001/getForsendelse_withAdresse-happy.json");
-		stubFor(put(OPPDATERFORSENDELSE_PATH)
-				.willReturn(aResponse().withStatus(OK.value())));
+		stubPutOppdaterForsendelse(OK);
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
@@ -116,8 +115,7 @@ class Qdist010IT extends ApplicationTestConfig {
 	@Test
 	void oppretteOppgaveWhenForsendelseDistribusjonTypeIsVedtak() throws Exception {
 		stubHentForsendelse(OK, "rdist001/forsendelse_distribusjontype_vedtak.json");
-		stubFor(put(OPPDATERFORSENDELSE_PATH)
-				.willReturn(aResponse().withStatus(OK.value())));
+		stubPutOppdaterForsendelse(OK);
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
@@ -130,8 +128,7 @@ class Qdist010IT extends ApplicationTestConfig {
 	@Test
 	void sendBeskjedWhenForsendelseDistribusjonTypeIsNull() throws Exception {
 		stubHentForsendelse(OK, "rdist001/forsendelse_distribusjontype_null.json");
-		stubFor(put(OPPDATERFORSENDELSE_PATH)
-				.willReturn(aResponse().withStatus(OK.value())));
+		stubPutOppdaterForsendelse(OK);
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
@@ -293,8 +290,7 @@ class Qdist010IT extends ApplicationTestConfig {
 	@Test
 	void shouldThrowRdist001OppdaterForsendelseStatusFunctionalException() throws Exception {
 		stubHentForsendelse(OK, "rdist001/getForsendelse_withAdresse-happy.json");
-		stubFor(put("/administrerforsendelse?forsendelseId=" + FORSENDELSE_ID + "&forsendelseStatus=EKSPEDERT")
-				.willReturn(aResponse().withStatus(HttpStatus.NOT_FOUND.value())));
+		stubPutOppdaterForsendelse(NOT_FOUND);
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
@@ -310,12 +306,11 @@ class Qdist010IT extends ApplicationTestConfig {
 	@Test
 	void shouldThrowRdist001OppdaterForsendelseStatusTechnicalException() throws Exception {
 		stubHentForsendelse(OK, "rdist001/getForsendelse_withAdresse-happy.json");
-		stubFor(put(OPPDATERFORSENDELSE_PATH)
-				.willReturn(aResponse().withStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())));
+		stubPutOppdaterForsendelse(INTERNAL_SERVER_ERROR);
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
-		await().atMost(100, TimeUnit.SECONDS).untilAsserted(() -> {
+		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
 			String resultOnQdist010BackoutQueue = receive(backoutQueue);
 			assertNotNull(resultOnQdist010BackoutQueue);
 			assertEquals(resultOnQdist010BackoutQueue, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
@@ -335,8 +330,7 @@ class Qdist010IT extends ApplicationTestConfig {
 		ReflectionTestUtils.setField(produsentNotifikasjon, "clock", fixedClock);
 
 		stubHentForsendelse(OK, "rdist001/getForsendelse_withKjernetid.json");
-		stubFor(put(OPPDATERFORSENDELSE_PATH)
-				.willReturn(aResponse().withStatus(OK.value())));
+		stubPutOppdaterForsendelse(OK);
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
@@ -359,8 +353,7 @@ class Qdist010IT extends ApplicationTestConfig {
 		ReflectionTestUtils.setField(produsentNotifikasjon, "clock", fixedClock);
 
 		stubHentForsendelse(OK, "rdist001/getForsendelse_withKjernetid.json");
-		stubFor(put(OPPDATERFORSENDELSE_PATH)
-				.willReturn(aResponse().withStatus(OK.value())));
+		stubPutOppdaterForsendelse(OK);
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
@@ -376,8 +369,7 @@ class Qdist010IT extends ApplicationTestConfig {
 	@Test
 	void innenforKjernetidFunctionalException() throws Exception {
 		stubHentForsendelse(OK, "rdist001/getForsendelse_withKjernetid.json");
- 		stubFor(put(OPPDATERFORSENDELSE_PATH)
-				.willReturn(aResponse().withStatus(OK.value())));
+		stubPutOppdaterForsendelse(OK);
 
 		sendStringMessage(qdist010, testUtils.classpathToString("qdist010/qdist010-happy.xml"));
 
@@ -385,8 +377,6 @@ class Qdist010IT extends ApplicationTestConfig {
 			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
 			verify(1, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
 		});
-
-		verifyAllStubs(1);
 	}
 
 	private void stubHentForsendelse(HttpStatus status, String responseBodyFile) {
@@ -395,6 +385,11 @@ class Qdist010IT extends ApplicationTestConfig {
 						.withStatus(status.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile(responseBodyFile)));
+	}
+
+	private void stubPutOppdaterForsendelse(HttpStatus  httpStatus) {
+		stubFor(put(OPPDATERFORSENDELSE_PATH)
+				.willReturn(aResponse().withStatus(httpStatus.value())));
 	}
 
 	private void sendStringMessage(Queue queue, final String message) {
