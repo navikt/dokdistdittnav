@@ -6,7 +6,7 @@ import no.nav.dokdistdittnav.consumer.doknotifikasjon.DoknotifikasjonConsumer;
 import no.nav.dokdistdittnav.consumer.doknotifikasjon.NotifikasjonInfoTo;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus;
-import no.nav.dokdistdittnav.consumer.rdist001.to.FeilRegistrerForsendelseRequest;
+import no.nav.dokdistdittnav.consumer.rdist001.to.FeilregistrerForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
@@ -154,8 +154,8 @@ public class Kdist002Service {
 
 	private void feilregistrerForsendelse(String gammelForsendelseId, String nyBestillingsId, DoknotifikasjonStatus doknotifikasjonStatus) {
 
-		administrerForsendelse.feilregistrerForsendelse(FeilRegistrerForsendelseRequest.builder()
-				.forsendelseId(gammelForsendelseId)
+		administrerForsendelse.feilregistrerForsendelse(FeilregistrerForsendelseRequest.builder()
+				.forsendelseId(Long.valueOf(gammelForsendelseId))
 				.type(VARSLINGSFEIL)
 				.tidspunkt(LocalDateTime.now())
 				.detaljer(doknotifikasjonStatus.getMelding())

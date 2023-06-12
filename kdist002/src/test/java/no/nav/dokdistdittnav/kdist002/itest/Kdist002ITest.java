@@ -10,6 +10,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
@@ -71,6 +72,8 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 	private static final String HENTFORSENDELSE_URL = "/rest/v1/administrerforsendelse/" + FORSENDELSE_ID;
 	private static final String OPPDATERFORSENDELSE_URL = "/rest/v1/administrerforsendelse/oppdaterforsendelse";
+	private static final String OPPDATERVARSELINFO_URL = "/rest/v1/administrerforsendelse/oppdatervarselinfo";
+	private static final String FEILREGISTRERFORSENDELSE_URL = "/rest/v1/administrerforsendelse/feilregistrerforsendelse";
 
 	@Autowired
 	private KafkaEventProducer kafkaEventProducer;
@@ -87,7 +90,6 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 	@Autowired
 	private EmbeddedKafkaBroker embeddedKafkaBroker;
-
 
 	@BeforeEach
 	void setUp() {
@@ -124,7 +126,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	}
 
 	@Test
-	public void shouldFeilRegistrerForsendelseOgOppdaterForsendelse() {
+	public void shouldFeilregistrerForsendelseOgOppdaterForsendelse() {
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json", FORSENDELSE_ID, OK.value());
 		stubPostOpprettForsendelse("__files/rdist001/opprettForsendelseResponse-happy.json", OK.value());
@@ -207,7 +209,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
 			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
-			verify(1, putRequestedFor((urlEqualTo("/rest/v1/administrerforsendelse/oppdatervarselinfo"))));
+			verify(1, putRequestedFor((urlEqualTo(OPPDATERVARSELINFO_URL))));
 		});
 	}
 
@@ -231,7 +233,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 		verify(getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + bestillingsId)));
 		verify(getRequestedFor(urlEqualTo(HENTFORSENDELSE_URL)));
 		verify(postRequestedFor(urlMatching("/rest/v1/administrerforsendelse")));
-		verify(putRequestedFor(urlMatching("/administrerforsendelse/feilregistrerforsendelse")));
+		verify(putRequestedFor(urlMatching(FEILREGISTRERFORSENDELSE_URL)));
 		verify(putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_URL)));
 	}
 
@@ -258,13 +260,14 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	}
 
 	private void stubPutFeilregistrerforsendelse(int httpStatusValue) {
-		stubFor(put("/administrerforsendelse/feilregistrerforsendelse")
-				.willReturn(aResponse().withStatus(httpStatusValue)));
+		stubFor(put(FEILREGISTRERFORSENDELSE_URL)
+				.willReturn(aResponse()
+						.withStatus(httpStatusValue)));
 	}
 
 	private void stubUpdateVarselInfo() {
-		stubFor(put("/rest/v1/administrerforsendelse/oppdatervarselinfo")
-				.willReturn(aResponse().withStatus(200)));
+		stubFor(put(OPPDATERVARSELINFO_URL)
+				.willReturn(aResponse().withStatus(OK.value())));
 	}
 
 	private void stubNotifikasjonInfo(String responseBody, int httpStatusValue) {

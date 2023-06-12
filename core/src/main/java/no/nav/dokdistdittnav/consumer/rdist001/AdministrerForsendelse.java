@@ -1,7 +1,7 @@
 package no.nav.dokdistdittnav.consumer.rdist001;
 
 import no.nav.dokdistdittnav.consumer.dokumentdistribusjon.OppdaterVarselInfoRequest;
-import no.nav.dokdistdittnav.consumer.rdist001.to.FeilRegistrerForsendelseRequest;
+import no.nav.dokdistdittnav.consumer.rdist001.to.FeilregistrerForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
@@ -21,5 +21,5 @@ public interface AdministrerForsendelse {
 
 	OpprettForsendelseResponse opprettForsendelse(final OpprettForsendelseRequest forsendelseRequestTo);
 
-	void feilregistrerForsendelse(FeilRegistrerForsendelseRequest feilRegistrerForsendelse);
+	void feilregistrerForsendelse(FeilregistrerForsendelseRequest feilregistrerForsendelse);
 }

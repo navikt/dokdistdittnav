@@ -6,14 +6,13 @@ import no.nav.dokdistdittnav.config.properties.DokdistDittnavServiceuser;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.constants.RetryConstants;
 import no.nav.dokdistdittnav.consumer.dokumentdistribusjon.OppdaterVarselInfoRequest;
-import no.nav.dokdistdittnav.consumer.rdist001.to.FeilRegistrerForsendelseRequest;
+import no.nav.dokdistdittnav.consumer.rdist001.to.FeilregistrerForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OppdaterForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseResponse;
-import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
 import no.nav.dokdistdittnav.exception.functional.DokdistadminFunctionalException;
 import no.nav.dokdistdittnav.exception.functional.Rdist001OppdaterForsendelseStatusFunctionalException;
 import no.nav.dokdistdittnav.exception.technical.AbstractDokdistdittnavTechnicalException;
@@ -55,7 +54,6 @@ import static no.nav.dokdistdittnav.constants.RetryConstants.MAX_ATTEMPTS_SHORT;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
@@ -152,20 +150,19 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 
 	@Override
 	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
-	public void feilregistrerForsendelse(FeilRegistrerForsendelseRequest feilregistrerForsendelse) {
+	public void feilregistrerForsendelse(FeilregistrerForsendelseRequest feilregistrerForsendelse) {
+		log.info("feilregistrerForsendelse feilregistrerer forsendelse med forsendelseId={}", feilregistrerForsendelse.getForsendelseId());
 
-		try {
-			HttpEntity<?> entity = new HttpEntity<>(feilregistrerForsendelse, createHeaders());
-			restTemplate.exchange(administrerforsendelseV1Url + "/feilregistrerforsendelse", PUT, entity, Object.class);
-		} catch (HttpClientErrorException e) {
-			log.error("Kall mot rdist001 - feilet til å feilregistrere forsendelse med forsendelseId={}, feilmelding={}", feilregistrerForsendelse.getForsendelseId(), e.getMessage());
-			throw new AbstractDokdistdittnavFunctionalException(format("Kall mot rdist001 - feilet til å feilregistrere forsendelse med statusCode=%s, feilmelding=%s", e.getStatusCode(), e.getMessage()), e) {
-			};
-		} catch (HttpServerErrorException e) {
-			log.error("Kall mot rdist001 - feilet til å feilregistre forsendelse med forsendelseId={}, feilmelding={}", feilregistrerForsendelse.getForsendelseId(), e.getMessage());
-			throw new AbstractDokdistdittnavTechnicalException(format("Kall mot rdist001 - feilet til å feilregistrere forsendelse med statusCode=%s, feilmelding=%s", e.getStatusCode(), e.getMessage()), e) {
-			};
-		}
+		webClient.put()
+				.uri(uriBuilder -> uriBuilder.path("/feilregistrerforsendelse").build())
+				.attributes(getOAuth2AuthorizedClient())
+				.bodyValue(feilregistrerForsendelse)
+				.retrieve()
+				.toBodilessEntity()
+				.doOnError(this::handleError)
+				.block();
+
+		log.info("feilregistrerForsendelse har feilregistrert forsendelse med forsendelseId={}", feilregistrerForsendelse.getForsendelseId());
 	}
 
 	@Override
