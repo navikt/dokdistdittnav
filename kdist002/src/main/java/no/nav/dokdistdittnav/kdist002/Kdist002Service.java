@@ -156,7 +156,7 @@ public class Kdist002Service {
 
 		administrerForsendelse.feilregistrerForsendelse(FeilregistrerForsendelseRequest.builder()
 				.forsendelseId(Long.valueOf(gammelForsendelseId))
-				.type(VARSLINGSFEIL)
+				.feilTypeCode(VARSLINGSFEIL)
 				.tidspunkt(LocalDateTime.now())
 				.detaljer(doknotifikasjonStatus.getMelding())
 				.resendingDistribusjonId(nyBestillingsId)
