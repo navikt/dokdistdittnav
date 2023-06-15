@@ -7,9 +7,9 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class FeilRegistrerForsendelseRequest {
-	private String forsendelseId;
-	private String type;
+public class FeilregistrerForsendelseRequest {
+	private Long forsendelseId;
+	private String feilTypeCode;
 	private String part;
 	private LocalDateTime tidspunkt;
 	private String detaljer;
