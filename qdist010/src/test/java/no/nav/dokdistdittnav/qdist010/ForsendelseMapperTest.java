@@ -28,7 +28,6 @@ public class ForsendelseMapperTest {
 	private static final String MELDING_FRA_NAV = "Melding fra NAV";
 	private static final String AARSOPPGAVE_FRA_NAV = "Årsoppgave fra NAV";
 
-
 	@ParameterizedTest
 	@CsvSource(value = {
 			"12345" + ", " + "varseltekster/melding_epostvarseltekst.html" + ", " + MELDING_FRA_NAV + ", " + SMS_TEKST,
@@ -37,7 +36,6 @@ public class ForsendelseMapperTest {
 	public void shouldMap(String dokumenttypeId, String epostVarslingstekstPath, String epostTittel, String smsVarslingstekst) {
 		HentForsendelseResponse hentForsendelseResponse = createHentForsendelseResponteTo(dokumenttypeId, ANNET);
 		BeskjedInput beskjedInput = mapBeskjedIntern("https://url.no", hentForsendelseResponse);
-
 
 		assertEquals(beskjedInput.getEpostVarslingstekst(), classpathToString(epostVarslingstekstPath));
 		assertEquals(beskjedInput.getEpostVarslingstittel(), epostTittel);
@@ -52,7 +50,6 @@ public class ForsendelseMapperTest {
 	public void shouldMapOppgave(String kode, String epostPath, String expectedEpostTittel, String expectedTittel, String expectedSmsTekst) {
 		HentForsendelseResponse hentForsendelseResponse = createHentForsendelseResponteTo("123456", DistribusjonsTypeKode.valueOf(kode));
 		OppgaveInput oppgaveInput = oppretteOppgave("https://url.no", hentForsendelseResponse);
-
 
 		assertThat(oppgaveInput.getTekst().contains(expectedTittel));
 		assertEquals(oppgaveInput.getEpostVarslingstekst(), classpathToString(epostPath));

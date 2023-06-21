@@ -170,7 +170,6 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	private void stubPatchOppdaterDistribusjonsinfo(String forsendelseId, int httpStatusvalue) {
 		stubFor(patch(urlMatching("/" + forsendelseId + "/oppdaterDistribusjonsinfo"))
 				.willReturn(aResponse().withStatus(httpStatusvalue)));
-
 	}
 
 	@SneakyThrows

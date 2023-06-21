@@ -3,7 +3,6 @@ package no.nav.dokdistdittnav.kdist002.itest;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.dokdistdittnav.kdist002.itest.config.ApplicationTestConfig;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.AfterEach;
@@ -37,7 +36,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static java.lang.String.format;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.EKSPEDERT;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.KLAR_FOR_DIST;
@@ -45,6 +43,14 @@ import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.INFO;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.OVERSENDT;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.classpathToString;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -117,14 +123,14 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 	private Map<String, Object> getConsumerProperties() {
 		Map<String, Object> map = new HashMap<>();
-		map.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedKafkaBroker.getBrokersAsString());
-		map.put(ConsumerConfig.GROUP_ID_CONFIG, "consumer");
-		map.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
-		map.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "10");
-		map.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "60000");
-		map.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-		map.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-		map.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+		map.put(BOOTSTRAP_SERVERS_CONFIG, embeddedKafkaBroker.getBrokersAsString());
+		map.put(GROUP_ID_CONFIG, "consumer");
+		map.put(ENABLE_AUTO_COMMIT_CONFIG, "true");
+		map.put(AUTO_COMMIT_INTERVAL_MS_CONFIG, "10");
+		map.put(SESSION_TIMEOUT_MS_CONFIG, "60000");
+		map.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+		map.put(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+		map.put(AUTO_OFFSET_RESET_CONFIG, "earliest");
 		return map;
 	}
 
@@ -138,7 +144,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name()));
 
-		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
+		await().atMost(10, SECONDS).untilAsserted(() -> {
 			//Sjekk at riktig forsendelseId blir sendt til qdist009/print
 			String message = receive(qdist009);
 			assertThat(message).contains(NY_FORSENDELSE_ID);
@@ -167,7 +173,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDPI, INFO.name()));
 
-		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() ->
+		await().atMost(10, SECONDS).untilAsserted(() ->
 				verify(0, getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGSID, BESTILLINGSID))))
 		);
 	}
@@ -182,7 +188,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDPI, FEILET.name()));
 
-		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() ->
+		await().atMost(10, SECONDS).untilAsserted(() ->
 				verify(0, getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGSID, BESTILLINGSID))))
 		);
 	}
@@ -194,7 +200,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name()));
 
-		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
+		await().atMost(10, SECONDS).untilAsserted(() -> {
 			verify(getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGSID, BESTILLINGSID))));
 			verify(getRequestedFor(urlEqualTo(HENTFORSENDELSE_URL)));
 		});
@@ -210,7 +216,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDITTNAV, OVERSENDT.name(), null));
 
-		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
+		await().atMost(10, SECONDS).untilAsserted(() -> {
 			verify(1, getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGSID, BESTILLINGSID))));
 			verify(1, putRequestedFor((urlEqualTo(OPPDATERVARSELINFO_URL))));
 		});
@@ -223,7 +229,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name()));
 
-		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
+		await().atMost(10, SECONDS).untilAsserted(() -> {
 			ConsumerRecord<String, Object> record = records.poll();
 			assertTrue(record != null);
 			assertTrue(record.value().toString().contains(MELDING));

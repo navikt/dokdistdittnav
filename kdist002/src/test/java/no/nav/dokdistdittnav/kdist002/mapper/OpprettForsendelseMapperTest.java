@@ -76,7 +76,6 @@ class OpprettForsendelseMapperTest {
 		assertEquals(request.getOriginalDistribusjonId(), OLD_BESTILLINGS_ID);
 		assertNull(request.getPostadresse());
 		assertDokument(request.getDokumenter().get(1));
-
 	}
 
 	@Test
@@ -109,7 +108,6 @@ class OpprettForsendelseMapperTest {
 	}
 
 	private void assertDokument(OpprettForsendelseRequest.DokumentTo dokumentTo) {
-
 		assertEquals(dokumentTo.getDokumenttypeId(), DOKUMENTTYPE_ID_2);
 		assertEquals(dokumentTo.getDokumentObjektReferanse(), OBJEKT_REFERANSE_2);
 		assertEquals(dokumentTo.getTilknyttetSom(), TILKNYTTET_SOM_VEDLEGG);
@@ -201,8 +199,6 @@ class OpprettForsendelseMapperTest {
 						.tilknyttetSom(TILKNYTTET_SOM_VEDLEGG)
 						.arkivDokumentInfoId(ARKIV_DOKUMENTINFO_ID_1)
 						.build());
-
-
 	}
 
 	private static HentForsendelseResponse.PostadresseTo createPostadresse() {

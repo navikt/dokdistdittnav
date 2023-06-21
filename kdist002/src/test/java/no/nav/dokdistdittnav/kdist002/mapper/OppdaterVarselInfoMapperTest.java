@@ -28,7 +28,6 @@ class OppdaterVarselInfoMapperTest {
 	private static final String MOBILTELEFON = "MOBILTELEFON";
 	private static final LocalDateTime NOW = LocalDateTime.now();
 
-
 	@Test
 	public void shouldMap() {
 		Set<NotifikasjonInfoTo.NotifikasjonDistribusjonDto> distribusjoner = new HashSet<>();
@@ -57,24 +56,10 @@ class OppdaterVarselInfoMapperTest {
 	}
 
 	public NotifikasjonInfoTo createNotifikasjonInfoTo(Set<NotifikasjonInfoTo.NotifikasjonDistribusjonDto> distribusjoner) {
-		return new NotifikasjonInfoTo(
-				1,
-				BESTILLERID,
-				STATUS,
-				0,
-				distribusjoner
-		);
+		return new NotifikasjonInfoTo(1, BESTILLERID, STATUS, 0, distribusjoner);
 	}
 
 	public NotifikasjonInfoTo.NotifikasjonDistribusjonDto createNotifikasjonDistribusjonDto(String kanal) {
-		return new NotifikasjonInfoTo.NotifikasjonDistribusjonDto(
-				1,
-				STATUS,
-				kanal,
-				KONTAKTINFO,
-				TITTEL,
-				TEKST,
-				NOW
-		);
+		return new NotifikasjonInfoTo.NotifikasjonDistribusjonDto(1, STATUS, kanal, KONTAKTINFO, TITTEL, TEKST, NOW);
 	}
 }
