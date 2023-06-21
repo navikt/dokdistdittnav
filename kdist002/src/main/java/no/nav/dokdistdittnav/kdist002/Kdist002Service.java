@@ -7,8 +7,8 @@ import no.nav.dokdistdittnav.consumer.doknotifikasjon.NotifikasjonInfoTo;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FeilregistrerForsendelseRequest;
-import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequestTo;
-import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponseTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequest;
+import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OppdaterForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
@@ -61,7 +61,7 @@ public class Kdist002Service {
 	public DoneEventRequest sendForsendelse(DoknotifikasjonStatus doknotifikasjonStatus) {
 		log.info("Kdist002 hentet doknotifikasjonstatus med bestillingsId={} og status={} fra topic={}.", doknotifikasjonStatus.getBestillingsId(), doknotifikasjonStatus.getStatus(), properties.getDoknotifikasjon().getStatustopic());
 		String oldBestillingsId = extractDokdistBestillingsId(doknotifikasjonStatus.getBestillingsId());
-		FinnForsendelseResponseTo finnForsendelse = finnForsendelse(oldBestillingsId);
+		FinnForsendelseResponse finnForsendelse = finnForsendelse(oldBestillingsId);
 
 		if (skalInformasjonOmVarselLagres(doknotifikasjonStatus)) {
 
@@ -87,7 +87,7 @@ public class Kdist002Service {
 				createNewAndFeilRegistrerOldForsendelse(finnForsendelse.getForsendelseId(), hentForsendelseResponse, doknotifikasjonStatus) : null;
 	}
 
-	private void oppdaterForsendelseStatus(FinnForsendelseResponseTo finnForsendelse, String bestillingsId) {
+	private void oppdaterForsendelseStatus(FinnForsendelseResponse finnForsendelse, String bestillingsId) {
 		HentForsendelseResponse forsendelse = administrerForsendelse.hentForsendelse(finnForsendelse.getForsendelseId());
 
 		if (nonNull(forsendelse)) {
@@ -118,9 +118,9 @@ public class Kdist002Service {
 	}
 
 
-	private FinnForsendelseResponseTo finnForsendelse(String bestillingsId) {
-		return administrerForsendelse.finnForsendelse(FinnForsendelseRequestTo.builder()
-				.oppslagsNoekkel(PROPERTY_BESTILLINGS_ID)
+	private FinnForsendelseResponse finnForsendelse(String bestillingsId) {
+		return administrerForsendelse.finnForsendelse(FinnForsendelseRequest.builder()
+				.oppslagsnoekkel(PROPERTY_BESTILLINGS_ID)
 				.verdi(bestillingsId)
 				.build());
 	}
@@ -182,8 +182,8 @@ public class Kdist002Service {
 		assertNotBlank("OpprettForsendelseResponse.ForsendelseId", valueOf(request.getForsendelseId()));
 	}
 
-	private void validateFinnForsendelse(FinnForsendelseResponseTo finnForsendelseResponseTo) {
-		assertNotNull("finnForsendelseResponseTo", finnForsendelseResponseTo);
-		assertNotBlank("FinnForsendelseResponseTo.ForsendelseId", valueOf(finnForsendelseResponseTo.getForsendelseId()));
+	private void validateFinnForsendelse(FinnForsendelseResponse finnForsendelseResponse) {
+		assertNotNull("finnForsendelseResponseTo", finnForsendelseResponse);
+		assertNotBlank("FinnForsendelseResponseTo.ForsendelseId", valueOf(finnForsendelseResponse.getForsendelseId()));
 	}
 }

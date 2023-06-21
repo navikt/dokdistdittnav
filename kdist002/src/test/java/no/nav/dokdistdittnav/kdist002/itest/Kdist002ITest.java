@@ -10,14 +10,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.listener.MessageListener;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
-import org.springframework.kafka.test.utils.ContainerTestUtils;
 import org.springframework.test.context.ActiveProfiles;
 
 import javax.jms.Queue;
@@ -38,6 +36,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.EKSPEDERT;
@@ -52,6 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.kafka.test.utils.ContainerTestUtils.waitForAssignment;
 
 @ActiveProfiles("itest")
 public class Kdist002ITest extends ApplicationTestConfig {
@@ -65,6 +65,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	private static final String MELDING = "Altinn feilet";
 	private static final String DOKDISTDPI = "dokdistdpi";
 	private static final String DOKDISTDITTNAV = "dokdistdittnav";
+	private static final String PROPERTY_BESTILLINGSID = "bestillingsId";
 
 	private static final String DONEEVENT_DITTNAV_BESTILLINGSID = "811c0c5d-e74c-491a-8b8c-d94075c822c3";
 	private static final String DONEEVENT_DITTNAV_FORSENDELSEID = "1720847";
@@ -72,6 +73,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 	private static final String HENTFORSENDELSE_URL = "/rest/v1/administrerforsendelse/" + FORSENDELSE_ID;
 	private static final String OPPDATERFORSENDELSE_URL = "/rest/v1/administrerforsendelse/oppdaterforsendelse";
+	private static final String FINNFORSENDELSE_URL = "/rest/v1/administrerforsendelse/finnforsendelse/%s/%s";
 	private static final String OPPDATERVARSELINFO_URL = "/rest/v1/administrerforsendelse/oppdatervarselinfo";
 	private static final String FEILREGISTRERFORSENDELSE_URL = "/rest/v1/administrerforsendelse/feilregistrerforsendelse";
 
@@ -99,7 +101,8 @@ public class Kdist002ITest extends ApplicationTestConfig {
 		records = new LinkedBlockingQueue<>();
 		container.setupMessageListener((MessageListener<String, Object>) e -> records.add(e));
 		container.start();
-		ContainerTestUtils.waitForAssignment(container, embeddedKafkaBroker.getTopics().size() * embeddedKafkaBroker.getPartitionsPerTopic());
+		waitForAssignment(container, embeddedKafkaBroker.getTopics().size() * embeddedKafkaBroker.getPartitionsPerTopic());
+
 		stubFor(post("/azure_token")
 				.willReturn(aResponse()
 						.withStatus(OK.value())
@@ -108,7 +111,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	}
 
 	@AfterEach
-	void steardown() {
+	void teardown() {
 		container.stop();
 	}
 
@@ -164,9 +167,9 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDPI, INFO.name()));
 
-		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
-			verify(0, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
-		});
+		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() ->
+				verify(0, getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGSID, BESTILLINGSID))))
+		);
 	}
 
 	@Test
@@ -179,9 +182,9 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDPI, FEILET.name()));
 
-		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
-			verify(0, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
-		});
+		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() ->
+				verify(0, getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGSID, BESTILLINGSID))))
+		);
 	}
 
 	@Test
@@ -192,7 +195,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name()));
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
-			verify(getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
+			verify(getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGSID, BESTILLINGSID))));
 			verify(getRequestedFor(urlEqualTo(HENTFORSENDELSE_URL)));
 		});
 	}
@@ -208,7 +211,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDITTNAV, OVERSENDT.name(), null));
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
+			verify(1, getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGSID, BESTILLINGSID))));
 			verify(1, putRequestedFor((urlEqualTo(OPPDATERVARSELINFO_URL))));
 		});
 	}
@@ -224,13 +227,13 @@ public class Kdist002ITest extends ApplicationTestConfig {
 			ConsumerRecord<String, Object> record = records.poll();
 			assertTrue(record != null);
 			assertTrue(record.value().toString().contains(MELDING));
-			verify(getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)));
+			verify(getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGSID, BESTILLINGSID))));
 			verify(getRequestedFor(urlEqualTo(HENTFORSENDELSE_URL)));
 		});
 	}
 
 	private void verifyAndCountForsendelse(String bestillingsId) {
-		verify(getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?bestillingsId=" + bestillingsId)));
+		verify(getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGSID, bestillingsId))));
 		verify(getRequestedFor(urlEqualTo(HENTFORSENDELSE_URL)));
 		verify(postRequestedFor(urlMatching("/rest/v1/administrerforsendelse")));
 		verify(putRequestedFor(urlMatching(FEILREGISTRERFORSENDELSE_URL)));
@@ -246,7 +249,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	}
 
 	void stubGetFinnForsendelse(String responseBody, int httpStatusValue) {
-		stubFor(get("/administrerforsendelse/finnforsendelse?bestillingsId=" + BESTILLINGSID)
+		stubFor(get(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGSID, BESTILLINGSID))
 				.willReturn(aResponse()
 						.withStatus(httpStatusValue)
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
@@ -255,7 +258,8 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 	private void stubPutOppdaterForsendelse(String forsendelseStatus, String forsendelseId, int httpStatusvalue) {
 		stubFor(put(OPPDATERFORSENDELSE_URL)
-				.willReturn(aResponse().withStatus(httpStatusvalue)));
+				.willReturn(aResponse()
+						.withStatus(httpStatusvalue)));
 
 	}
 
@@ -267,7 +271,8 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 	private void stubUpdateVarselInfo() {
 		stubFor(put(OPPDATERVARSELINFO_URL)
-				.willReturn(aResponse().withStatus(OK.value())));
+				.willReturn(aResponse()
+						.withStatus(OK.value())));
 	}
 
 	private void stubNotifikasjonInfo(String responseBody, int httpStatusValue) {

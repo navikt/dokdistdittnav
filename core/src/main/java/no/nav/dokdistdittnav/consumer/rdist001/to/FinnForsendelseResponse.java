@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 @Builder
-public class FinnForsendelseResponseTo {
+public class FinnForsendelseResponse {
 	private String forsendelseId;
 }

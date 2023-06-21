@@ -10,8 +10,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.io.InputStream;
@@ -29,12 +27,15 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @ActiveProfiles("itest")
 public class Kdist001ITest extends ApplicationTestConfig {
@@ -43,8 +44,11 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	private static final String DOKUMENTINFOID_2 = "111111";
 	private static final String JOURNALPOST_ID = "153781366";
 	private static final String FORSENDELSE_ID = "1720847";
-	private static final String URL_OPPDATERFORSENDELSE = "/rest/v1/administrerforsendelse/oppdaterforsendelse";
+	private static final String PROPERTY_JOURNALPOST = "journalpostId";
+
 	private static final String URL_HENTFORSENDELSE = "/rest/v1/administrerforsendelse/" + FORSENDELSE_ID;
+	private static final String URL_FINNFORSENDELSE = "/rest/v1/administrerforsendelse/finnforsendelse/%s/%s";
+	private static final String URL_OPPDATERFORSENDELSE = "/rest/v1/administrerforsendelse/oppdaterforsendelse";
 
 	@Autowired
 	private KafkaEventProducer kafkaEventProducer;
@@ -54,7 +58,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 		stubFor(post("/azure_token")
 				.willReturn(aResponse()
 						.withStatus(OK.value())
-						.withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile("azure/token_response_dummy.json")));
 	}
 
@@ -73,7 +77,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
 			verify(1, getRequestedFor(urlEqualTo(URL_HENTFORSENDELSE)));
-			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?journalpostId=" + JOURNALPOST_ID)));
+			verify(1, getRequestedFor(urlEqualTo(format(URL_FINNFORSENDELSE, PROPERTY_JOURNALPOST, JOURNALPOST_ID))));
 			verify(1, putRequestedFor(urlEqualTo(URL_OPPDATERFORSENDELSE)));
 			verify(1, patchRequestedFor(urlMatching(".*/oppdaterDistribusjonsinfo")).withHeader("Authorization", matching("Bearer .*")));
 		});
@@ -92,7 +96,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 		putMessageOnKafkaTopic(hoveddokumentLest);
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?journalpostId=" + JOURNALPOST_ID)));
+			verify(1, getRequestedFor(urlEqualTo(format(URL_FINNFORSENDELSE, PROPERTY_JOURNALPOST, JOURNALPOST_ID))));
 			verify(1, getRequestedFor(urlEqualTo(URL_HENTFORSENDELSE)));
 		});
 		verify(0, patchRequestedFor(urlMatching(".*/oppdaterDistribusjonsinfo")));
@@ -112,7 +116,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 		putMessageOnKafkaTopic(hoveddokumentLest);
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?journalpostId=" + JOURNALPOST_ID)));
+			verify(1, getRequestedFor(urlEqualTo(format(URL_FINNFORSENDELSE, PROPERTY_JOURNALPOST, JOURNALPOST_ID))));
 			verify(1, getRequestedFor(urlEqualTo(URL_HENTFORSENDELSE)));
 		});
 	}
@@ -130,28 +134,30 @@ public class Kdist001ITest extends ApplicationTestConfig {
 		putMessageOnKafkaTopic(hoveddokumentLest);
 
 		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo("/administrerforsendelse/finnforsendelse?journalpostId=" + JOURNALPOST_ID)));
+			verify(1, getRequestedFor(urlEqualTo(format(URL_FINNFORSENDELSE, PROPERTY_JOURNALPOST, JOURNALPOST_ID))));
 			verify(1, getRequestedFor(urlEqualTo(URL_HENTFORSENDELSE)));
 		});
 	}
 
 	private void stubGetHentForsendelse(String responsebody, String forsendelseId, int httpStatusvalue) {
-		stubFor(get(urlEqualTo("/rest/v1/administrerforsendelse/" + forsendelseId)).willReturn(aResponse().withStatus(httpStatusvalue)
-				.withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-				.withBody(classpathToString(responsebody))));
+		stubFor(get(urlEqualTo("/rest/v1/administrerforsendelse/" + forsendelseId))
+				.willReturn(aResponse()
+						.withStatus(httpStatusvalue)
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBody(classpathToString(responsebody))));
 	}
 
 	void stubGetFinnForsendelse(String responseBody, int httpStatusValue) {
-		stubFor(WireMock.get("/administrerforsendelse/finnforsendelse?journalpostId=" + JOURNALPOST_ID)
-				.willReturn(aResponse().withStatus(httpStatusValue)
-						.withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+		stubFor(WireMock.get(format(URL_FINNFORSENDELSE, PROPERTY_JOURNALPOST, JOURNALPOST_ID))
+				.willReturn(aResponse()
+						.withStatus(httpStatusValue)
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBody(classpathToString(responseBody))));
 	}
 
 	private void stubPutOppdaterForsendelse(int httpStatusvalue) {
 		stubFor(put(URL_OPPDATERFORSENDELSE)
 				.willReturn(aResponse().withStatus(httpStatusvalue)));
-
 	}
 
 	private void putMessageOnKafkaTopic(HoveddokumentLest hoveddokumentLest) {
@@ -171,6 +177,5 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	private static String classpathToString(String classpathResource) {
 		InputStream inputStream = new ClassPathResource(classpathResource).getInputStream();
 		return IOUtils.toString(inputStream, UTF_8);
-
 	}
 }
