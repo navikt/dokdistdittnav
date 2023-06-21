@@ -44,11 +44,6 @@ public class TestUtils {
 		return objectMapper(forsendelseString, HentForsendelseResponse.class);
 	}
 
-	public static FinnForsendelseResponse finnForsendelseResponseTo() {
-		String forsendelseString = classpathToString("__files/rdist001/finnForsendelseresponse-happy.json");
-		return objectMapper(forsendelseString, FinnForsendelseResponse.class);
-	}
-
 	@SneakyThrows
 	private static <T> T objectMapper(String input, Class<T> tClass) {
 		ObjectMapper mapper = new ObjectMapper();

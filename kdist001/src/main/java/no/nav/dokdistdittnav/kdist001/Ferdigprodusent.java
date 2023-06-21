@@ -8,7 +8,6 @@ import no.nav.dokdistdittnav.consumer.dokarkiv.JournalpostId;
 import no.nav.dokdistdittnav.consumer.dokarkiv.OppdaterDistribusjonsInfo;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequest;
-import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OppdaterForsendelseRequest;
 import no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper;
@@ -20,12 +19,10 @@ import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
 
-import static java.lang.String.format;
 import static java.util.Objects.nonNull;
-import static java.util.Objects.requireNonNull;
 import static no.nav.dokdistdittnav.constants.DomainConstants.HOVEDDOKUMENT;
 import static no.nav.dokdistdittnav.constants.DomainConstants.KANAL_DITTNAV;
-import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_JOURNALPOST_ID;
+import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.Oppslagsnoekkel.JOURNALPOSTID;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatusCode.FERDIGSTILT;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatusCode.OPPRETTET;
 
@@ -53,25 +50,22 @@ public class Ferdigprodusent {
 	public void updateVarselStatus(HoveddokumentLest hoveddokumentLest) {
 		log.info("Mottatt hoveddokumentLest med journalpostId={}, dokumentInfoId={}.", hoveddokumentLest.getJournalpostId(), hoveddokumentLest.getDokumentInfoId());
 
-		FinnForsendelseResponse finnForsendelseResponse = administrerForsendelse.finnForsendelse(FinnForsendelseRequest.builder()
-				.oppslagsnoekkel(PROPERTY_JOURNALPOST_ID)
+		String forsendelseId = administrerForsendelse.finnForsendelse(FinnForsendelseRequest.builder()
+				.oppslagsnoekkel(JOURNALPOSTID)
 				.verdi(hoveddokumentLest.getJournalpostId())
 				.build());
 
-		if (nonNull(finnForsendelseResponse) && nonNull(finnForsendelseResponse.getForsendelseId())) {
-
-			HentForsendelseResponse hentForsendelseResponse = administrerForsendelse.hentForsendelse(requireNonNull(finnForsendelseResponse.getForsendelseId(), format("Fant ikke forsendelse med journalpostId=%s", hoveddokumentLest.getJournalpostId())));
+		if (forsendelseId != null) {
+			HentForsendelseResponse hentForsendelseResponse = administrerForsendelse.hentForsendelse(forsendelseId);
 
 			if (nonNull(hentForsendelseResponse) && isValidForsendelse(hentForsendelseResponse, hoveddokumentLest)) {
 
-				NokkelInput nokkelInput = mapper.mapNokkelIntern(finnForsendelseResponse.getForsendelseId(), dokdistdittnavProperties.getAppnavn(), hentForsendelseResponse);
+				NokkelInput nokkelInput = mapper.mapNokkelIntern(forsendelseId, dokdistdittnavProperties.getAppnavn(), hentForsendelseResponse);
 				kafkaEventProducer.publish(dokdistdittnavProperties.getBrukernotifikasjon().getTopicdone(), nokkelInput, mapper.mapDoneInput());
 				dokarkivConsumer.settTidLestHoveddokument(new JournalpostId(hoveddokumentLest.getJournalpostId()), new OppdaterDistribusjonsInfo(OffsetDateTime.now()));
-				administrerForsendelse.oppdaterForsendelse(new OppdaterForsendelseRequest(Long.valueOf(finnForsendelseResponse.getForsendelseId()),
-						null, FERDIGSTILT));
+				administrerForsendelse.oppdaterForsendelse(new OppdaterForsendelseRequest(Long.valueOf(forsendelseId), null, FERDIGSTILT));
 			}
 		}
-
 	}
 
 	private boolean isValidForsendelse(HentForsendelseResponse hentForsendelseResponse, HoveddokumentLest hoveddokumentLest) {

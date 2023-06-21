@@ -4,6 +4,7 @@ import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.consumer.doknotifikasjon.DoknotifikasjonConsumer;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelseConsumer;
+import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.Oppslagsnoekkel;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OppdaterForsendelseRequest;
@@ -18,7 +19,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.BESTILLINGSID;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.DOKDISTDITTNAV;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.DOKDISTDPI;
@@ -26,7 +26,6 @@ import static no.nav.dokdistdittnav.kdist002.TestUtils.DOKNOTIFIKASJON_BESTILLIN
 import static no.nav.dokdistdittnav.kdist002.TestUtils.DOKNOTIFIKASJON_BESTILLINGSID_OLD;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.FORSENDELSE_ID;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.MELDING;
-import static no.nav.dokdistdittnav.kdist002.TestUtils.finnForsendelseResponseTo;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.hentForsendelseResponse;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.hentForsendelseResponseUtenMottaker;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.hentForsendelseResponseWithForsendelseStatusFeilet;
@@ -65,9 +64,9 @@ class Kdist002ServiceTest {
 	@EnumSource(value = DoknotifikasjonStatusKode.class, names = {"OVERSENDT", "FERDIGSTILT"})
 	public void shouldUpdateDistribusjonsTidspunktAndForsendelseStatus(DoknotifikasjonStatusKode statusKode) {
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequest.builder()
-				.oppslagsnoekkel(PROPERTY_BESTILLINGS_ID)
+				.oppslagsnoekkel(Oppslagsnoekkel.BESTILLINGSID)
 				.verdi(BESTILLINGSID)
-				.build())).thenReturn(finnForsendelseResponseTo());
+				.build())).thenReturn(FORSENDELSE_ID);
 		when(doknotifikasjonConsumer.getNotifikasjonInfo(DOKNOTIFIKASJON_BESTILLINGSID_OLD)).thenReturn(hentNotifikasjonInfoTo());
 		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponse());
 
@@ -82,9 +81,9 @@ class Kdist002ServiceTest {
 	@Test
 	public void shouldNotUpdateForsendelseStatusWhenStatusIsFEILET() {
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequest.builder()
-				.oppslagsnoekkel(PROPERTY_BESTILLINGS_ID)
+				.oppslagsnoekkel(Oppslagsnoekkel.BESTILLINGSID)
 				.verdi(BESTILLINGSID)
-				.build())).thenReturn(finnForsendelseResponseTo());
+				.build())).thenReturn(FORSENDELSE_ID);
 		when(doknotifikasjonConsumer.getNotifikasjonInfo(DOKNOTIFIKASJON_BESTILLINGSID_OLD)).thenReturn(hentNotifikasjonInfoTo());
 		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseWithForsendelseStatusFeilet());
 
@@ -100,9 +99,9 @@ class Kdist002ServiceTest {
 	public void shouldLogAndAvsluttBehandlingenWhenForsendelseStatusErNotFeilet() {
 		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponse());
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequest.builder()
-				.oppslagsnoekkel(PROPERTY_BESTILLINGS_ID)
+				.oppslagsnoekkel(Oppslagsnoekkel.BESTILLINGSID)
 				.verdi(BESTILLINGSID)
-				.build())).thenReturn(finnForsendelseResponseTo());
+				.build())).thenReturn(FORSENDELSE_ID);
 		when(administrerForsendelse.opprettForsendelse(any(OpprettForsendelseRequest.class))).thenReturn(OpprettForsendelseResponse.builder()
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
@@ -116,9 +115,9 @@ class Kdist002ServiceTest {
 	public void shouldExtractOldBestillingsIdFraDoknotifikasjonStatusEvent() {
 		when(administrerForsendelse.hentForsendelse(FORSENDELSE_ID)).thenReturn(hentForsendelseResponse());
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequest.builder()
-				.oppslagsnoekkel(PROPERTY_BESTILLINGS_ID)
+				.oppslagsnoekkel(Oppslagsnoekkel.BESTILLINGSID)
 				.verdi(BESTILLINGSID)
-				.build())).thenReturn(finnForsendelseResponseTo());
+				.build())).thenReturn(FORSENDELSE_ID);
 		when(administrerForsendelse.opprettForsendelse(any(OpprettForsendelseRequest.class))).thenReturn(OpprettForsendelseResponse.builder()
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
@@ -133,9 +132,9 @@ class Kdist002ServiceTest {
 	public void shouldExtractNewBestillingsIdFraDoknotifikasjonStatusEvent() {
 		when(administrerForsendelse.hentForsendelse(FORSENDELSE_ID)).thenReturn(hentForsendelseResponse());
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequest.builder()
-				.oppslagsnoekkel(PROPERTY_BESTILLINGS_ID)
+				.oppslagsnoekkel(Oppslagsnoekkel.BESTILLINGSID)
 				.verdi(BESTILLINGSID)
-				.build())).thenReturn(finnForsendelseResponseTo());
+				.build())).thenReturn(FORSENDELSE_ID);
 		when(administrerForsendelse.opprettForsendelse(any(OpprettForsendelseRequest.class))).thenReturn(OpprettForsendelseResponse.builder()
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
@@ -150,9 +149,9 @@ class Kdist002ServiceTest {
 	public void shouldLogAndAvsluttBehandlingenWhenForsendelseStatusErNotFeiletAndBestillerIdIsNotDokdistdittnav() {
 		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponse());
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequest.builder()
-				.oppslagsnoekkel(PROPERTY_BESTILLINGS_ID)
+				.oppslagsnoekkel(Oppslagsnoekkel.BESTILLINGSID)
 				.verdi(BESTILLINGSID)
-				.build())).thenReturn(finnForsendelseResponseTo());
+				.build())).thenReturn(FORSENDELSE_ID);
 		when(administrerForsendelse.opprettForsendelse(any(OpprettForsendelseRequest.class))).thenReturn(OpprettForsendelseResponse.builder()
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
@@ -166,9 +165,9 @@ class Kdist002ServiceTest {
 	public void shouldLogAndAvsluttBehandlingenWhenNotifikasjonStatusErNotFeiletAndBestillerIdIsNotDokdistdittnav() {
 		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponse());
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequest.builder()
-				.oppslagsnoekkel(PROPERTY_BESTILLINGS_ID)
+				.oppslagsnoekkel(Oppslagsnoekkel.BESTILLINGSID)
 				.verdi(BESTILLINGSID)
-				.build())).thenReturn(finnForsendelseResponseTo());
+				.build())).thenReturn(FORSENDELSE_ID);
 		when(administrerForsendelse.opprettForsendelse(any(OpprettForsendelseRequest.class))).thenReturn(OpprettForsendelseResponse.builder()
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
@@ -182,9 +181,9 @@ class Kdist002ServiceTest {
 	public void shouldLogAndAvsluttBehandlingenWhenForsendelseStatusErFEILET() {
 		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseWithForsendelseStatusFeilet());
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequest.builder()
-				.oppslagsnoekkel(PROPERTY_BESTILLINGS_ID)
+				.oppslagsnoekkel(Oppslagsnoekkel.BESTILLINGSID)
 				.verdi(BESTILLINGSID)
-				.build())).thenReturn(finnForsendelseResponseTo());
+				.build())).thenReturn(FORSENDELSE_ID);
 		when(administrerForsendelse.opprettForsendelse(any(OpprettForsendelseRequest.class))).thenReturn(OpprettForsendelseResponse.builder()
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
@@ -195,30 +194,13 @@ class Kdist002ServiceTest {
 	}
 
 	@Test
-	public void shouldThrowExceptionIfFinnForsendelseReturnsNull() {
-		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponse());
-		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequest.builder()
-				.oppslagsnoekkel(PROPERTY_BESTILLINGS_ID)
-				.verdi(BESTILLINGSID)
-				.build())).thenReturn(null);
-		when(administrerForsendelse.opprettForsendelse(any(OpprettForsendelseRequest.class))).thenReturn(OpprettForsendelseResponse.builder()
-				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
-				.build());
-
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> kdist002Service.sendForsendelse(
-				doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
-
-		assertEquals("finnForsendelseResponseTo kan ikke være null", e.getMessage());
-	}
-
-	@Test
-	public void throwsExceptionWhenHentForsendleseWithoutMottakerInfo() {
+	public void shouldThrowExceptionWhenHentForsendelseWithoutMottakerInfo() {
 		HentForsendelseResponse hentForsendelseResponse = hentForsendelseResponseUtenMottaker();
 
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequest.builder()
-				.oppslagsnoekkel(PROPERTY_BESTILLINGS_ID)
+				.oppslagsnoekkel(Oppslagsnoekkel.BESTILLINGSID)
 				.verdi(BESTILLINGSID)
-				.build())).thenReturn(finnForsendelseResponseTo());
+				.build())).thenReturn(FORSENDELSE_ID);
 		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponse);
 
 		when(administrerForsendelse.opprettForsendelse(any(OpprettForsendelseRequest.class))).thenReturn(OpprettForsendelseResponse.builder()

@@ -3,7 +3,6 @@ package no.nav.dokdistdittnav.consumer.rdist001;
 import no.nav.dokdistdittnav.consumer.dokumentdistribusjon.OppdaterVarselInfoRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FeilregistrerForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequest;
-import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OppdaterForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
@@ -17,7 +16,7 @@ public interface AdministrerForsendelse {
 
 	void oppdaterVarselInfo(OppdaterVarselInfoRequest oppdaterVarselInfo);
 
-	FinnForsendelseResponse finnForsendelse(final FinnForsendelseRequest finnForsendelseRequest);
+	String finnForsendelse(final FinnForsendelseRequest finnForsendelseRequest);
 
 	OpprettForsendelseResponse opprettForsendelse(final OpprettForsendelseRequest forsendelseRequestTo);
 

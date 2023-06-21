@@ -1,6 +1,5 @@
 package no.nav.dokdistdittnav.kdist001.itest;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
 import lombok.SneakyThrows;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.dokdistdittnav.kdist001.itest.config.ApplicationTestConfig;
@@ -148,7 +147,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	}
 
 	void stubGetFinnForsendelse(String responseBody, int httpStatusValue) {
-		stubFor(WireMock.get(format(URL_FINNFORSENDELSE, PROPERTY_JOURNALPOST, JOURNALPOST_ID))
+		stubFor(get(format(URL_FINNFORSENDELSE, PROPERTY_JOURNALPOST, JOURNALPOST_ID))
 				.willReturn(aResponse()
 						.withStatus(httpStatusValue)
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)

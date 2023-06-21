@@ -77,8 +77,8 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 
 	@Override
 	@Retryable(include = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MULTIPLIER_SHORT))
-	public FinnForsendelseResponse finnForsendelse(final FinnForsendelseRequest finnForsendelseRequest) {
-		var oppslagsnoekkel = finnForsendelseRequest.getOppslagsnoekkel();
+	public String finnForsendelse(final FinnForsendelseRequest finnForsendelseRequest) {
+		var oppslagsnoekkel = finnForsendelseRequest.getOppslagsnoekkel().noekkel;
 		var verdi = finnForsendelseRequest.getVerdi();
 
 		log.info("finnForsendelse henter forsendelse med {}={}", oppslagsnoekkel, verdi);
@@ -90,10 +90,11 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 				.attributes(getOAuth2AuthorizedClient())
 				.retrieve()
 				.bodyToMono(FinnForsendelseResponse.class)
+				.map(FinnForsendelseResponse::getForsendelseId)
 				.doOnError(this::handleError)
 				.block();
 
-		log.info("finnForsendelse har hentet forsendelse med {}={}", oppslagsnoekkel, verdi);
+		log.info("finnForsendelse har hentet forsendelse med forsendelseId={} og {}={}", response, oppslagsnoekkel, verdi);
 
 		return response;
 	}
