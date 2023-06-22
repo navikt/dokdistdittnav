@@ -16,11 +16,11 @@ public class DokdistdittnavProperties {
 
 	private boolean autostartup;
 	private String appnavn;
+
 	private final Topic topic = new Topic();
 	private final Brukernotifikasjon brukernotifikasjon = new Brukernotifikasjon();
 	private final Doknotifikasjon doknotifikasjon = new Doknotifikasjon();
 	private final Dokarkiv dokarkiv = new Dokarkiv();
-	private final Dokdist dokdist = new Dokdist();
 	private final Dokdist dokdistadmin = new Dokdist();
 
 	@Data
@@ -77,6 +77,7 @@ public class DokdistdittnavProperties {
 	@Validated
 	public static class Dokarkiv {
 		private final String oppdaterDistribusjonsinfoPath = "/oppdaterDistribusjonsinfo";
+
 		@NotEmpty
 		private String baseUri;
 		@NotEmpty

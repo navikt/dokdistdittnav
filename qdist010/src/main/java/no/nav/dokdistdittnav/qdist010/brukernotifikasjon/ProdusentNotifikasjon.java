@@ -42,7 +42,6 @@ public class ProdusentNotifikasjon {
 	private final LocalTime kjernetidSlutt;
 	private final Clock clock;
 
-	@Autowired
 	public ProdusentNotifikasjon(KafkaEventProducer kafkaEventProducer,
 								 AdministrerForsendelse administrerForsendelse,
 								 DokdistdittnavProperties properties,
