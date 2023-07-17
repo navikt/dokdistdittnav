@@ -15,7 +15,6 @@ import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKanal;
 import org.apache.camel.Exchange;
 import org.apache.camel.Handler;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -61,7 +60,7 @@ public class ProdusentNotifikasjon {
 	public void oppretteOppgaveEllerBeskjed(DistribuerTilKanal distribuerTilKanal, Exchange exchange) {
 		String forsendelseId = distribuerTilKanal.getForsendelseId();
 		HentForsendelseResponse hentForsendelseResponse = administrerForsendelse.hentForsendelse(forsendelseId);
-		log.info("Hentet forsendelse med forsendlseId={} og bestillingsId={} fra rdist002", forsendelseId, hentForsendelseResponse.getBestillingsId());
+		log.info("Hentet forsendelse med forsendelseId={}, bestillingsId={} fra rdist002", forsendelseId, hentForsendelseResponse.getBestillingsId());
 		NokkelInput nokkelIntern = brukerNotifikasjonMapper.mapNokkelIntern(forsendelseId, properties.getAppnavn(), hentForsendelseResponse);
 
 		if (isJournalpostIdNotNull(hentForsendelseResponse)) {
@@ -69,15 +68,15 @@ public class ProdusentNotifikasjon {
 		}
 		exchange.setProperty(PROPERTY_BESTILLINGS_ID, hentForsendelseResponse.getBestillingsId());
 
-		if 	(!innenKjernetid(hentForsendelseResponse.getDistribusjonstidspunkt())){
-			log.info("Legger melding med distribusjonstidspunkt {} på vente-kø for eventId/bestillingsId={}", hentForsendelseResponse.getDistribusjonstidspunkt(), hentForsendelseResponse.getBestillingsId());
+		if (!innenKjernetid(hentForsendelseResponse.getDistribusjonstidspunkt())) {
+			log.info("Legger melding med distribusjonstidspunkt={} på vente-kø for eventId/bestillingsId={}", hentForsendelseResponse.getDistribusjonstidspunkt(), hentForsendelseResponse.getBestillingsId());
 			throw new UtenforKjernetidFunctionalException("Utenfor kjernetid, legges på ventekø");
 		} else {
 			behandleForsendelse(hentForsendelseResponse, nokkelIntern);
 		}
 	}
 
-	private void behandleForsendelse(HentForsendelseResponse hentForsendelseResponse, NokkelInput nokkelIntern){
+	private void behandleForsendelse(HentForsendelseResponse hentForsendelseResponse, NokkelInput nokkelIntern) {
 		if (erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype()) && isJournalpostIdNotNull(hentForsendelseResponse)) {
 			OppgaveInput oppgaveIntern = oppretteOppgave(properties.getBrukernotifikasjon().getLink(), hentForsendelseResponse);
 			log.info("Opprettet eventType OPPGAVE med eventId/bestillingsId={}", hentForsendelseResponse.getBestillingsId());
