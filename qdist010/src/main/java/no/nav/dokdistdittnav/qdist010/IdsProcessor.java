@@ -7,6 +7,8 @@ import org.apache.camel.Processor;
 import org.apache.camel.language.xpath.XPathBuilder;
 import org.slf4j.MDC;
 
+import java.util.UUID;
+
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDELSE_ID;
 import static no.nav.dokdistdittnav.constants.MdcConstants.MDC_CALL_ID;
 
@@ -19,9 +21,9 @@ public class IdsProcessor implements Processor {
 	}
 
 	private void setBestillingsIdAsPropertyAndAddCallIdToMdc(Exchange exchange) {
-		final String callId = exchange.getIn().getHeader(MDC_CALL_ID, String.class);
+		String callId = exchange.getIn().getHeader(MDC_CALL_ID, String.class);
 		if (callId == null) {
-			throw new ForsendelseManglerPaakrevdHeaderFunctionalException("qdist010 har mottatt forsendelse uten påkrevd header callId");
+			callId = UUID.randomUUID().toString();
 		} else if (callId.trim().isEmpty()) {
 			throw new ForsendelseManglerPaakrevdHeaderFunctionalException("qdist010 har mottatt forsendelse med tom header callId");
 		}
