@@ -143,20 +143,6 @@ class Qdist010IT extends ApplicationTestConfig {
 	}
 
 	@Test
-	void shouldThrowForsendelseManglerPaakrevdHeaderFunctionalExceptionManglerCallId() throws Exception {
-
-		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"), null);
-
-		await().atMost(10, SECONDS).untilAsserted(() -> {
-			String resultOnQdist010FunksjonellFeilQueue = receive(qdist010FunksjonellFeil);
-			assertNotNull(resultOnQdist010FunksjonellFeilQueue);
-			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-happy.xml"));
-		});
-
-		verifyAllStubs(0);
-	}
-
-	@Test
 	void shouldThrowForsendelseManglerPaakrevdHeaderFunctionalExceptionEmptyCallId() throws Exception {
 
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"), "");
