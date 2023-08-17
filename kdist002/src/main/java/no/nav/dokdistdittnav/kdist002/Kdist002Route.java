@@ -15,8 +15,8 @@ import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.jms.Queue;
-import javax.xml.bind.JAXBContext;
+import jakarta.jms.Queue;
+import jakarta.xml.bind.JAXBContext;
 
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;

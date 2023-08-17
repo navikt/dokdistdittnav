@@ -1,8 +1,12 @@
 package no.nav.dokdistdittnav.qdist010.itest;
 
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.Queue;
+import jakarta.jms.TextMessage;
+import jakarta.xml.bind.JAXBElement;
 import no.nav.dokdistdittnav.qdist010.brukernotifikasjon.ProdusentNotifikasjon;
 import no.nav.dokdistdittnav.qdist010.config.ApplicationTestConfig;
-import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,11 +18,6 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Queue;
-import javax.jms.TextMessage;
-import javax.xml.bind.JAXBElement;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Clock;
@@ -76,7 +75,7 @@ class Qdist010IT extends ApplicationTestConfig {
 	private Queue qdist010UtenforKjernetid;
 
 	@Autowired
-	private Queue backoutQueue;
+	private Queue qdist010Bq;
 
 	@Autowired
 	private ProdusentNotifikasjon produsentNotifikasjon;
@@ -207,7 +206,7 @@ class Qdist010IT extends ApplicationTestConfig {
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, SECONDS).untilAsserted(() -> {
-			String resultOnQdist010BackoutQueue = receive(backoutQueue, CALL_ID);
+			String resultOnQdist010BackoutQueue = receive(qdist010Bq, CALL_ID);
 			assertNotNull(resultOnQdist010BackoutQueue);
 			assertEquals(resultOnQdist010BackoutQueue, classpathToString("qdist010/qdist010-happy.xml"));
 		});
@@ -301,7 +300,7 @@ class Qdist010IT extends ApplicationTestConfig {
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
 		await().atMost(10, SECONDS).untilAsserted(() -> {
-			String resultOnQdist010BackoutQueue = receive(backoutQueue);
+			String resultOnQdist010BackoutQueue = receive(qdist010Bq);
 			assertNotNull(resultOnQdist010BackoutQueue);
 			assertEquals(resultOnQdist010BackoutQueue, classpathToString("qdist010/qdist010-happy.xml"));
 		});
@@ -389,7 +388,7 @@ class Qdist010IT extends ApplicationTestConfig {
 
 	private void sendStringMessage(Queue queue, final String message, final String callId) {
 		jmsTemplate.send(queue, session -> {
-			TextMessage msg = new ActiveMQTextMessage();
+			TextMessage msg = session.createTextMessage();
 			msg.setText(message);
 			if (callId != null)
 				msg.setStringProperty("callId", callId);

@@ -10,7 +10,7 @@ import org.apache.camel.support.RoutePolicySupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 
 import static no.nav.dokdistdittnav.constants.DomainConstants.SERVICE_ID;
 import static no.nav.dokdistdittnav.metrics.MetricLabels.LABEL_ERROR_TYPE;

@@ -17,8 +17,8 @@ import org.springframework.kafka.listener.MessageListener;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.test.context.ActiveProfiles;
 
-import javax.jms.Queue;
-import javax.xml.bind.JAXBElement;
+import jakarta.jms.Queue;
+import jakarta.xml.bind.JAXBElement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
