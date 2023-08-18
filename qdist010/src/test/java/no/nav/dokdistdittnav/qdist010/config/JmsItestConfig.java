@@ -52,7 +52,7 @@ public class JmsItestConfig {
 	}
 
 	@Bean
-	public ConnectionFactory activemqConnectionFactory(EmbeddedActiveMQ embeddedActiveMQMustBeRunning) {
+	public ConnectionFactory activemqConnectionFactory(EmbeddedActiveMQ embeddedActiveMQ) { // EmbeddedActiveMQ must be initialized before we try to connect, therefore we depend on it here
 		ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory("vm://localhost?create=false");
 
 		JmsPoolConnectionFactory pooledFactory = new JmsPoolConnectionFactory();

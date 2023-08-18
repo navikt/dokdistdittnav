@@ -35,6 +35,7 @@
 		<commons-io.version>2.13.0</commons-io.version>
 		<melding-virksomhet-dokdistfordeling.version>6-4049b35</melding-virksomhet-dokdistfordeling.version>
 		<resilience4j.version>2.1.0</resilience4j.version>
+		<httpclient4.version>4.5.14</httpclient4.version>
 
 		<!-- Test -->
 		<spring-cloud-contract-wiremock.version>4.0.4</spring-cloud-contract-wiremock.version>
@@ -83,6 +84,11 @@
 				<artifactId>resilience4j-spring-boot3</artifactId>
 				<version>${resilience4j.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpclient</artifactId>
+				<version>${httpclient4.version}</version>
+			</dependency>
 
 			<!-- Kafka -->
 			<dependency>
@@ -112,12 +118,6 @@
 				<version>${ibm-mq.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.apache.activemq</groupId>
-				<artifactId>artemis-jakarta-server</artifactId>
-				<version>${artemis.version}</version>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
 				<groupId>no.nav.meldinger.virksomhet</groupId>
 				<artifactId>melding-virksomhet-dokdistfordeling</artifactId>
 				<version>${melding-virksomhet-dokdistfordeling.version}</version>
@@ -134,6 +134,12 @@
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
 				<version>${commons-io.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.activemq</groupId>
+				<artifactId>artemis-jakarta-server</artifactId>
+				<version>${artemis.version}</version>
 				<scope>test</scope>
 			</dependency>
 		</dependencies>
