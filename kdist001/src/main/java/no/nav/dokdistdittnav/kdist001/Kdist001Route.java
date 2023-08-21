@@ -10,11 +10,8 @@ import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.kafka.consumer.DefaultKafkaManualCommit;
-import org.apache.camel.spi.RoutePolicy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.function.Supplier;
 
 import static java.lang.String.format;
 import static no.nav.dokdistdittnav.constants.DomainConstants.KDIST001_ID;
