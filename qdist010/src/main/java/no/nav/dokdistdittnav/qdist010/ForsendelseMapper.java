@@ -39,7 +39,7 @@ public class ForsendelseMapper {
 	static final String VIKTIG_TITTEL = "Brev fra NAV";
 	static final String BESKJED_TITTEL = "Melding fra NAV";
 	static final String AARSOPPGAVE_TITTEL = "Årsoppgave fra NAV";
-	private static final Integer SIKKEREHETSNIVAA = 4;
+	private static final Integer SIKKEREHETSNIVAA = 3;
 
 	static {
 		VEDTAK_TEKST_FIL = getFileAndAssertNotNullOrEmpty("varseltekster/vedtak_epostvarseltekst.html");
