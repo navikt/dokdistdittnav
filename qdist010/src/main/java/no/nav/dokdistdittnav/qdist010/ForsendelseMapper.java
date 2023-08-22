@@ -39,7 +39,7 @@ public class ForsendelseMapper {
 	static final String VIKTIG_TITTEL = "Brev fra NAV";
 	static final String BESKJED_TITTEL = "Melding fra NAV";
 	static final String AARSOPPGAVE_TITTEL = "Årsoppgave fra NAV";
-	private static final Integer SIKKEREHETSNIVAA = 4;
+	private static final Integer SIKKERHETSNIVAA = 3;
 
 	static {
 		VEDTAK_TEKST_FIL = getFileAndAssertNotNullOrEmpty("varseltekster/vedtak_epostvarseltekst.html");
@@ -66,7 +66,7 @@ public class ForsendelseMapper {
 				.withEpostVarslingstekst(mapEpostTekst(dokumenttypeId))
 				.withEpostVarslingstittel(mapInternEpostVarslingstittel(dokumenttypeId))
 				.withSmsVarslingstekst(mapInternSmsVarslingstekst(dokumenttypeId))
-				.withSikkerhetsnivaa(SIKKEREHETSNIVAA)
+				.withSikkerhetsnivaa(SIKKERHETSNIVAA)
 				.build();
 	}
 
@@ -95,7 +95,7 @@ public class ForsendelseMapper {
 				.withEpostVarslingstekst(mapEpostVarslingsteks(hentForsendelseResponse.getDistribusjonstype()))
 				.withEpostVarslingstittel(VEDTAK.equals(hentForsendelseResponse.getDistribusjonstype()) ? VEDTAK_TITTEL : VIKTIG_TITTEL)
 				.withSmsVarslingstekst(getSmsTekst(hentForsendelseResponse))
-				.withSikkerhetsnivaa(SIKKEREHETSNIVAA)
+				.withSikkerhetsnivaa(SIKKERHETSNIVAA)
 				.build();
 	}
 
