@@ -8,7 +8,6 @@ import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FeilregistrerForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequest;
-import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OppdaterForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
@@ -50,7 +49,9 @@ public class Kdist002Service {
 	private final OpprettForsendelseMapper opprettForsendelseMapper;
 	private final DoknotifikasjonConsumer doknotifikasjonConsumer;
 
-	public Kdist002Service(DokdistdittnavProperties properties, AdministrerForsendelse administrerForsendelse, DoknotifikasjonConsumer doknotifikasjonConsumer) {
+	public Kdist002Service(DokdistdittnavProperties properties,
+						   AdministrerForsendelse administrerForsendelse,
+						   DoknotifikasjonConsumer doknotifikasjonConsumer) {
 		this.properties = properties;
 		this.administrerForsendelse = administrerForsendelse;
 		this.opprettForsendelseMapper = new OpprettForsendelseMapper();
@@ -92,8 +93,8 @@ public class Kdist002Service {
 		if (nonNull(forsendelse)) {
 			if (skalOppdatereForsendelseStatus(forsendelse)) {
 				log.info("Kdist002 oppdaterer forsendelse med forsendelseId={} til forsendelseStatus=EKSPEDERT for bestillingsId={}", forsendelseId, bestillingsId);
-				administrerForsendelse.oppdaterForsendelse(new OppdaterForsendelseRequest(Long.valueOf(forsendelseId),
-						EKSPEDERT.name(), null));
+
+				administrerForsendelse.oppdaterForsendelse(new OppdaterForsendelseRequest(Long.valueOf(forsendelseId), EKSPEDERT.name(), null));
 				log.info("Kdist002 har oppdatert forsendelsesstatus med forsendelseId={} til forsendelseStatus=EKSPEDERT for bestillingsId={}", forsendelseId, bestillingsId);
 			} else {
 				log.info("Kdist002 skal ikke oppdatere forsendelsestatus på forsendelse med forsendelseId={}, bestillingsId={} og forsendelsestatus={}",

@@ -4,10 +4,10 @@ import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -180,7 +180,7 @@ class OpprettForsendelseMapperTest {
 
 	private static List<HentForsendelseResponse.DokumentTo> createDokument() {
 
-		return Arrays.asList(
+		return asList(
 				HentForsendelseResponse.DokumentTo.builder()
 						.dokumenttypeId(DOKUMENTTYPE_ID_1)
 						.dokumentObjektReferanse(OBJEKT_REFERANSE_1)

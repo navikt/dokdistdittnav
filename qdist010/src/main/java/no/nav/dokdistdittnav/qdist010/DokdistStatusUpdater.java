@@ -10,7 +10,6 @@ import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDEL
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.OVERSENDT;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatusCode.OPPRETTET;
 
-
 @Component
 public class DokdistStatusUpdater {
 
@@ -23,7 +22,7 @@ public class DokdistStatusUpdater {
 	@Handler
 	public void doUpdate(Exchange exchange) {
 		final Long forsendelseId = exchange.getProperty(PROPERTY_FORSENDELSE_ID, Long.class);
-		administrerForsendelse.oppdaterForsendelse(new OppdaterForsendelseRequest(forsendelseId,
-				OVERSENDT.name(), OPPRETTET));
+
+		administrerForsendelse.oppdaterForsendelse(new OppdaterForsendelseRequest(forsendelseId, OVERSENDT.name(), OPPRETTET));
 	}
 }

@@ -1,5 +1,7 @@
 package no.nav.dokdistdittnav.kdist002.itest;
 
+import jakarta.jms.Queue;
+import jakarta.xml.bind.JAXBElement;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.dokdistdittnav.kdist002.itest.config.ApplicationTestConfig;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
@@ -17,8 +19,6 @@ import org.springframework.kafka.listener.MessageListener;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.test.context.ActiveProfiles;
 
-import jakarta.jms.Queue;
-import jakarta.xml.bind.JAXBElement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -53,6 +53,7 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.SESSION_TIMEOUT_M
 import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.OK;
@@ -231,7 +232,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 		await().atMost(10, SECONDS).untilAsserted(() -> {
 			ConsumerRecord<String, Object> record = records.poll();
-			assertTrue(record != null);
+			assertNotNull(record);
 			assertTrue(record.value().toString().contains(MELDING));
 			verify(getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGSID, BESTILLINGSID))));
 			verify(getRequestedFor(urlEqualTo(HENTFORSENDELSE_URL)));
@@ -266,7 +267,6 @@ public class Kdist002ITest extends ApplicationTestConfig {
 		stubFor(put(OPPDATERFORSENDELSE_URL)
 				.willReturn(aResponse()
 						.withStatus(httpStatusvalue)));
-
 	}
 
 	private void stubPutFeilregistrerforsendelse(int httpStatusValue) {

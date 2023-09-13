@@ -105,23 +105,25 @@ public class OpprettForsendelseMapper {
 		assertNotBlank("mottaker.mottakerId", forsendelseResponse.getMottaker().getMottakerId());
 		assertNotBlank("mottaker.mottakerNavn", forsendelseResponse.getMottaker().getMottakerNavn());
 		assertNotBlank("mottaker.mottakerType", forsendelseResponse.getMottaker().getMottakerType());
+
 		if (forsendelseResponse.getArkivInformasjon() != null) {
 			assertNotBlank("arkivinformasjon.arkivSystem", forsendelseResponse.getArkivInformasjon().getArkivSystem());
 			assertNotBlank("arkivinformasjon.arkivId", forsendelseResponse.getArkivInformasjon().getArkivId());
 		}
+
 		if (forsendelseResponse.getPostadresse() != null) {
 			assertNotBlank("postadresse.landkode", forsendelseResponse.getPostadresse().getLandkode());
 		}
-		assertThatAtLeastOneDocumentIsPresent(forsendelseResponse.getDokumenter());
-		forsendelseResponse.getDokumenter().forEach(dokumentTo ->
-				assertDokument(dokumentTo, forsendelseResponse.getArkivInformasjon()));
 
+		assertThatAtLeastOneDocumentIsPresent(forsendelseResponse.getDokumenter());
+		forsendelseResponse.getDokumenter().forEach(dokumentTo -> assertDokument(dokumentTo, forsendelseResponse.getArkivInformasjon()));
 	}
 
 	private void assertDokument(HentForsendelseResponse.DokumentTo dokumentTo, HentForsendelseResponse.ArkivInformasjonTo arkivInformasjonTo) {
 		assertNotBlank("dokumenter.dokument.tilknyttetSom", dokumentTo.getTilknyttetSom());
 		assertNotBlank("dokumenter.dokument.dokumentObjektReferanse", dokumentTo.getDokumentObjektReferanse());
 		assertNotBlank("dokumenter.dokument.dokumenttypeId", dokumentTo.getDokumenttypeId());
+
 		if (arkivInformasjonTo != null) {
 			assertNotBlank("dokumenter.dokument.arkivdokumentInfoId", dokumentTo.getArkivDokumentInfoId());
 		}

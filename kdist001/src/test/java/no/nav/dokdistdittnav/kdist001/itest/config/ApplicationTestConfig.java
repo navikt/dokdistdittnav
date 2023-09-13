@@ -24,9 +24,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 		AzureProperties.class,
 		MqGatewayAlias.class
 })
-@Import({
-		JmsItestConfig.class
-})
+@Import(JmsItestConfig.class)
 @EmbeddedKafka(
 		partitions = 1,
 		brokerProperties = {
@@ -35,12 +33,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 )
 @EnableAutoConfiguration
 @ComponentScan(basePackages = "no.nav.dokdistdittnav")
-@SpringBootTest(
-		classes = {
-				ApplicationTestConfig.class
-		},
-		webEnvironment = RANDOM_PORT
-)
+@SpringBootTest(classes = ApplicationTestConfig.class, webEnvironment = RANDOM_PORT)
 @AutoConfigureWireMock(port = 0)
 public class ApplicationTestConfig {
 }

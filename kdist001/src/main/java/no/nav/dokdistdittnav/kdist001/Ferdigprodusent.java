@@ -14,7 +14,6 @@ import no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.safselvbetjening.schemas.HoveddokumentLest;
 import org.apache.camel.Handler;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
@@ -36,9 +35,10 @@ public class Ferdigprodusent {
 	private final KafkaEventProducer kafkaEventProducer;
 	private final BrukerNotifikasjonMapper mapper;
 
-	@Autowired
-	public Ferdigprodusent(AdministrerForsendelse administrerForsendelse, DokdistdittnavProperties dokdistdittnavProperties,
-						   KafkaEventProducer kafkaEventProducer, DokarkivConsumer dokarkivConsumer) {
+	public Ferdigprodusent(AdministrerForsendelse administrerForsendelse,
+						   DokdistdittnavProperties dokdistdittnavProperties,
+						   KafkaEventProducer kafkaEventProducer,
+						   DokarkivConsumer dokarkivConsumer) {
 		this.administrerForsendelse = administrerForsendelse;
 		this.dokdistdittnavProperties = dokdistdittnavProperties;
 		this.kafkaEventProducer = kafkaEventProducer;
@@ -69,14 +69,14 @@ public class Ferdigprodusent {
 	}
 
 	private boolean isValidForsendelse(HentForsendelseResponse hentForsendelseResponse, HoveddokumentLest hoveddokumentLest) {
-		return isValidStatusAndKanal(hentForsendelseResponse) && isHovedDokument(hentForsendelseResponse, hoveddokumentLest);
+		return isValidStatusAndKanal(hentForsendelseResponse) && isHoveddokument(hentForsendelseResponse, hoveddokumentLest);
 	}
 
 	private boolean isValidStatusAndKanal(HentForsendelseResponse hentForsendelseResponse) {
 		return OPPRETTET.name().equals(hentForsendelseResponse.getVarselStatus()) && KANAL_DITTNAV.equals(hentForsendelseResponse.getDistribusjonKanal());
 	}
 
-	public boolean isHovedDokument(HentForsendelseResponse hentForsendelseResponse, HoveddokumentLest hoveddokumentLest) {
+	public boolean isHoveddokument(HentForsendelseResponse hentForsendelseResponse, HoveddokumentLest hoveddokumentLest) {
 		return nonNull(hentForsendelseResponse.getDokumenter()) && hentForsendelseResponse.getDokumenter().stream()
 				.filter(dokument -> HOVEDDOKUMENT.equals(dokument.getTilknyttetSom()))
 				.anyMatch(dokument -> dokument.getArkivDokumentInfoId().equals(hoveddokumentLest.getDokumentInfoId())

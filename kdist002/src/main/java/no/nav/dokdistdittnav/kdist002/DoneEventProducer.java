@@ -8,7 +8,6 @@ import no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper;
 import no.nav.dokdistdittnav.kafka.DoneEventRequest;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import org.apache.camel.Handler;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -19,7 +18,6 @@ public class DoneEventProducer {
 	private final BrukerNotifikasjonMapper mapper;
 	private final KafkaEventProducer kafkaEventProducer;
 
-	@Autowired
 	public DoneEventProducer(DokdistdittnavProperties properties,
 							 KafkaEventProducer kafkaEventProducer) {
 		this.properties = properties;
@@ -30,7 +28,8 @@ public class DoneEventProducer {
 	@Handler
 	public void sendDoneEvent(DoneEventRequest doneEventRequest) {
 		NokkelInput nokkelInput = mapper.mapNokkelForKdist002(doneEventRequest, properties.getAppnavn());
-		log.info("Kdist002 mottatt hendelse med eventId/bestillingsId={} til å skrive til (topic={})", doneEventRequest.getDittnavFeiletForsendelseId(), properties.getBrukernotifikasjon().getTopicdone());
+		log.info("Kdist002 har mottatt hendelse med eventId/bestillingsId={} som skal skrives til (topic={})", doneEventRequest.getDittnavFeiletForsendelseId(), properties.getBrukernotifikasjon().getTopicdone());
+
 		kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicdone(), nokkelInput, mapper.mapDoneInput());
 	}
 }

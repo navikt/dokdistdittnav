@@ -1,5 +1,8 @@
 package no.nav.dokdistdittnav.qdist010;
 
+import jakarta.jms.Queue;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
 import no.nav.dokdistdittnav.exception.functional.UtenforKjernetidFunctionalException;
 import no.nav.dokdistdittnav.metrics.DittnavMetricsRoutePolicy;
@@ -9,12 +12,7 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.ValidationException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import jakarta.jms.Queue;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBException;
 
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDELSE_ID;
@@ -23,7 +21,6 @@ import static no.nav.dokdistdittnav.constants.DomainConstants.SERVICE_ID;
 import static org.apache.camel.ExchangePattern.InOnly;
 import static org.apache.camel.LoggingLevel.ERROR;
 import static org.apache.camel.LoggingLevel.INFO;
-
 
 @Component
 public class Qdist010Route extends RouteBuilder {
@@ -35,7 +32,6 @@ public class Qdist010Route extends RouteBuilder {
 	private final Queue qdist010UtenforKjernetid;
 	private final DittnavMetricsRoutePolicy qdist010MetricsRoutePolicy;
 
-	@Autowired
 	public Qdist010Route(ProdusentNotifikasjon produsentNotifikasjon,
 						 DokdistStatusUpdater dokdistStatusUpdater,
 						 Queue qdist010,

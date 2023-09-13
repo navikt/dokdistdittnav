@@ -35,10 +35,10 @@ public class ForsendelseMapper {
 	private static final String BESKJED_TEKST_FIL;
 	private static final String AARSOPPPGAVE_TEKST_FIL;
 	private static final String AARSOPPGAVE_DOKUMENTTYPEID = "000053";
-	static final String VEDTAK_TITTEL = "Vedtak fra NAV";
-	static final String VIKTIG_TITTEL = "Brev fra NAV";
-	static final String BESKJED_TITTEL = "Melding fra NAV";
-	static final String AARSOPPGAVE_TITTEL = "Årsoppgave fra NAV";
+	public static final String VEDTAK_TITTEL = "Vedtak fra NAV";
+	public static final String VIKTIG_TITTEL = "Brev fra NAV";
+	public static final String BESKJED_TITTEL = "Melding fra NAV";
+	public static final String AARSOPPGAVE_TITTEL = "Årsoppgave fra NAV";
 	private static final Integer SIKKERHETSNIVAA = 3;
 
 	static {
@@ -48,9 +48,9 @@ public class ForsendelseMapper {
 		AARSOPPPGAVE_TEKST_FIL = getFileAndAssertNotNullOrEmpty("varseltekster/aarsoppgave_epostvarseltekst.html");
 	}
 
-	private static String getFileAndAssertNotNullOrEmpty(String path){
+	private static String getFileAndAssertNotNullOrEmpty(String path) {
 		String result = classpathToString(path);
-		if(isEmpty(result)){
+		if (isEmpty(result)) {
 			throw new Qdist010FileNotFoundException("Fant ikke filen på path: " + path);
 		}
 		return result;
@@ -58,6 +58,7 @@ public class ForsendelseMapper {
 
 	public static BeskjedInput mapBeskjedIntern(String url, HentForsendelseResponse hentForsendelseResponse) {
 		String dokumenttypeId = hentForsendelseResponse.getDokumenter().get(0).getDokumenttypeId();
+
 		return new BeskjedInputBuilder()
 				.withTidspunkt(LocalDateTime.now(ZoneId.of("UTC")))
 				.withTekst(format(BESKJED_TEKST, hentForsendelseResponse.getForsendelseTittel()))

@@ -5,6 +5,7 @@ import no.nav.dokdistdittnav.exception.technical.KafkaTechnicalException;
 import no.nav.dokdistdittnav.metrics.Monitor;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.errors.TopicAuthorizationException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.KafkaException;
 import org.springframework.kafka.core.KafkaProducerException;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -12,8 +13,6 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
-
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.concurrent.ExecutionException;
 
@@ -53,8 +52,7 @@ public class KafkaEventProducer {
 					sendResult.getRecordMetadata().topic()
 			);
 		} catch (ExecutionException executionException) {
-			if (executionException.getCause() instanceof KafkaProducerException) {
-				KafkaProducerException kafkaProducerException = (KafkaProducerException) executionException.getCause();
+			if (executionException.getCause() instanceof KafkaProducerException kafkaProducerException) {
 				if (kafkaProducerException.getCause() instanceof TopicAuthorizationException) {
 					throw new KafkaTechnicalException(KAFKA_NOT_AUTHENTICATED + topic, kafkaProducerException.getCause());
 				}
