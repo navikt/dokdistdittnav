@@ -4,11 +4,10 @@ import jakarta.jms.Queue;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
-import no.nav.dokdistdittnav.exception.functional.UtenforKjernetidFunctionalException;
+import no.nav.dokdistdittnav.exception.functional.UtenforKjernetidException;
 import no.nav.dokdistdittnav.metrics.DittnavMetricsRoutePolicy;
 import no.nav.dokdistdittnav.qdist010.brukernotifikasjon.ProdusentNotifikasjon;
 import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKanal;
-import org.apache.camel.LoggingLevel;
 import org.apache.camel.ValidationException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
@@ -21,6 +20,7 @@ import static no.nav.dokdistdittnav.constants.DomainConstants.SERVICE_ID;
 import static org.apache.camel.ExchangePattern.InOnly;
 import static org.apache.camel.LoggingLevel.ERROR;
 import static org.apache.camel.LoggingLevel.INFO;
+import static org.apache.camel.LoggingLevel.WARN;
 
 @Component
 public class Qdist010Route extends RouteBuilder {
@@ -54,16 +54,16 @@ public class Qdist010Route extends RouteBuilder {
 				.logExhaustedMessageBody(true)
 				.loggingLevel(ERROR));
 
-		onException(UtenforKjernetidFunctionalException.class)
+		onException(UtenforKjernetidException.class)
 				.handled(true)
 				.useOriginalMessage()
-				.log(LoggingLevel.INFO, log, "Forsendelse til DittNAV er utenfor kjernetid. Legges på kø. " + getIdsForLogging())
+				.log(INFO, log, "Forsendelse til DittNAV er utenfor kjernetid. Legges på kø. " + getIdsForLogging())
 				.to("jms:" + qdist010UtenforKjernetid.getQueueName());
 
 		onException(AbstractDokdistdittnavFunctionalException.class, JAXBException.class, ValidationException.class)
 				.handled(true)
 				.useOriginalMessage()
-				.log(LoggingLevel.WARN, log, "${exception}; " + getIdsForLogging())
+				.log(WARN, log, "${exception}; " + getIdsForLogging())
 				.to("jms:" + qdist010FunksjonellFeil.getQueueName());
 
 		from("jms:" + qdist010.getQueueName() +

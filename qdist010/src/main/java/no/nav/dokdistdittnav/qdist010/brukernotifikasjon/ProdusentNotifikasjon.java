@@ -9,7 +9,7 @@ import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonstidspunktKode;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
-import no.nav.dokdistdittnav.exception.functional.UtenforKjernetidFunctionalException;
+import no.nav.dokdistdittnav.exception.functional.UtenforKjernetidException;
 import no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKanal;
@@ -26,8 +26,9 @@ import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLIN
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_JOURNALPOST_ID;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VEDTAK;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VIKTIG;
+import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonstidspunktKode.UMIDDELBART;
 import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.mapBeskjedIntern;
-import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.oppretteOppgave;
+import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.opprettOppgave;
 
 @Slf4j
 @Component
@@ -70,7 +71,7 @@ public class ProdusentNotifikasjon {
 
 		if (!innenKjernetid(hentForsendelseResponse.getDistribusjonstidspunkt())) {
 			log.info("Legger melding med distribusjonstidspunkt={} på vente-kø for eventId/bestillingsId={}", hentForsendelseResponse.getDistribusjonstidspunkt(), hentForsendelseResponse.getBestillingsId());
-			throw new UtenforKjernetidFunctionalException("Utenfor kjernetid, legges på ventekø");
+			throw new UtenforKjernetidException("Utenfor kjernetid, legges på ventekø");
 		} else {
 			behandleForsendelse(hentForsendelseResponse, nokkelIntern);
 		}
@@ -78,7 +79,7 @@ public class ProdusentNotifikasjon {
 
 	private void behandleForsendelse(HentForsendelseResponse hentForsendelseResponse, NokkelInput nokkelIntern) {
 		if (erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype()) && isJournalpostIdNotNull(hentForsendelseResponse)) {
-			OppgaveInput oppgaveIntern = oppretteOppgave(properties.getBrukernotifikasjon().getLink(), hentForsendelseResponse);
+			OppgaveInput oppgaveIntern = opprettOppgave(properties.getBrukernotifikasjon().getLink(), hentForsendelseResponse);
 			log.info("Opprettet eventType OPPGAVE med eventId/bestillingsId={}", hentForsendelseResponse.getBestillingsId());
 			kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicoppgave(), nokkelIntern, oppgaveIntern);
 			log.info("Oppgave med eventId/bestillingsId={} skrevet til topic={}", hentForsendelseResponse.getBestillingsId(), properties.getBrukernotifikasjon().getTopicoppgave());
@@ -93,9 +94,10 @@ public class ProdusentNotifikasjon {
 	}
 
 	private boolean innenKjernetid(DistribusjonstidspunktKode distribusjonstidspunkt) {
-		if (distribusjonstidspunkt == null || distribusjonstidspunkt.equals(DistribusjonstidspunktKode.UMIDDELBART)) {
+		if (distribusjonstidspunkt == null || distribusjonstidspunkt.equals(UMIDDELBART)) {
 			return true;
 		}
+
 		LocalTime tid = LocalTime.now(clock);
 		return (tid.isAfter(kjernetidStart) && tid.isBefore(kjernetidSlutt));
 	}

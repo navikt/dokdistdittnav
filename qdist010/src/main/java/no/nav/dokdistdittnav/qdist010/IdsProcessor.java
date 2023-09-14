@@ -1,7 +1,7 @@
 package no.nav.dokdistdittnav.qdist010;
 
-import no.nav.dokdistdittnav.exception.functional.ForsendelseManglerForsendelseIdFunctionalException;
-import no.nav.dokdistdittnav.exception.functional.ForsendelseManglerPaakrevdHeaderFunctionalException;
+import no.nav.dokdistdittnav.exception.functional.ForsendelseManglerForsendelseIdException;
+import no.nav.dokdistdittnav.exception.functional.ForsendelseManglerPaakrevdHeaderException;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.language.xpath.XPathBuilder;
@@ -25,7 +25,7 @@ public class IdsProcessor implements Processor {
 		if (callId == null) {
 			callId = UUID.randomUUID().toString();
 		} else if (callId.trim().isEmpty()) {
-			throw new ForsendelseManglerPaakrevdHeaderFunctionalException("qdist010 har mottatt forsendelse med tom header callId");
+			throw new ForsendelseManglerPaakrevdHeaderException("qdist010 har mottatt forsendelse med tom header callId");
 		}
 		MDC.put(MDC_CALL_ID, callId);
 	}
@@ -33,9 +33,9 @@ public class IdsProcessor implements Processor {
 	private void setForsendelseIdAsProperty(Exchange exchange) {
 		String forsendelseId = XPathBuilder.xpath("//forsendelseId/text()").evaluate(exchange, String.class);
 		if (forsendelseId == null) {
-			throw new ForsendelseManglerForsendelseIdFunctionalException("qdist010 har mottatt forsendelse uten påkrevd forsendelseId");
+			throw new ForsendelseManglerForsendelseIdException("qdist010 har mottatt forsendelse uten påkrevd forsendelseId");
 		} else if (forsendelseId.trim().isEmpty()) {
-			throw new ForsendelseManglerForsendelseIdFunctionalException("qdist010 har mottatt forsendelse med tom forsendelseId");
+			throw new ForsendelseManglerForsendelseIdException("qdist010 har mottatt forsendelse med tom forsendelseId");
 		}
 		exchange.setProperty(PROPERTY_FORSENDELSE_ID, forsendelseId);
 	}
