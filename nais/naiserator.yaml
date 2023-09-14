@@ -79,12 +79,11 @@ spec:
     max: {{ MAX_REPLICAS }}
     cpuThresholdPercentage: 50
   resources:
-    limits:
-      cpu: 3000m
-      memory: 1024Mi
     requests:
       cpu: 60m
-      memory: 600Mi
+      memory: 512Mi
+    limits:
+      memory: 1024Mi
   vault:
     enabled: true
     paths:

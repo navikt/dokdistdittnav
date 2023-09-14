@@ -1,6 +1,7 @@
 package no.nav.dokdistdittnav.kdist002.mapper;
 
 import no.nav.dokdistdittnav.consumer.doknotifikasjon.NotifikasjonInfoTo;
+import no.nav.dokdistdittnav.consumer.doknotifikasjon.NotifikasjonInfoTo.NotifikasjonDistribusjonDto;
 import no.nav.dokdistdittnav.consumer.dokumentdistribusjon.Notifikasjon;
 import no.nav.dokdistdittnav.consumer.dokumentdistribusjon.OppdaterVarselInfoRequest;
 
@@ -19,8 +20,9 @@ public class OppdaterVarselInfoMapper {
 		return new OppdaterVarselInfoRequest(bestillingsId, notifikasjoner);
 	}
 
-	private static Notifikasjon mapNotifikasjon(NotifikasjonInfoTo.NotifikasjonDistribusjonDto notifikasjonDist) {
+	private static Notifikasjon mapNotifikasjon(NotifikasjonDistribusjonDto notifikasjonDist) {
 		String kanal = notifikasjonDist.kanal();
+
 		return new Notifikasjon(
 				mapKanal(kanal),
 				mapTittel(kanal, notifikasjonDist.tittel()),

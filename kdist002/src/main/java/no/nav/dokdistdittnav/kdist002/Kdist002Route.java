@@ -1,5 +1,7 @@
 package no.nav.dokdistdittnav.kdist002;
 
+import jakarta.jms.Queue;
+import jakarta.xml.bind.JAXBContext;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistdittnav.config.kafka.CamelKafkaProperties;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
@@ -12,11 +14,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.kafka.consumer.DefaultKafkaManualCommit;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import jakarta.jms.Queue;
-import jakarta.xml.bind.JAXBContext;
 
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -45,10 +43,12 @@ public class Kdist002Route extends RouteBuilder {
 	private final DoneEventProducer doneEventProducer;
 	private final DittnavMetricsRoutePolicy metricsRoutePolicy;
 
-	@Autowired
-	public Kdist002Route(CamelKafkaProperties camelKafkaProperties, Kdist002Service kdist002Service,
-						 DokdistdittnavProperties dittnavProperties, Queue qdist009,
-						 DoneEventProducer doneEventProducer, DittnavMetricsRoutePolicy metricsRoutePolicy) {
+	public Kdist002Route(CamelKafkaProperties camelKafkaProperties,
+						 Kdist002Service kdist002Service,
+						 DokdistdittnavProperties dittnavProperties,
+						 Queue qdist009,
+						 DoneEventProducer doneEventProducer,
+						 DittnavMetricsRoutePolicy metricsRoutePolicy) {
 		this.camelKafkaProperties = camelKafkaProperties;
 		this.kdist002Service = kdist002Service;
 		this.dittnavProperties = dittnavProperties;
@@ -67,6 +67,7 @@ public class Kdist002Route extends RouteBuilder {
 					if (exception != null) {
 						DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
 						manual.getConsumer().seek(manual.getPartition(), manual.getRecordOffset());
+
 						log.error("Kdist002 Teknisk feil. Seek tilbake til record(topic={}, partition={}, offset={})", manual.getTopicName(),
 								manual.getPartition().partition(), manual.getRecordOffset());
 					}

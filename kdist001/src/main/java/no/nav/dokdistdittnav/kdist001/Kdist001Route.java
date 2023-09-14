@@ -7,16 +7,15 @@ import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunction
 import no.nav.dokdistdittnav.metrics.DittnavMetricsRoutePolicy;
 import no.nav.dokdistdittnav.utils.MDCProcessor;
 import org.apache.camel.Exchange;
-import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.kafka.consumer.DefaultKafkaManualCommit;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import static java.lang.String.format;
 import static no.nav.dokdistdittnav.constants.DomainConstants.KDIST001_ID;
 import static org.apache.camel.Exchange.EXCEPTION_CAUGHT;
 import static org.apache.camel.LoggingLevel.ERROR;
+import static org.apache.camel.LoggingLevel.WARN;
 import static org.apache.camel.component.kafka.KafkaConstants.MANUAL_COMMIT;
 
 @Slf4j
@@ -28,7 +27,6 @@ public class Kdist001Route extends RouteBuilder {
 	private final DokdistdittnavProperties dokdistdittnavProperties;
 	private final DittnavMetricsRoutePolicy metricsRoutePolicy;
 
-	@Autowired
 	public Kdist001Route(CamelKafkaProperties camelKafkaProperties, Ferdigprodusent ferdigprodusent,
 						 DokdistdittnavProperties dokdistdittnavProperties,DittnavMetricsRoutePolicy metricsRoutePolicy) {
 		this.camelKafkaProperties = camelKafkaProperties;
@@ -47,6 +45,7 @@ public class Kdist001Route extends RouteBuilder {
 					if (exception != null && !(exception instanceof AbstractDokdistdittnavFunctionalException)) {
 						DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
 						manual.getConsumer().seek(manual.getPartition(), manual.getRecordOffset());
+
 						log.error("Kdist001 Teknisk feil. Seek tilbake til record(topic={}, partition={}, offset={})", manual.getTopicName(),
 								manual.getPartition().partition(), manual.getRecordOffset());
 					}
@@ -64,7 +63,7 @@ public class Kdist001Route extends RouteBuilder {
 				.logStackTrace(false)
 				.logRetryAttempted(false)
 				.process(this::defaultKafkaManualCommit)
-				.log(LoggingLevel.WARN, log, "${exception}");
+				.log(WARN, log, "${exception}");
 
 		from(camelKafkaProperties.buildKafkaUrl(dokdistdittnavProperties.getTopic().getLestavmottaker(), camelKafkaProperties.kafkaConsumer()))
 				.autoStartup(dokdistdittnavProperties.isAutostartup())

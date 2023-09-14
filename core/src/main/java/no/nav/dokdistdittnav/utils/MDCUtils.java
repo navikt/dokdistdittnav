@@ -22,12 +22,4 @@ public final class MDCUtils {
 	public static void generateNewCallId() {
 		MDC.put(MDC_CALL_ID, UUID.randomUUID().toString());
 	}
-
-	public static void setCallId(String callId) {
-		MDC.put(MDC_CALL_ID, callId);
-	}
-
-	public static void clearMDC() {
-		MDC.clear();
-	}
 }

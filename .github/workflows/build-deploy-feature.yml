@@ -5,8 +5,12 @@ on:
     branches-ignore:
       - main
       - master
+      - 'dependabot/**'
 
 jobs:
   build:
+    permissions:
+      contents: read
+      packages: write
     uses: navikt/dok-workflows/.github/workflows/build-deploy-feature.yml@main
     secrets: inherit

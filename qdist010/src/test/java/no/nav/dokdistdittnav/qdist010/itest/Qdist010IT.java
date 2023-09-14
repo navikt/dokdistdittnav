@@ -312,7 +312,7 @@ class Qdist010IT extends ApplicationTestConfig {
 	@Test
 	void shouldThrowBeforeKjernetidFunctionalException() throws Exception {
 		//05.00.00 -> UTC
-		LocalTime morgen = LocalTime.of(03, 00, 00);
+		LocalTime morgen = LocalTime.of(3, 0, 0);
 		LocalDate today = LocalDate.now(OSLO_ZONE);
 		LocalDateTime todayMidnight = LocalDateTime.of(today, morgen);
 		Clock fixedClock = Clock.fixed(todayMidnight.toInstant(UTC), OSLO_ZONE);
