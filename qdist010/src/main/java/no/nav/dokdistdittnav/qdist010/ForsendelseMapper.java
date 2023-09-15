@@ -6,8 +6,8 @@ import no.nav.brukernotifikasjon.schemas.input.BeskjedInput;
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
-import no.nav.dokdistdittnav.exception.functional.Qdist010FileNotFoundException;
-import no.nav.dokdistdittnav.exception.technical.FinneIkkeURLException;
+import no.nav.dokdistdittnav.exception.functional.VarseltekstfilNotFoundException;
+import no.nav.dokdistdittnav.exception.technical.FinnerIkkeURLException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.MalformedURLException;
@@ -30,10 +30,10 @@ import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 
 public class ForsendelseMapper {
 
-	private static final String VEDTAK_TEKST_FIL;
-	private static final String VIKTIG_TEKST_FIL;
-	private static final String BESKJED_TEKST_FIL;
-	private static final String AARSOPPPGAVE_TEKST_FIL;
+	private static final String VEDTAK_TEKSTFIL;
+	private static final String VIKTIG_TEKSTFIL;
+	private static final String BESKJED_TEKSTFIL;
+	private static final String AARSOPPPGAVE_TEKSTFIL;
 	private static final String AARSOPPGAVE_DOKUMENTTYPEID = "000053";
 	public static final String VEDTAK_TITTEL = "Vedtak fra NAV";
 	public static final String VIKTIG_TITTEL = "Brev fra NAV";
@@ -42,16 +42,16 @@ public class ForsendelseMapper {
 	private static final Integer SIKKERHETSNIVAA = 3;
 
 	static {
-		VEDTAK_TEKST_FIL = getFileAndAssertNotNullOrEmpty("varseltekster/vedtak_epostvarseltekst.html");
-		VIKTIG_TEKST_FIL = getFileAndAssertNotNullOrEmpty("varseltekster/viktig_epostvarseltekst.html");
-		BESKJED_TEKST_FIL = getFileAndAssertNotNullOrEmpty("varseltekster/melding_epostvarseltekst.html");
-		AARSOPPPGAVE_TEKST_FIL = getFileAndAssertNotNullOrEmpty("varseltekster/aarsoppgave_epostvarseltekst.html");
+		VEDTAK_TEKSTFIL = getFileAndAssertNotNullOrEmpty("varseltekster/vedtak_epostvarseltekst.html");
+		VIKTIG_TEKSTFIL = getFileAndAssertNotNullOrEmpty("varseltekster/viktig_epostvarseltekst.html");
+		BESKJED_TEKSTFIL = getFileAndAssertNotNullOrEmpty("varseltekster/melding_epostvarseltekst.html");
+		AARSOPPPGAVE_TEKSTFIL = getFileAndAssertNotNullOrEmpty("varseltekster/aarsoppgave_epostvarseltekst.html");
 	}
 
 	private static String getFileAndAssertNotNullOrEmpty(String path) {
 		String result = classpathToString(path);
 		if (isEmpty(result)) {
-			throw new Qdist010FileNotFoundException("Fant ikke filen på path: " + path);
+			throw new VarseltekstfilNotFoundException("Fant ikke filen på path: " + path);
 		}
 		return result;
 	}
@@ -72,28 +72,28 @@ public class ForsendelseMapper {
 	}
 
 	private static String mapInternSmsVarslingstekst(String dokumenttypeId) {
-		return isDokumenttypeIdAarsoppgpave(dokumenttypeId) ? SMS_AARSOPPGAVE_TEKST : SMS_TEKST;
+		return isDokumenttypeIdAarsoppgave(dokumenttypeId) ? SMS_AARSOPPGAVE_TEKST : SMS_TEKST;
 	}
 
 	private static String mapInternEpostVarslingstittel(String dokumenttypeId) {
-		return isDokumenttypeIdAarsoppgpave(dokumenttypeId) ? AARSOPPGAVE_TITTEL : BESKJED_TITTEL;
+		return isDokumenttypeIdAarsoppgave(dokumenttypeId) ? AARSOPPGAVE_TITTEL : BESKJED_TITTEL;
 	}
 
 	private static String mapEpostTekst(String dokumenttypeId) {
-		return isDokumenttypeIdAarsoppgpave(dokumenttypeId) ? AARSOPPPGAVE_TEKST_FIL : BESKJED_TEKST_FIL;
+		return isDokumenttypeIdAarsoppgave(dokumenttypeId) ? AARSOPPPGAVE_TEKSTFIL : BESKJED_TEKSTFIL;
 	}
 
-	private static boolean isDokumenttypeIdAarsoppgpave(String dokumenttypeId) {
+	private static boolean isDokumenttypeIdAarsoppgave(String dokumenttypeId) {
 		return AARSOPPGAVE_DOKUMENTTYPEID.equals(dokumenttypeId);
 	}
 
-	public static OppgaveInput oppretteOppgave(String url, HentForsendelseResponse hentForsendelseResponse) {
+	public static OppgaveInput opprettOppgave(String url, HentForsendelseResponse hentForsendelseResponse) {
 		return new OppgaveInputBuilder()
 				.withTidspunkt(LocalDateTime.now(ZoneId.of("UTC")))
 				.withTekst(getTekst(hentForsendelseResponse))
 				.withLink(mapLink(url, hentForsendelseResponse))
 				.withEksternVarsling(true)
-				.withEpostVarslingstekst(mapEpostVarslingsteks(hentForsendelseResponse.getDistribusjonstype()))
+				.withEpostVarslingstekst(mapEpostVarslingstekst(hentForsendelseResponse.getDistribusjonstype()))
 				.withEpostVarslingstittel(VEDTAK.equals(hentForsendelseResponse.getDistribusjonstype()) ? VEDTAK_TITTEL : VIKTIG_TITTEL)
 				.withSmsVarslingstekst(getSmsTekst(hentForsendelseResponse))
 				.withSikkerhetsnivaa(SIKKERHETSNIVAA)
@@ -125,12 +125,12 @@ public class ForsendelseMapper {
 		return null;
 	}
 
-	private static String mapEpostVarslingsteks(DistribusjonsTypeKode distribusjonsType) {
+	private static String mapEpostVarslingstekst(DistribusjonsTypeKode distribusjonsType) {
 		switch (distribusjonsType) {
 			case VEDTAK:
-				return VEDTAK_TEKST_FIL;
+				return VEDTAK_TEKSTFIL;
 			case VIKTIG:
-				return VIKTIG_TEKST_FIL;
+				return VIKTIG_TEKSTFIL;
 			case ANNET:
 				break;
 		}
@@ -145,7 +145,7 @@ public class ForsendelseMapper {
 
 			return uri.toURL();
 		} catch (MalformedURLException e) {
-			throw new FinneIkkeURLException("Path specified does not exist" + e.getMessage(), e);
+			throw new FinnerIkkeURLException("Path specified does not exist" + e.getMessage(), e);
 		}
 	}
 }

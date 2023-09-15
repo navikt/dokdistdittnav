@@ -17,7 +17,7 @@ import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsType
 import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.VEDTAK_TITTEL;
 import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.VIKTIG_TITTEL;
 import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.mapBeskjedIntern;
-import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.oppretteOppgave;
+import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.opprettOppgave;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.classpathToString;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -49,7 +49,7 @@ public class ForsendelseMapperTest {
 	})
 	public void shouldMapOppgave(String kode, String epostPath, String expectedEpostTittel, String expectedTittel, String expectedSmsTekst) {
 		HentForsendelseResponse hentForsendelseResponse = createHentForsendelseResponteTo("123456", DistribusjonsTypeKode.valueOf(kode));
-		OppgaveInput oppgaveInput = oppretteOppgave("https://url.no", hentForsendelseResponse);
+		OppgaveInput oppgaveInput = opprettOppgave("https://url.no", hentForsendelseResponse);
 
 		assertThat(oppgaveInput.getTekst().contains(expectedTittel));
 		assertEquals(oppgaveInput.getEpostVarslingstekst(), classpathToString(epostPath));

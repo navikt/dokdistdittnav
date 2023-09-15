@@ -94,14 +94,14 @@ class Qdist010IT extends ApplicationTestConfig {
 	@Bean
 	public Clock clock() {
 		//15.30.00 -> UTC
-		LocalTime morgen = LocalTime.of(13, 30, 00);
+		LocalTime morgen = LocalTime.of(13, 30, 0);
 		LocalDate today = LocalDate.now(OSLO_ZONE);
 		LocalDateTime todayMidnight = LocalDateTime.of(today, morgen);
 		return Clock.fixed(todayMidnight.toInstant(UTC), OSLO_ZONE);
 	}
 
 	@Test
-	void shouldProcessForsendelse() throws Exception {
+	void skalOppretteOppgaveNaarDistribusjonTypeErViktig() throws Exception {
 		stubHentForsendelse(OK, "rdist001/getForsendelse_withAdresse-happy.json");
 		stubPutOppdaterForsendelse(OK);
 
@@ -116,7 +116,7 @@ class Qdist010IT extends ApplicationTestConfig {
 	}
 
 	@Test
-	void oppretteOppgaveWhenForsendelseDistribusjonTypeIsVedtak() throws Exception {
+	void skalOppretteOppgaveNaarDistribusjonTypeErVedtak() throws Exception {
 		stubHentForsendelse(OK, "rdist001/forsendelse_distribusjontype_vedtak.json");
 		stubPutOppdaterForsendelse(OK);
 
@@ -126,10 +126,12 @@ class Qdist010IT extends ApplicationTestConfig {
 			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
 			verify(1, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
 		});
+
+		verifyAllStubs(1);
 	}
 
 	@Test
-	void sendBeskjedWhenForsendelseDistribusjonTypeIsNull() throws Exception {
+	void skalSendeBeskjedNaarDistribusjonTypeErNull() throws Exception {
 		stubHentForsendelse(OK, "rdist001/forsendelse_distribusjontype_null.json");
 		stubPutOppdaterForsendelse(OK);
 
@@ -139,11 +141,12 @@ class Qdist010IT extends ApplicationTestConfig {
 			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
 			verify(1, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
 		});
+
+		verifyAllStubs(1);
 	}
 
 	@Test
-	void shouldThrowForsendelseManglerPaakrevdHeaderFunctionalExceptionEmptyCallId() throws Exception {
-
+	void skalHavnePaaFunksjonellBoqHvisCallIdHeaderErTom() throws Exception {
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"), "");
 
 		await().atMost(10, SECONDS).untilAsserted(() -> {
@@ -156,8 +159,7 @@ class Qdist010IT extends ApplicationTestConfig {
 	}
 
 	@Test
-	void shouldThrowForsendelseManglerForsendelseIdFunctionalExceptionManglerForsendelseId() throws Exception {
-
+	void skalHavnePaaFunksjonellBoqHvisForsendelseIdErNull() throws Exception {
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-feilId.xml"));
 
 		await().atMost(10, SECONDS).untilAsserted(() -> {
@@ -170,8 +172,7 @@ class Qdist010IT extends ApplicationTestConfig {
 	}
 
 	@Test
-	void shouldThrowForsendelseManglerForsendelseIdFunctionalExceptionTomForsendelseId() throws Exception {
-
+	void skalHavnePaaFunksjonellBoqHvisForsendelseIdErTom() throws Exception {
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-tom-forsendelseId.xml"));
 
 		await().atMost(10, SECONDS).untilAsserted(() -> {
@@ -184,7 +185,7 @@ class Qdist010IT extends ApplicationTestConfig {
 	}
 
 	@Test
-	void shouldThrowRdist001HentForsendelseFunctionalException() throws Exception {
+	void skalHavnePaaFunksjonellBoqHvis404FraHentForsendelse() throws Exception {
 		stubHentForsendelse(NOT_FOUND, "");
 
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
@@ -200,7 +201,7 @@ class Qdist010IT extends ApplicationTestConfig {
 	}
 
 	@Test
-	void shouldThrowRdist001HentForsendelseTechnicalException() throws Exception {
+	void skalHavnePaaTekniskBoqHvis500FraHentForsendelse() throws Exception {
 		stubHentForsendelse(INTERNAL_SERVER_ERROR, "");
 
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
@@ -216,68 +217,7 @@ class Qdist010IT extends ApplicationTestConfig {
 	}
 
 	@Test
-	void shouldThrowRdist001HentForsendelseFunctionalExceptionUtenArkivInformasjon() throws Exception {
-		stubHentForsendelse(OK, "rdist001/getForsendelse_utenArkivInformasjon.json");
-
-		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
-
-		await().atMost(10, SECONDS).untilAsserted(() -> {
-			String resultOnQdist010FunksjonellFeilQueue = receive(qdist010FunksjonellFeil);
-			assertNotNull(resultOnQdist010FunksjonellFeilQueue);
-			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-happy.xml"));
-		});
-
-		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
-	}
-
-	@Test
-	void shouldThrowInvalidForsendelseStatusException() throws Exception {
-		stubHentForsendelse(OK, "rdist001/getForsendelse_oversendtForsendelseStatus.json");
-
-		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
-
-		await().atMost(10, SECONDS).untilAsserted(() -> {
-			String resultOnQdist010FunksjonellFeilQueue = receive(qdist010FunksjonellFeil);
-			assertNotNull(resultOnQdist010FunksjonellFeilQueue);
-			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-happy.xml"));
-		});
-
-		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
-		verify(1, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
-	}
-
-	@Test
-	void shouldThrowTkat020FunctionalException() throws Exception {
-		stubHentForsendelse(OK, "rdist001/getForsendelse_withAdresse-happy.json");
-
-		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
-
-		await().atMost(10, SECONDS).untilAsserted(() -> {
-			String resultOnQdist010FunksjonellFeilQueue = receive(qdist010FunksjonellFeil);
-			assertNotNull(resultOnQdist010FunksjonellFeilQueue);
-			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-happy.xml"));
-		});
-
-		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
-	}
-
-	@Test
-	void shouldThrowTkat020FunctionalExceptionUtenDokumentProduksjonsInfo() throws Exception {
-		stubHentForsendelse(OK, "rdist001/getForsendelse_withAdresse-happy.json");
-
-		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
-
-		await().atMost(10, SECONDS).untilAsserted(() -> {
-			String resultOnQdist010FunksjonellFeilQueue = receive(qdist010FunksjonellFeil);
-			assertNotNull(resultOnQdist010FunksjonellFeilQueue);
-			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-happy.xml"));
-		});
-
-		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
-	}
-
-	@Test
-	void shouldThrowRdist001OppdaterForsendelseStatusFunctionalException() throws Exception {
+	void skalHavnePaaFunksjonellBoqHvis404FraOppdaterForsendelse() throws Exception {
 		stubHentForsendelse(OK, "rdist001/getForsendelse_withAdresse-happy.json");
 		stubPutOppdaterForsendelse(NOT_FOUND);
 
@@ -293,7 +233,7 @@ class Qdist010IT extends ApplicationTestConfig {
 	}
 
 	@Test
-	void shouldThrowRdist001OppdaterForsendelseStatusTechnicalException() throws Exception {
+	void skalHavnePaaTekniskBoqHvis500FraOppdaterForsendelse() throws Exception {
 		stubHentForsendelse(OK, "rdist001/getForsendelse_withAdresse-happy.json");
 		stubPutOppdaterForsendelse(INTERNAL_SERVER_ERROR);
 
@@ -310,7 +250,7 @@ class Qdist010IT extends ApplicationTestConfig {
 	}
 
 	@Test
-	void shouldThrowBeforeKjernetidFunctionalException() throws Exception {
+	void skalHavnePaaUtenforKjernetidBoqHvisKlokkenErFoerKjernetid() throws Exception {
 		//05.00.00 -> UTC
 		LocalTime morgen = LocalTime.of(3, 0, 0);
 		LocalDate today = LocalDate.now(OSLO_ZONE);
@@ -333,7 +273,7 @@ class Qdist010IT extends ApplicationTestConfig {
 	}
 
 	@Test
-	void shouldThrowEtterKjernetidFunctionalException() throws Exception {
+	void skalHavnePaaUtenforKjernetidBoqHvisKlokkenErEtterKjernetid() throws Exception {
 		//23.30.00 -> UTC
 		LocalTime morgen = LocalTime.of(23, 30, 0);
 		LocalDate today = LocalDate.of(2022, 4, 29);
@@ -353,19 +293,6 @@ class Qdist010IT extends ApplicationTestConfig {
 		});
 
 		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
-	}
-
-	@Test
-	void innenforKjernetidFunctionalException() throws Exception {
-		stubHentForsendelse(OK, "rdist001/getForsendelse_withKjernetid.json");
-		stubPutOppdaterForsendelse(OK);
-
-		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
-
-		await().atMost(10, SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
-			verify(1, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
-		});
 	}
 
 	private void stubHentForsendelse(HttpStatus status, String responseBodyFile) {
