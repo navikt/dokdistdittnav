@@ -5,10 +5,11 @@ import no.nav.brukernotifikasjon.schemas.builders.NokkelInputBuilder;
 import no.nav.brukernotifikasjon.schemas.input.DoneInput;
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
+import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse.MottakerTo;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 
+import static java.time.ZoneOffset.UTC;
 import static java.util.Optional.ofNullable;
 
 public class BrukerNotifikasjonMapper {
@@ -38,14 +39,15 @@ public class BrukerNotifikasjonMapper {
 
 	public DoneInput mapDoneInput() {
 		return new DoneInputBuilder()
-				.withTidspunkt(LocalDateTime.now(ZoneOffset.UTC))
+				.withTidspunkt(LocalDateTime.now(UTC))
 				.build();
 	}
 
 	private String getMottakerId(HentForsendelseResponse hentForsendelseResponse) {
-		HentForsendelseResponse.MottakerTo mottaker = hentForsendelseResponse.getMottaker();
+		MottakerTo mottaker = hentForsendelseResponse.getMottaker();
+
 		return ofNullable(mottaker)
-				.map(HentForsendelseResponse.MottakerTo::getMottakerId)
+				.map(MottakerTo::getMottakerId)
 				.orElseThrow(() -> new IllegalArgumentException("Mottaker kan ikke være null"));
 	}
 

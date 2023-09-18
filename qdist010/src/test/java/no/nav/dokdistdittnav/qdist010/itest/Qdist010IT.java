@@ -10,6 +10,8 @@ import no.nav.dokdistdittnav.qdist010.config.ApplicationTestConfig;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
@@ -84,11 +86,7 @@ class Qdist010IT extends ApplicationTestConfig {
 	public void setupBefore() {
 		CALL_ID = UUID.randomUUID().toString();
 
-		stubFor(post("/azure_token")
-				.willReturn(aResponse()
-						.withStatus(OK.value())
-						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-						.withBodyFile("azure/token_response_dummy.json")));
+		stubAzure();
 	}
 
 	@Bean
@@ -100,49 +98,29 @@ class Qdist010IT extends ApplicationTestConfig {
 		return Clock.fixed(todayMidnight.toInstant(UTC), OSLO_ZONE);
 	}
 
-	@Test
-	void skalOppretteOppgaveNaarDistribusjonTypeErViktig() throws Exception {
-		stubHentForsendelse(OK, "rdist001/getForsendelse_withAdresse-happy.json");
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"rdist001/getForsendelse_withAdresse-happy.json",
+			"rdist001/forsendelse_distribusjontype_vedtak.json",
+			"rdist001/forsendelse_distribusjontype_null.json"
+	})
+	void skalPublisereOppgaveNaarDistribusjonstypeErVedtakViktigEllerNull(String filnavn) throws Exception {
+		stubHentForsendelse(OK, filnavn);
 		stubPutOppdaterForsendelse(OK);
 
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
-		await().atMost(10, SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
-			verify(1, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
-		});
-
-		verifyAllStubs(1);
+		await().atMost(10, SECONDS).untilAsserted(() -> verifyAllStubs(1));
 	}
 
 	@Test
-	void skalOppretteOppgaveNaarDistribusjonTypeErVedtak() throws Exception {
-		stubHentForsendelse(OK, "rdist001/forsendelse_distribusjontype_vedtak.json");
+	void skalPublisereBeskjedNaarDistribusjonstypeErAnnet() throws Exception {
+		stubHentForsendelse(OK, "rdist001/forsendelse_distribusjontype_annet.json");
 		stubPutOppdaterForsendelse(OK);
 
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
-		await().atMost(10, SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
-			verify(1, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
-		});
-
-		verifyAllStubs(1);
-	}
-
-	@Test
-	void skalSendeBeskjedNaarDistribusjonTypeErNull() throws Exception {
-		stubHentForsendelse(OK, "rdist001/forsendelse_distribusjontype_null.json");
-		stubPutOppdaterForsendelse(OK);
-
-		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
-
-		await().atMost(10, SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
-			verify(1, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
-		});
-
-		verifyAllStubs(1);
+		await().atMost(10, SECONDS).untilAsserted(() -> verifyAllStubs(1));
 	}
 
 	@Test
@@ -293,6 +271,14 @@ class Qdist010IT extends ApplicationTestConfig {
 		});
 
 		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
+	}
+
+	private void stubAzure() {
+		stubFor(post("/azure_token")
+				.willReturn(aResponse()
+						.withStatus(OK.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile("azure/token_response_dummy.json")));
 	}
 
 	private void stubHentForsendelse(HttpStatus status, String responseBodyFile) {

@@ -4,6 +4,9 @@ import no.nav.brukernotifikasjon.schemas.input.BeskjedInput;
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
+import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse.ArkivInformasjonTo;
+import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse.DokumentTo;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -11,12 +14,12 @@ import java.util.Collections;
 
 import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_AARSOPPGAVE_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_TEKST;
-import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_VEDTAK_TEKST;
-import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_VIKTIG_TEKST;
+import static no.nav.dokdistdittnav.constants.DomainConstants.VEDTAK_SMSTEKST;
+import static no.nav.dokdistdittnav.constants.DomainConstants.VIKTIG_SMSTEKST;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.ANNET;
-import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.VEDTAK_TITTEL;
-import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.VIKTIG_TITTEL;
-import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.mapBeskjedIntern;
+import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.VEDTAK_EPOSTTITTEL;
+import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.VIKTIG_EPOSTTITTEL;
+import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.opprettBeskjed;
 import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.opprettOppgave;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.classpathToString;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -33,31 +36,55 @@ public class ForsendelseMapperTest {
 			"12345" + ", " + "varseltekster/melding_epostvarseltekst.html" + ", " + MELDING_FRA_NAV + ", " + SMS_TEKST,
 			AARSOPPGAVE_ID + ", " + "varseltekster/aarsoppgave_epostvarseltekst.html" + ", " + AARSOPPGAVE_FRA_NAV + ", " + SMS_AARSOPPGAVE_TEKST
 	})
-	public void shouldMap(String dokumenttypeId, String epostVarslingstekstPath, String epostTittel, String smsVarslingstekst) {
-		HentForsendelseResponse hentForsendelseResponse = createHentForsendelseResponteTo(dokumenttypeId, ANNET);
-		BeskjedInput beskjedInput = mapBeskjedIntern("https://url.no", hentForsendelseResponse);
+	public void shouldMapBeskjed(String dokumenttypeId, String epostVarslingstekstPath, String epostTittel, String smsVarslingstekst) {
+		HentForsendelseResponse forsendelse = createForsendelse(dokumenttypeId, ANNET);
+		BeskjedInput beskjed = opprettBeskjed("https://url.no", forsendelse);
 
-		assertEquals(beskjedInput.getEpostVarslingstekst(), classpathToString(epostVarslingstekstPath));
-		assertEquals(beskjedInput.getEpostVarslingstittel(), epostTittel);
-		assertEquals(beskjedInput.getSmsVarslingstekst(), smsVarslingstekst);
+		assertEquals(beskjed.getEpostVarslingstekst(), classpathToString(epostVarslingstekstPath));
+		assertEquals(beskjed.getEpostVarslingstittel(), epostTittel);
+		assertEquals(beskjed.getSmsVarslingstekst(), smsVarslingstekst);
 	}
 
 	@ParameterizedTest
 	@CsvSource(value = {
-			"VIKTIG" + ", "+ "varseltekster/viktig_epostvarseltekst.html" + ", " + VIKTIG_TITTEL + ", " + "du har fått et brev som du må lese:" + ", " + SMS_VIKTIG_TEKST,
-			"VEDTAK" + ", "+ "varseltekster/vedtak_epostvarseltekst.html" + ", " + VEDTAK_TITTEL + ", " + "du har fått et vedtak som gjelder:" + ", " + SMS_VEDTAK_TEKST
+			"VIKTIG" + ", " + "varseltekster/viktig_epostvarseltekst.html" + ", " + VIKTIG_EPOSTTITTEL + ", " + "du har fått et brev som du må lese:" + ", " + VIKTIG_SMSTEKST,
+			"VEDTAK" + ", " + "varseltekster/vedtak_epostvarseltekst.html" + ", " + VEDTAK_EPOSTTITTEL + ", " + "du har fått et vedtak som gjelder:" + ", " + VEDTAK_SMSTEKST
 	})
 	public void shouldMapOppgave(String kode, String epostPath, String expectedEpostTittel, String expectedTittel, String expectedSmsTekst) {
-		HentForsendelseResponse hentForsendelseResponse = createHentForsendelseResponteTo("123456", DistribusjonsTypeKode.valueOf(kode));
-		OppgaveInput oppgaveInput = opprettOppgave("https://url.no", hentForsendelseResponse);
+		HentForsendelseResponse forsendelse = createForsendelse("123456", DistribusjonsTypeKode.valueOf(kode));
+		OppgaveInput oppgave = opprettOppgave("https://url.no", forsendelse);
 
-		assertThat(oppgaveInput.getTekst().contains(expectedTittel));
-		assertEquals(oppgaveInput.getEpostVarslingstekst(), classpathToString(epostPath));
-		assertEquals(oppgaveInput.getEpostVarslingstittel(), expectedEpostTittel);
-		assertEquals(oppgaveInput.getSmsVarslingstekst(), expectedSmsTekst);
+		assertThat(oppgave.getTekst().contains(expectedTittel));
+		assertEquals(oppgave.getEpostVarslingstekst(), classpathToString(epostPath));
+		assertEquals(oppgave.getEpostVarslingstittel(), expectedEpostTittel);
+		assertEquals(oppgave.getSmsVarslingstekst(), expectedSmsTekst);
 	}
 
-	private HentForsendelseResponse createHentForsendelseResponteTo(String dokumenttypeId, DistribusjonsTypeKode kode) {
+	@ParameterizedTest
+	@CsvSource(value = {
+			"varseltekster/viktig_epostvarseltekst.html" + ", " + VIKTIG_EPOSTTITTEL + ", " + "du har fått et brev som du må lese:" + ", " + VIKTIG_SMSTEKST
+	})
+	public void shouldMapOppgaveForDistribusjonstypeNull(String epostPath, String expectedEpostTittel, String expectedTittel, String expectedSmsTekst) {
+
+		HentForsendelseResponse forsendelse = createForsendelse("123456", null);
+		OppgaveInput oppgave = opprettOppgave("https://url.no", forsendelse);
+
+		assertThat(oppgave.getTekst().contains(expectedTittel));
+		assertEquals(oppgave.getEpostVarslingstekst(), classpathToString(epostPath));
+		assertEquals(oppgave.getEpostVarslingstittel(), expectedEpostTittel);
+		assertEquals(oppgave.getSmsVarslingstekst(), expectedSmsTekst);
+	}
+
+	@Test
+	public void shouldNotMapOppgaveForDistribusjonstypeAnnet() {
+
+		HentForsendelseResponse forsendelse = createForsendelse("123456", ANNET);
+		OppgaveInput oppgave = opprettOppgave("https://url.no", forsendelse);
+
+		assertThat(oppgave).isNull();
+	}
+
+	private HentForsendelseResponse createForsendelse(String dokumenttypeId, DistribusjonsTypeKode kode) {
 		return HentForsendelseResponse.builder()
 				.forsendelseTittel("tittel")
 				.distribusjonstype(kode)
@@ -67,16 +94,18 @@ public class ForsendelseMapperTest {
 				.build();
 	}
 
-	private HentForsendelseResponse.ArkivInformasjonTo createArkivInformasjon() {
-		return HentForsendelseResponse.ArkivInformasjonTo.builder()
-				.arkivId("ARKIV").build();
+	private ArkivInformasjonTo createArkivInformasjon() {
+		return ArkivInformasjonTo.builder()
+				.arkivId("ARKIV")
+				.build();
 	}
 
-	private HentForsendelseResponse.DokumentTo createDokument(String dokumenttypeId) {
-		return HentForsendelseResponse.DokumentTo.builder()
+	private DokumentTo createDokument(String dokumenttypeId) {
+		return DokumentTo.builder()
 				.arkivDokumentInfoId("123")
 				.dokumentObjektReferanse("REFERANSE")
 				.tilknyttetSom("HOVEDDOKUMENT")
-				.dokumenttypeId(dokumenttypeId).build();
+				.dokumenttypeId(dokumenttypeId)
+				.build();
 	}
 }
