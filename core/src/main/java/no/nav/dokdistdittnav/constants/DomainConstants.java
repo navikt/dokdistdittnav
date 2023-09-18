@@ -16,10 +16,10 @@ public class DomainConstants {
 	public static final String PROPERTY_DITTNAV_FEILET_FORSENDELSE_ID = "dittnavFeiletForsendelseId";
 	public static final String PROPERTY_PRINT_FORSENDELSE_ID = "printForsendelseId";
 
-	public static final String VEDTAK_TEKST = "Du har fått et vedtak som gjelder %s. Les vedtaket i mine saker.";
+	public static final String VEDTAK_TEKST = "Du har fått et vedtak som gjelder %s. Les vedtaket i mine saker. Hvis du ikke åpner og leser dokumentet, vil vi sende det til deg i posten.";
 	public static final String SMS_VEDTAK_TEKST = "Hei! Du har fått et vedtak fra NAV. Logg inn på nav.no for å lese det. Vennlig hilsen NAV";
 
-	public static final String VIKTIG_TEKST = "Du har fått et brev som du må lese: %s. Les brevet i mine saker.";
+	public static final String VIKTIG_TEKST = "Du har fått et brev som du må lese: %s. Les brevet i mine saker. Hvis du ikke åpner og leser dokumentet, vil vi sende det til deg i posten.";
 	public static final String SMS_VIKTIG_TEKST = "Hei! Du har fått et brev fra NAV som du må lese. Logg inn på nav.no for å lese det. Vennlig hilsen NAV";
 	public static final String BESKJED_TEKST = "Du har fått en melding som gjelder %s. Les meldingen i mine saker.";
 	public static final String SMS_TEKST = "Hei! Du har fått en melding fra NAV. Logg inn på nav.no for å lese den. Vennlig hilsen NAV";
