@@ -101,11 +101,11 @@ public class ProdusentNotifikasjon {
 	}
 
 	private boolean erDistribusjonstypeVedtakViktigEllerNull(DistribusjonsTypeKode distribusjonstype) {
-		return distribusjonstype == null || VIKTIG.equals(distribusjonstype) || VEDTAK.equals(distribusjonstype);
+		return distribusjonstype == null || distribusjonstype == VIKTIG || distribusjonstype == VEDTAK;
 	}
 
 	private boolean erDistribusjonstypeAnnet(DistribusjonsTypeKode distribusjonstype) {
-		return ANNET.equals(distribusjonstype);
+		return distribusjonstype == ANNET;
 	}
 
 	private boolean harJournalpostId(HentForsendelseResponse forsendelse) {

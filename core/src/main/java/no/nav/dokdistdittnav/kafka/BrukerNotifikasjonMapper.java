@@ -7,20 +7,18 @@ import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse.MottakerTo;
 
-import java.time.LocalDateTime;
-
+import static java.time.LocalDateTime.now;
 import static java.time.ZoneOffset.UTC;
-import static java.util.Optional.ofNullable;
 
 public class BrukerNotifikasjonMapper {
 
 	private static final String NAMESPACE = "teamdokumenthandtering";
 
-	public NokkelInput mapNokkelIntern(String forsendelseId, String appnavn, HentForsendelseResponse hentForsendelseResponse) {
+	public NokkelInput mapNokkelIntern(String forsendelseId, String appnavn, HentForsendelseResponse forsendelse) {
 		return new NokkelInputBuilder()
-				.withEventId(hentForsendelseResponse.getBestillingsId())
+				.withEventId(forsendelse.getBestillingsId())
 				.withGrupperingsId(forsendelseId)
-				.withFodselsnummer(getMottakerId(hentForsendelseResponse))
+				.withFodselsnummer(getMottakerId(forsendelse))
 				.withNamespace(NAMESPACE)
 				.withAppnavn(appnavn)
 				.build();
@@ -36,19 +34,20 @@ public class BrukerNotifikasjonMapper {
 				.build();
 	}
 
-
 	public DoneInput mapDoneInput() {
 		return new DoneInputBuilder()
-				.withTidspunkt(LocalDateTime.now(UTC))
+				.withTidspunkt(now(UTC))
 				.build();
 	}
 
-	private String getMottakerId(HentForsendelseResponse hentForsendelseResponse) {
-		MottakerTo mottaker = hentForsendelseResponse.getMottaker();
+	private String getMottakerId(HentForsendelseResponse forsendelse) {
+		MottakerTo mottaker = forsendelse.getMottaker();
 
-		return ofNullable(mottaker)
-				.map(MottakerTo::getMottakerId)
-				.orElseThrow(() -> new IllegalArgumentException("Mottaker kan ikke være null"));
+		if (mottaker == null || mottaker.getMottakerId() == null) {
+			throw new IllegalArgumentException("Mottaker kan ikke være null");
+		}
+
+		return mottaker.getMottakerId();
 	}
 
 }

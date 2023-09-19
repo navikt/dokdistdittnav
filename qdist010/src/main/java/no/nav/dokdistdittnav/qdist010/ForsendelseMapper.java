@@ -99,7 +99,7 @@ public class ForsendelseMapper {
 				.withEksternVarsling(true)
 				.withSikkerhetsnivaa(SIKKERHETSNIVAA);
 
-		if (VIKTIG.equals(distribusjonstype) || distribusjonstype == null) {
+		if (distribusjonstype == null || distribusjonstype == VIKTIG) {
 			return oppgaveBuilder
 					.withTekst(format(VIKTIG_TEKST, forsendelse.getForsendelseTittel()))
 					.withEpostVarslingstittel(VIKTIG_EPOSTTITTEL)
@@ -108,7 +108,7 @@ public class ForsendelseMapper {
 					.build();
 		}
 
-		if (VEDTAK.equals(distribusjonstype)) {
+		if (distribusjonstype == VEDTAK) {
 			return oppgaveBuilder
 					.withTekst(format(VEDTAK_TEKST, forsendelse.getForsendelseTittel()))
 					.withEpostVarslingstittel(VEDTAK_EPOSTTITTEL)
