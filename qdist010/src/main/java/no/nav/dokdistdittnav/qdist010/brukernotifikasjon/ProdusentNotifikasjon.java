@@ -21,13 +21,13 @@ import org.springframework.stereotype.Component;
 import java.time.Clock;
 import java.time.LocalTime;
 
-import static java.util.Objects.nonNull;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_JOURNALPOST_ID;
+import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.ANNET;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VEDTAK;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VIKTIG;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonstidspunktKode.UMIDDELBART;
-import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.mapBeskjedIntern;
+import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.opprettBeskjed;
 import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.opprettOppgave;
 
 @Slf4j
@@ -58,42 +58,40 @@ public class ProdusentNotifikasjon {
 	}
 
 	@Handler
-	public void oppretteOppgaveEllerBeskjed(DistribuerTilKanal distribuerTilKanal, Exchange exchange) {
+	public void opprettOppgaveEllerBeskjed(DistribuerTilKanal distribuerTilKanal, Exchange exchange) {
 		String forsendelseId = distribuerTilKanal.getForsendelseId();
-		HentForsendelseResponse hentForsendelseResponse = administrerForsendelse.hentForsendelse(forsendelseId);
-		log.info("Hentet forsendelse med forsendelseId={}, bestillingsId={} fra rdist002", forsendelseId, hentForsendelseResponse.getBestillingsId());
-		NokkelInput nokkelIntern = brukerNotifikasjonMapper.mapNokkelIntern(forsendelseId, properties.getAppnavn(), hentForsendelseResponse);
+		HentForsendelseResponse forsendelse = administrerForsendelse.hentForsendelse(forsendelseId);
+		log.info("Hentet forsendelse med forsendelseId={} og bestillingsId={} fra rdist001", forsendelseId, forsendelse.getBestillingsId());
 
-		if (isJournalpostIdNotNull(hentForsendelseResponse)) {
-			exchange.setProperty(PROPERTY_JOURNALPOST_ID, hentForsendelseResponse.getArkivInformasjon().getArkivId());
-		}
-		exchange.setProperty(PROPERTY_BESTILLINGS_ID, hentForsendelseResponse.getBestillingsId());
+		settExchangeProperties(exchange, forsendelse);
 
-		if (!innenKjernetid(hentForsendelseResponse.getDistribusjonstidspunkt())) {
-			log.info("Legger melding med distribusjonstidspunkt={} på vente-kø for eventId/bestillingsId={}", hentForsendelseResponse.getDistribusjonstidspunkt(), hentForsendelseResponse.getBestillingsId());
+		if (!innenforKjernetid(forsendelse.getDistribusjonstidspunkt())) {
+			log.info("Legger melding med distribusjonstidspunkt={} på vente-kø for eventId/bestillingsId={}", forsendelse.getDistribusjonstidspunkt(), forsendelse.getBestillingsId());
 			throw new UtenforKjernetidException("Utenfor kjernetid, legges på ventekø");
 		} else {
-			behandleForsendelse(hentForsendelseResponse, nokkelIntern);
+			publiserOppgaveEllerBeskjed(forsendelse, brukerNotifikasjonMapper.mapNokkelIntern(forsendelseId, properties.getAppnavn(), forsendelse));
 		}
 	}
 
-	private void behandleForsendelse(HentForsendelseResponse hentForsendelseResponse, NokkelInput nokkelIntern) {
-		if (erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype()) && isJournalpostIdNotNull(hentForsendelseResponse)) {
-			OppgaveInput oppgaveIntern = opprettOppgave(properties.getBrukernotifikasjon().getLink(), hentForsendelseResponse);
-			log.info("Opprettet eventType OPPGAVE med eventId/bestillingsId={}", hentForsendelseResponse.getBestillingsId());
-			kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicoppgave(), nokkelIntern, oppgaveIntern);
-			log.info("Oppgave med eventId/bestillingsId={} skrevet til topic={}", hentForsendelseResponse.getBestillingsId(), properties.getBrukernotifikasjon().getTopicoppgave());
+	private void publiserOppgaveEllerBeskjed(HentForsendelseResponse forsendelse, NokkelInput noekkel) {
+		if (erDistribusjonstypeVedtakViktigEllerNull(forsendelse.getDistribusjonstype()) && harJournalpostId(forsendelse)) {
+			OppgaveInput oppgaveIntern = opprettOppgave(properties.getBrukernotifikasjon().getLink(), forsendelse);
+			log.info("Har opprettet oppgave med eventId/bestillingsId={}", forsendelse.getBestillingsId());
+
+			kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicoppgave(), noekkel, oppgaveIntern);
+			log.info("Har publisert oppgave med eventId/bestillingsId={} til topic={}", forsendelse.getBestillingsId(), properties.getBrukernotifikasjon().getTopicoppgave());
 		}
 
-		if (!erVedtakEllerViktig(hentForsendelseResponse.getDistribusjonstype()) && isJournalpostIdNotNull(hentForsendelseResponse)) {
-			BeskjedInput beskjedIntern = mapBeskjedIntern(properties.getBrukernotifikasjon().getLink(), hentForsendelseResponse);
-			log.info("Opprettet eventType BESKJED med eventId/bestillingsId={}", hentForsendelseResponse.getBestillingsId());
-			kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicbeskjed(), nokkelIntern, beskjedIntern);
-			log.info("Beskjed med eventId/bestillingsId={} skrevet til topic={}", hentForsendelseResponse.getBestillingsId(), properties.getBrukernotifikasjon().getTopicbeskjed());
+		if (erDistribusjonstypeAnnet(forsendelse.getDistribusjonstype()) && harJournalpostId(forsendelse)) {
+			BeskjedInput beskjedIntern = opprettBeskjed(properties.getBrukernotifikasjon().getLink(), forsendelse);
+			log.info("Har opprettet beskjed med eventId/bestillingsId={}", forsendelse.getBestillingsId());
+
+			kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicbeskjed(), noekkel, beskjedIntern);
+			log.info("Har publisert beskjed med eventId/bestillingsId={} til topic={}", forsendelse.getBestillingsId(), properties.getBrukernotifikasjon().getTopicbeskjed());
 		}
 	}
 
-	private boolean innenKjernetid(DistribusjonstidspunktKode distribusjonstidspunkt) {
+	private boolean innenforKjernetid(DistribusjonstidspunktKode distribusjonstidspunkt) {
 		if (distribusjonstidspunkt == null || distribusjonstidspunkt.equals(UMIDDELBART)) {
 			return true;
 		}
@@ -102,11 +100,23 @@ public class ProdusentNotifikasjon {
 		return (tid.isAfter(kjernetidStart) && tid.isBefore(kjernetidSlutt));
 	}
 
-	private boolean erVedtakEllerViktig(DistribusjonsTypeKode distribusjonsType) {
-		return nonNull(distribusjonsType) && ((VIKTIG.equals(distribusjonsType) || VEDTAK.equals(distribusjonsType)));
+	private boolean erDistribusjonstypeVedtakViktigEllerNull(DistribusjonsTypeKode distribusjonstype) {
+		return distribusjonstype == null || distribusjonstype == VIKTIG || distribusjonstype == VEDTAK;
 	}
 
-	private boolean isJournalpostIdNotNull(HentForsendelseResponse hentForsendelseResponse) {
-		return hentForsendelseResponse.getArkivInformasjon() != null && hentForsendelseResponse.getArkivInformasjon().getArkivId() != null;
+	private boolean erDistribusjonstypeAnnet(DistribusjonsTypeKode distribusjonstype) {
+		return distribusjonstype == ANNET;
+	}
+
+	private boolean harJournalpostId(HentForsendelseResponse forsendelse) {
+		return forsendelse.getArkivInformasjon() != null && forsendelse.getArkivInformasjon().getArkivId() != null;
+	}
+
+	private void settExchangeProperties(Exchange exchange, HentForsendelseResponse forsendelse) {
+		exchange.setProperty(PROPERTY_BESTILLINGS_ID, forsendelse.getBestillingsId());
+
+		if (harJournalpostId(forsendelse)) {
+			exchange.setProperty(PROPERTY_JOURNALPOST_ID, forsendelse.getArkivInformasjon().getArkivId());
+		}
 	}
 }
