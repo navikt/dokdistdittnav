@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import java.util.concurrent.ExecutionException;
 
 import static java.lang.Integer.MAX_VALUE;
+import static java.lang.System.currentTimeMillis;
 import static no.nav.dokdistdittnav.constants.RetryConstants.DELAY_LONG;
 
 @Slf4j
@@ -29,23 +30,19 @@ public class KafkaEventProducer {
 	private final KafkaTemplate<Object, Object> kafkaTemplate;
 
 	@Autowired
-	KafkaEventProducer(@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") KafkaTemplate<Object, Object> kafkaTemplate) {
+	KafkaEventProducer(KafkaTemplate<Object, Object> kafkaTemplate) {
 		this.kafkaTemplate = kafkaTemplate;
 	}
 
 	@Monitor(createErrorMetric = true, errorMetricInclude = KafkaTechnicalException.class)
-	@Retryable(include = KafkaTechnicalException.class, maxAttempts = MAX_VALUE, backoff = @Backoff(delay = DELAY_LONG))
+	@Retryable(retryFor = KafkaTechnicalException.class, maxAttempts = MAX_VALUE, backoff = @Backoff(delay = DELAY_LONG))
 	public void publish(String topic, Object key, Object event) {
-		ProducerRecord<Object, Object> producerRecord = new ProducerRecord<>(
-				topic,
-				null,
-				System.currentTimeMillis(),
-				key,
-				event
-		);
+
+		ProducerRecord<Object, Object> producerRecord = new ProducerRecord<>(topic, null, currentTimeMillis(), key, event);
 
 		try {
 			SendResult<Object, Object> sendResult = kafkaTemplate.send(producerRecord).get();
+
 			log.info("Hendelse skrevet til topic. Timestamp={}, partition={}, topic={}",
 					sendResult.getRecordMetadata().timestamp(),
 					sendResult.getRecordMetadata().partition(),
@@ -57,9 +54,11 @@ public class KafkaEventProducer {
 					throw new KafkaTechnicalException(KAFKA_NOT_AUTHENTICATED + topic, kafkaProducerException.getCause());
 				}
 			}
+
 			throw new KafkaTechnicalException(KAFKA_FAILED_TO_SEND + topic, executionException);
 		} catch (InterruptedException | KafkaException e) {
 			throw new KafkaTechnicalException(KAFKA_FAILED_TO_SEND + topic, e);
 		}
 	}
+
 }
