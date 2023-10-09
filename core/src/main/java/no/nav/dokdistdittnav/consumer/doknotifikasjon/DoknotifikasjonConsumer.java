@@ -6,6 +6,7 @@ import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.consumer.dokarkiv.DokarkivOppdaterDistribusjonsinfoFunctionalException;
 import no.nav.dokdistdittnav.consumer.dokarkiv.DokarkivOppdaterDistribusjonsinfoTechnicalException;
 import no.nav.dokdistdittnav.exception.technical.AbstractDokdistdittnavTechnicalException;
+import no.nav.dokdistdittnav.exception.technical.NotifikasjonManglerSendtDatoException;
 import no.nav.dokdistdittnav.metrics.Monitor;
 import no.nav.dokdistdittnav.utils.NavHeadersFilter;
 import org.springframework.retry.annotation.Backoff;
@@ -50,12 +51,18 @@ public class DoknotifikasjonConsumer {
 
 	@Monitor(value = DOKNOTIFIKASJON_CONSUMER, extraTags = {PROCESS, "_test_"}, histogram = true)
 	@Retryable(retryFor = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
-	public NotifikasjonInfoTo getNotifikasjonInfo(String bestillingsId) {
+	public NotifikasjonInfoTo getNotifikasjonInfo(String bestillingsId, boolean maaInkludereSendtDato) {
 		return webClient.get()
 				.uri(dokdistdittnavProperties.getDoknotifikasjon().getNotifikasjonInfoURI(bestillingsId))
 				.attributes(getOAuth2AuthorizedClient())
 				.retrieve()
 				.bodyToMono(NotifikasjonInfoTo.class)
+				.doOnSuccess(notifikasjonInfoTo -> {
+					if (maaInkludereSendtDato && notifikasjonInfoTo.notifikasjonDistribusjoner().stream()
+							.anyMatch(it -> it.sendtDato() == null)) {
+						throw new NotifikasjonManglerSendtDatoException("NotifikasjonInfoTo inneholder en eller flere notifikasjonDistribusjoner uten sendtDato");
+					}
+				})
 				.doOnError(handleError(bestillingsId))
 				.block();
 	}

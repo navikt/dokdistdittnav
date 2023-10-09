@@ -1,5 +1,6 @@
 package no.nav.dokdistdittnav.kdist002.itest;
 
+import com.github.tomakehurst.wiremock.client.CountMatchingStrategy;
 import jakarta.jms.Queue;
 import jakarta.xml.bind.JAXBElement;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
@@ -9,6 +10,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
@@ -24,6 +26,7 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import static com.github.tomakehurst.wiremock.client.CountMatchingStrategy.GREATER_THAN_OR_EQUAL;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
@@ -40,6 +43,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.EKSPEDERT;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.KLAR_FOR_DIST;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FEILET;
+import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FERDIGSTILT;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.INFO;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.OVERSENDT;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.classpathToString;
@@ -83,6 +87,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	private static final String FINNFORSENDELSE_URL = "/rest/v1/administrerforsendelse/finnforsendelse/%s/%s";
 	private static final String OPPDATERVARSELINFO_URL = "/rest/v1/administrerforsendelse/oppdatervarselinfo";
 	private static final String FEILREGISTRERFORSENDELSE_URL = "/rest/v1/administrerforsendelse/feilregistrerforsendelse";
+	private static final String NOTIFIKASJONINFO_URL = "/rest/v1/notifikasjoninfo/B-dokdistdittnav-811c0c5d-e74c-491a-8b8c-d94075c822c3";
 
 	@Autowired
 	private KafkaEventProducer kafkaEventProducer;
@@ -224,6 +229,21 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	}
 
 	@Test
+	@Disabled
+	public void shouldRetryForNotifikasjonerUtenSendtDato() {
+		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
+		stubNotifikasjonInfo("__files/rnot001/doknot-uten-sendtdato.json", OK.value());
+		stubUpdateVarselInfo();
+		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json", FORSENDELSE_ID, OK.value());
+		stubPutOppdaterForsendelse(EKSPEDERT.name(), FORSENDELSE_ID, OK.value());
+
+		sendMessageToTopic(DOKNOTIFIKASJON_STATUS_TOPIC, doknotifikasjonStatus(DOKDISTDITTNAV, FERDIGSTILT.name(), null));
+
+		await().atMost(10, SECONDS).untilAsserted(() ->
+				verify(new CountMatchingStrategy(GREATER_THAN_OR_EQUAL, 3), getRequestedFor(urlEqualTo(NOTIFIKASJONINFO_URL))));
+	}
+
+	@Test
 	public void shouldLogAndAvsluttBehandlingHvisForsendelseStatusErFEILET() {
 		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-forsendelsestatus-feilet.json", FORSENDELSE_ID, OK.value());
@@ -282,7 +302,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	}
 
 	private void stubNotifikasjonInfo(String responseBody, int httpStatusValue) {
-		stubFor(get("/rest/v1/notifikasjoninfo/B-dokdistdittnav-811c0c5d-e74c-491a-8b8c-d94075c822c3")
+		stubFor(get(NOTIFIKASJONINFO_URL)
 				.willReturn(aResponse()
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withStatus(httpStatusValue)
