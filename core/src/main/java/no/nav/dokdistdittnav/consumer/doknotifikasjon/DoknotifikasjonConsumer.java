@@ -3,10 +3,7 @@ package no.nav.dokdistdittnav.consumer.doknotifikasjon;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistdittnav.azure.AzureProperties;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
-import no.nav.dokdistdittnav.consumer.dokarkiv.DokarkivOppdaterDistribusjonsinfoFunctionalException;
-import no.nav.dokdistdittnav.consumer.dokarkiv.DokarkivOppdaterDistribusjonsinfoTechnicalException;
 import no.nav.dokdistdittnav.exception.technical.AbstractDokdistdittnavTechnicalException;
-import no.nav.dokdistdittnav.exception.technical.NotifikasjonManglerSendtDatoException;
 import no.nav.dokdistdittnav.metrics.Monitor;
 import no.nav.dokdistdittnav.utils.NavHeadersFilter;
 import org.springframework.retry.annotation.Backoff;
@@ -26,7 +23,7 @@ import static no.nav.dokdistdittnav.azure.AzureProperties.CLIENT_REGISTRATION_DO
 import static no.nav.dokdistdittnav.constants.MdcConstants.DOKNOTIFIKASJON_CONSUMER;
 import static no.nav.dokdistdittnav.constants.MdcConstants.PROCESS;
 import static no.nav.dokdistdittnav.constants.RetryConstants.DELAY_SHORT;
-import static no.nav.dokdistdittnav.constants.RetryConstants.MAX_ATTEMPTS_SHORT;
+import static no.nav.dokdistdittnav.constants.RetryConstants.MULTIPLIER_SHORT;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -50,20 +47,20 @@ public class DoknotifikasjonConsumer {
 	}
 
 	@Monitor(value = DOKNOTIFIKASJON_CONSUMER, extraTags = {PROCESS, "_test_"}, histogram = true)
-	@Retryable(retryFor = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
+	@Retryable(retryFor = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MULTIPLIER_SHORT))
 	public NotifikasjonInfoTo getNotifikasjonInfo(String bestillingsId, boolean maaInkludereSendtDato) {
 		return webClient.get()
 				.uri(dokdistdittnavProperties.getDoknotifikasjon().getNotifikasjonInfoURI(bestillingsId))
 				.attributes(getOAuth2AuthorizedClient())
 				.retrieve()
 				.bodyToMono(NotifikasjonInfoTo.class)
+				.doOnError(handleError(bestillingsId))
 				.doOnSuccess(notifikasjonInfoTo -> {
 					if (maaInkludereSendtDato && notifikasjonInfoTo.notifikasjonDistribusjoner().stream()
 							.anyMatch(it -> it.sendtDato() == null)) {
 						throw new NotifikasjonManglerSendtDatoException("NotifikasjonInfoTo inneholder en eller flere notifikasjonDistribusjoner uten sendtDato");
 					}
 				})
-				.doOnError(handleError(bestillingsId))
 				.block();
 	}
 
@@ -71,15 +68,15 @@ public class DoknotifikasjonConsumer {
 		return error -> {
 			if (error instanceof WebClientResponseException response && ((WebClientResponseException) error).getStatusCode().is4xxClientError()) {
 				log.error("Kall mot doknotifikasjon feilet funksjonelt ved henting av notifikasjon med bestillingsId={}, feilmelding={}", bestillingsId, error.getMessage());
-				throw new DokarkivOppdaterDistribusjonsinfoFunctionalException(
+				throw new DoknotifikasjonFunctionalException(
 						String.format("Kall mot doknotifikasjon feilet funksjonelt ved henting av notifikasjon med bestillingsId=%s, status=%s, feilmelding=%s",
 								bestillingsId,
-								response.getRawStatusCode(),
+								response.getStatusCode(),
 								response.getMessage()),
 						error);
 			} else {
 				log.error("Kall mot doknotifikasjon feilet teknisk ved henting av notifikasjon med bestillingsId={}, feilmelding={}", bestillingsId, error.getMessage());
-				throw new DokarkivOppdaterDistribusjonsinfoTechnicalException(
+				throw new DoknotifikasjonTechnicalException(
 						String.format("Kall mot doknotifikasjon feilet teknisk ved henting av notifikasjon med bestillingsId=%s ,feilmelding=%s",
 								bestillingsId,
 								error.getMessage()),

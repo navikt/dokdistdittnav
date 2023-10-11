@@ -5,9 +5,9 @@
   "batchId": "batchId",
   "dokumentProdApp": "dokumentProdApp",
   "modus": "T",
-  "forsendelseStatus": "OVERSENDT",
+  "forsendelseStatus": "FEILET",
   "distribusjonKanal": "DITTNAV",
-  "varselStatus": "FEILET",
+  "varselStatus": "OPPRETTET",
   "tema":"FS22",
   "forsendelseTittel": "Innkalling til informasjonsmoete",
   "mottaker": {
