@@ -31,6 +31,7 @@ import static no.nav.dokdistdittnav.kdist002.TestUtils.hentForsendelseResponseUt
 import static no.nav.dokdistdittnav.kdist002.TestUtils.hentForsendelseResponseWithForsendelseStatusFeilet;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.hentNotifikasjonInfoTo;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FEILET;
+import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FERDIGSTILT;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.INFO;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.OVERSENDT;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -62,15 +63,15 @@ class Kdist002ServiceTest {
 
 	@ParameterizedTest
 	@EnumSource(value = DoknotifikasjonStatusKode.class, names = {"OVERSENDT", "FERDIGSTILT"})
-	public void shouldUpdateDistribusjonsTidspunktAndForsendelseStatus(DoknotifikasjonStatusKode statusKode) {
+	public void shouldUpdateDistribusjonsTidspunktAndForsendelseStatus(DoknotifikasjonStatusKode statuskode) {
 		when(administrerForsendelse.finnForsendelse(FinnForsendelseRequest.builder()
 				.oppslagsnoekkel(Oppslagsnoekkel.BESTILLINGSID)
 				.verdi(BESTILLINGSID)
 				.build())).thenReturn(FORSENDELSE_ID);
-		when(doknotifikasjonConsumer.getNotifikasjonInfo(DOKNOTIFIKASJON_BESTILLINGSID_OLD)).thenReturn(hentNotifikasjonInfoTo());
+		when(doknotifikasjonConsumer.getNotifikasjonInfo(DOKNOTIFIKASJON_BESTILLINGSID_OLD, statuskode == FERDIGSTILT)).thenReturn(hentNotifikasjonInfoTo());
 		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponse());
 
-		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatusWithoutDistribusjonsId(DOKDISTDITTNAV, statusKode.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
+		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatusWithoutDistribusjonsId(DOKDISTDITTNAV, statuskode.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
 
 		verify(administrerForsendelse, times(1)).finnForsendelse(any());
 		verify(administrerForsendelse, times(1)).oppdaterVarselInfo(any());
@@ -84,7 +85,7 @@ class Kdist002ServiceTest {
 				.oppslagsnoekkel(Oppslagsnoekkel.BESTILLINGSID)
 				.verdi(BESTILLINGSID)
 				.build())).thenReturn(FORSENDELSE_ID);
-		when(doknotifikasjonConsumer.getNotifikasjonInfo(DOKNOTIFIKASJON_BESTILLINGSID_OLD)).thenReturn(hentNotifikasjonInfoTo());
+		when(doknotifikasjonConsumer.getNotifikasjonInfo(DOKNOTIFIKASJON_BESTILLINGSID_OLD, false)).thenReturn(hentNotifikasjonInfoTo());
 		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseWithForsendelseStatusFeilet());
 
 		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatusWithoutDistribusjonsId(DOKDISTDITTNAV, OVERSENDT.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));

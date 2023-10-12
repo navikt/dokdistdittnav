@@ -66,7 +66,12 @@ public class Kdist002Service {
 
 		if (skalInformasjonOmVarselLagres(doknotifikasjonStatus)) {
 
-			NotifikasjonInfoTo notifikasjonInfoTo = doknotifikasjonConsumer.getNotifikasjonInfo(doknotifikasjonStatus.getBestillingsId());
+			//Problem: Pga timing issues i doknotifikasjon kan vi risikere å motta kafka-melding om at en notifikasjon er oppdatert før persistering til database er ferdig.
+			//Løsning: Trigg retry dersom ett eller flere forventede felter ikke er satt i response fra doknotifikasjon, spesifikt sendtDato i dette tilfellet.
+			//Dette er bare et problem for notifikasjoner med status FERDIGSTILT.
+			var maaInkludereSendtDato = FERDIGSTILT.name().equals(doknotifikasjonStatus.getStatus());
+
+			NotifikasjonInfoTo notifikasjonInfoTo = doknotifikasjonConsumer.getNotifikasjonInfo(doknotifikasjonStatus.getBestillingsId(), maaInkludereSendtDato);
 			log.info("Kdist002 oppdaterer distribusjonsinfo for notifikasjonen={} for bestillingsId={} med forsendelseId={}", notifikasjonInfoTo.id(), oldBestillingsId, forsendelseId);
 
 			administrerForsendelse.oppdaterVarselInfo(mapNotifikasjonBestilling(forsendelseId, notifikasjonInfoTo));
