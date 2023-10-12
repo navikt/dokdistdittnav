@@ -98,7 +98,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	private EmbeddedKafkaBroker embeddedKafkaBroker;
 
 	@BeforeEach
-	void setUp()  {
+	void setUp() {
 		DefaultKafkaConsumerFactory<String, Object> consumerFactory = new DefaultKafkaConsumerFactory<>(getConsumerProperties());
 		ContainerProperties containerProperties = new ContainerProperties(DOKNOTIFIKASJON_STATUS_TOPIC, DONE_EVENT_TOPIC);
 		container = new KafkaMessageListenerContainer<>(consumerFactory, containerProperties);

@@ -19,6 +19,7 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import static java.lang.String.format;
 import static no.nav.dokdistdittnav.azure.AzureProperties.CLIENT_REGISTRATION_DOKNOTIFIKASJON;
 import static no.nav.dokdistdittnav.constants.MdcConstants.DOKNOTIFIKASJON_CONSUMER;
 import static no.nav.dokdistdittnav.constants.MdcConstants.PROCESS;
@@ -58,7 +59,8 @@ public class DoknotifikasjonConsumer {
 				.doOnSuccess(notifikasjonInfoTo -> {
 					if (maaInkludereSendtDato && notifikasjonInfoTo.notifikasjonDistribusjoner().stream()
 							.anyMatch(it -> it.sendtDato() == null)) {
-						throw new NotifikasjonManglerSendtDatoException("NotifikasjonInfoTo inneholder en eller flere notifikasjonDistribusjoner uten sendtDato");
+						throw new NotifikasjonManglerSendtDatoException(
+								format("Notifikasjon med bestillingsId=%s inneholder en eller flere notifikasjonDistribusjoner uten sendtDato", bestillingsId));
 					}
 				})
 				.block();
@@ -69,7 +71,7 @@ public class DoknotifikasjonConsumer {
 			if (error instanceof WebClientResponseException response && ((WebClientResponseException) error).getStatusCode().is4xxClientError()) {
 				log.error("Kall mot doknotifikasjon feilet funksjonelt ved henting av notifikasjon med bestillingsId={}, feilmelding={}", bestillingsId, error.getMessage());
 				throw new DoknotifikasjonFunctionalException(
-						String.format("Kall mot doknotifikasjon feilet funksjonelt ved henting av notifikasjon med bestillingsId=%s, status=%s, feilmelding=%s",
+						format("Kall mot doknotifikasjon feilet funksjonelt ved henting av notifikasjon med bestillingsId=%s, status=%s, feilmelding=%s",
 								bestillingsId,
 								response.getStatusCode(),
 								response.getMessage()),
@@ -77,7 +79,7 @@ public class DoknotifikasjonConsumer {
 			} else {
 				log.error("Kall mot doknotifikasjon feilet teknisk ved henting av notifikasjon med bestillingsId={}, feilmelding={}", bestillingsId, error.getMessage());
 				throw new DoknotifikasjonTechnicalException(
-						String.format("Kall mot doknotifikasjon feilet teknisk ved henting av notifikasjon med bestillingsId=%s ,feilmelding=%s",
+						format("Kall mot doknotifikasjon feilet teknisk ved henting av notifikasjon med bestillingsId=%s ,feilmelding=%s",
 								bestillingsId,
 								error.getMessage()),
 						error);
