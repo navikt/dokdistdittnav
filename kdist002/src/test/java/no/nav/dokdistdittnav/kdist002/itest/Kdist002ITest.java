@@ -226,8 +226,11 @@ public class Kdist002ITest extends ApplicationTestConfig {
 
 		sendMessageToDoknotifikasjonStatusTopic(doknotifikasjonStatus(DOKDISTDITTNAV, FERDIGSTILT.name(), null));
 
-		await().atMost(10, SECONDS).untilAsserted(() ->
-				verify(3, getRequestedFor(urlEqualTo(NOTIFIKASJONINFO_URL))));
+		await().atMost(10, SECONDS).untilAsserted(() -> {
+					verify(3, getRequestedFor(urlEqualTo(NOTIFIKASJONINFO_URL)));
+					verify(1, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_URL)));
+				}
+		);
 	}
 
 	//Scenario hvor returnert notifikasjonInfo mangler sendtDato i kall nr 1 og 2, men inneholder sendtDato i kall nr 3
