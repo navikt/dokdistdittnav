@@ -10,6 +10,9 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -23,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.stream.Stream;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -216,20 +220,31 @@ public class Kdist002ITest extends ApplicationTestConfig {
 		});
 	}
 
-	@Test
-	public void shouldRetryForFerdigstilteNotifikasjonerSaaLengeSendtDatoMangler() {
+	@ParameterizedTest
+	@MethodSource
+	public void shouldRetryForFerdigstilteNotifikasjonerSaaLengeSendtDatoMangler(String melding, int antallKall) {
 		stubGetFinnForsendelse(OK.value());
 		stubUpdateVarselInfo();
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json", OK.value());
 		stubPutOppdaterForsendelse(OK.value());
 		stubNotifikasjonInfoHvorSendtDatoManglerToGanger();
 
-		sendMessageToDoknotifikasjonStatusTopic(doknotifikasjonStatus(DOKDISTDITTNAV, FERDIGSTILT.name(), null));
+		var doknotifikasjonStatus = doknotifikasjonStatus(DOKDISTDITTNAV, FERDIGSTILT.name(), null);
+		doknotifikasjonStatus.setMelding(melding);
+
+		sendMessageToDoknotifikasjonStatusTopic(doknotifikasjonStatus);
 
 		await().atMost(10, SECONDS).untilAsserted(() -> {
-					verify(3, getRequestedFor(urlEqualTo(NOTIFIKASJONINFO_URL)));
+					verify(antallKall, getRequestedFor(urlEqualTo(NOTIFIKASJONINFO_URL)));
 					verify(1, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_URL)));
 				}
+		);
+	}
+
+	private static Stream<Arguments> shouldRetryForFerdigstilteNotifikasjonerSaaLengeSendtDatoMangler() {
+		return Stream.of(
+				Arguments.of("notifikasjon sendt via sms", 3),
+				Arguments.of("renotifikasjon er stanset", 1)
 		);
 	}
 
