@@ -56,20 +56,7 @@ public class CamelKafkaProperties {
 				"&autoOffsetReset=" + consumer.getAutoOffsetReset() +
 				"&autoCommitEnable=" + consumer.getEnableAutoCommit() +
 				// custom
-				"&allowManualCommit=true" +
-				"&bridgeErrorHandler=true" +
-				"&breakOnFirstError=true";
-	}
-
-	public String kafkaProducer() {
-		KafkaProperties.Producer producer = kafkaProperties.getProducer();
-		// producer
-		return "&requestRequiredAcks=" + producer.getAcks() +
-				"&keySerializer=" + producer.getKeySerializer().getName() +
-				"&valueSerializer=" + producer.getValueSerializer().getName() +
-				"&retries=" + producer.getRetries() +
-				"&additionalProperties.enable.idempotence=true" +
-				"&additionalProperties.max.in.flight.requests.per.connection=1";
+				"&allowManualCommit=true";
 	}
 
 	private String appendIfNotBlank(String config, Resource value) {
