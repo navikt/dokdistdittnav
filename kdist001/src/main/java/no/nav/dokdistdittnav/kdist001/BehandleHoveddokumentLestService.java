@@ -13,6 +13,7 @@ import no.nav.dokdistdittnav.consumer.rdist001.to.OppdaterForsendelseRequest;
 import no.nav.dokdistdittnav.kafka.BrukerNotifikasjonMapper;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.safselvbetjening.schemas.HoveddokumentLest;
+import org.apache.camel.Exchange;
 import org.apache.camel.Handler;
 import org.springframework.stereotype.Component;
 
@@ -24,10 +25,13 @@ import static no.nav.dokdistdittnav.constants.DomainConstants.KANAL_DITTNAV;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.Oppslagsnoekkel.JOURNALPOSTID;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatusCode.FERDIGSTILT;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatusCode.OPPRETTET;
+import static org.apache.camel.component.kafka.KafkaConstants.OFFSET;
+import static org.apache.camel.component.kafka.KafkaConstants.PARTITION;
+import static org.apache.camel.component.kafka.KafkaConstants.TOPIC;
 
 @Slf4j
 @Component
-public class Ferdigprodusent {
+public class BehandleHoveddokumentLestService {
 
 	private final AdministrerForsendelse administrerForsendelse;
 	private final DokdistdittnavProperties dokdistdittnavProperties;
@@ -35,10 +39,10 @@ public class Ferdigprodusent {
 	private final KafkaEventProducer kafkaEventProducer;
 	private final BrukerNotifikasjonMapper mapper;
 
-	public Ferdigprodusent(AdministrerForsendelse administrerForsendelse,
-						   DokdistdittnavProperties dokdistdittnavProperties,
-						   KafkaEventProducer kafkaEventProducer,
-						   DokarkivConsumer dokarkivConsumer) {
+	public BehandleHoveddokumentLestService(AdministrerForsendelse administrerForsendelse,
+											DokdistdittnavProperties dokdistdittnavProperties,
+											KafkaEventProducer kafkaEventProducer,
+											DokarkivConsumer dokarkivConsumer) {
 		this.administrerForsendelse = administrerForsendelse;
 		this.dokdistdittnavProperties = dokdistdittnavProperties;
 		this.kafkaEventProducer = kafkaEventProducer;
@@ -47,8 +51,11 @@ public class Ferdigprodusent {
 	}
 
 	@Handler
-	public void updateVarselStatus(HoveddokumentLest hoveddokumentLest) {
-		log.info("Mottatt hoveddokumentLest med journalpostId={}, dokumentInfoId={}.", hoveddokumentLest.getJournalpostId(), hoveddokumentLest.getDokumentInfoId());
+	public void updateVarselStatus(Exchange exchange) {
+		HoveddokumentLest hoveddokumentLest = exchange.getIn().getBody(HoveddokumentLest.class);
+		log.info("Kdist001 mottatt HoveddokumentLest hendelse med journalpostId={}, dokumentInfoId={}, record(topic={}, partition={}, offset={})",
+				hoveddokumentLest.getJournalpostId(), hoveddokumentLest.getDokumentInfoId(),
+				exchange.getIn().getHeader(TOPIC, String.class), exchange.getIn().getHeader(PARTITION, String.class), exchange.getIn().getHeader(OFFSET, String.class));
 
 		String forsendelseId = administrerForsendelse.finnForsendelse(FinnForsendelseRequest.builder()
 				.oppslagsnoekkel(JOURNALPOSTID)
@@ -64,6 +71,9 @@ public class Ferdigprodusent {
 				kafkaEventProducer.publish(dokdistdittnavProperties.getBrukernotifikasjon().getTopicdone(), nokkelInput, mapper.mapDoneInput());
 				dokarkivConsumer.settTidLestHoveddokument(new JournalpostId(hoveddokumentLest.getJournalpostId()), new OppdaterDistribusjonsInfo(OffsetDateTime.now()));
 				administrerForsendelse.oppdaterForsendelse(new OppdaterForsendelseRequest(Long.valueOf(forsendelseId), null, FERDIGSTILT));
+				log.info("Kdist001 behandlet ferdig HoveddokumentLest hendelse med journalpostId={}, dokumentInfoId={}, record(topic={}, partition={}, offset={})",
+						hoveddokumentLest.getJournalpostId(), hoveddokumentLest.getDokumentInfoId(),
+						exchange.getIn().getHeader(TOPIC, String.class), exchange.getIn().getHeader(PARTITION, String.class), exchange.getIn().getHeader(OFFSET, String.class));
 			}
 		}
 	}

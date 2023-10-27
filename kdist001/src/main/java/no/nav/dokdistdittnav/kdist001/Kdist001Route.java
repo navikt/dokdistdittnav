@@ -23,14 +23,14 @@ import static org.apache.camel.component.kafka.KafkaConstants.MANUAL_COMMIT;
 public class Kdist001Route extends RouteBuilder {
 
 	private final CamelKafkaProperties camelKafkaProperties;
-	private final Ferdigprodusent ferdigprodusent;
+	private final BehandleHoveddokumentLestService behandleHoveddokumentLestService;
 	private final DokdistdittnavProperties dokdistdittnavProperties;
 	private final DittnavMetricsRoutePolicy metricsRoutePolicy;
 
-	public Kdist001Route(CamelKafkaProperties camelKafkaProperties, Ferdigprodusent ferdigprodusent,
+	public Kdist001Route(CamelKafkaProperties camelKafkaProperties, BehandleHoveddokumentLestService behandleHoveddokumentLestService,
 						 DokdistdittnavProperties dokdistdittnavProperties,DittnavMetricsRoutePolicy metricsRoutePolicy) {
 		this.camelKafkaProperties = camelKafkaProperties;
-		this.ferdigprodusent = ferdigprodusent;
+		this.behandleHoveddokumentLestService = behandleHoveddokumentLestService;
 		this.dokdistdittnavProperties = dokdistdittnavProperties;
 		this.metricsRoutePolicy = metricsRoutePolicy;
 	}
@@ -70,8 +70,7 @@ public class Kdist001Route extends RouteBuilder {
 				.id(KDIST001_ID)
 				.routePolicy(metricsRoutePolicy)
 				.process(new MDCProcessor())
-				.process(exchange -> log.info("Kdist001 mottatt " + createLoggingFraHeader(exchange)))
-				.bean(ferdigprodusent)
+				.bean(behandleHoveddokumentLestService)
 				.process(this::defaultKafkaManualCommit)
 				.end();
 		//@formatter:on
@@ -80,7 +79,9 @@ public class Kdist001Route extends RouteBuilder {
 	private void defaultKafkaManualCommit(Exchange exchange) {
 		DefaultKafkaManualCommit manualCommit = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
 		if (manualCommit != null) {
-			log.info("Kdist001, manual commit " + createLogging(manualCommit));
+			if(log.isDebugEnabled()) {
+				log.debug("Kdist001, manual commit " + createLogging(manualCommit));
+			}
 			manualCommit.commit();
 		}
 	}
