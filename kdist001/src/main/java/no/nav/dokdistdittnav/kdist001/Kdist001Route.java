@@ -28,7 +28,7 @@ public class Kdist001Route extends RouteBuilder {
 	private final DittnavMetricsRoutePolicy metricsRoutePolicy;
 
 	public Kdist001Route(CamelKafkaProperties camelKafkaProperties, BehandleHoveddokumentLestService behandleHoveddokumentLestService,
-						 DokdistdittnavProperties dokdistdittnavProperties,DittnavMetricsRoutePolicy metricsRoutePolicy) {
+						 DokdistdittnavProperties dokdistdittnavProperties, DittnavMetricsRoutePolicy metricsRoutePolicy) {
 		this.camelKafkaProperties = camelKafkaProperties;
 		this.behandleHoveddokumentLestService = behandleHoveddokumentLestService;
 		this.dokdistdittnavProperties = dokdistdittnavProperties;
@@ -79,7 +79,7 @@ public class Kdist001Route extends RouteBuilder {
 	private void defaultKafkaManualCommit(Exchange exchange) {
 		DefaultKafkaManualCommit manualCommit = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
 		if (manualCommit != null) {
-			if(log.isDebugEnabled()) {
+			if (log.isDebugEnabled()) {
 				log.debug("Kdist001, manual commit " + createLogging(manualCommit));
 			}
 			manualCommit.commit();
