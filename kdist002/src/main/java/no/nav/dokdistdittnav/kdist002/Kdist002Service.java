@@ -69,7 +69,7 @@ public class Kdist002Service {
 
 			// Problem: Pga timing issues i doknotifikasjon kan vi risikere å motta kafka-melding om at en notifikasjon er oppdatert før persistering til database er ferdig.
 			// Løsning: Trigg retry dersom ett eller flere forventede felter ikke er satt i response fra doknotifikasjon, spesifikt sendtDato i dette tilfellet.
-			// Dette skal ikke gjøres for FERDIGSTILT-melding med 'renotifikasjon er stanset'.
+			// Dette skal ikke gjøres for statusoppdateringer med meldingen 'renotifikasjon er stanset', siden sendtDato kan mangle.
 			var maaInkludereSendtDato = !MELDING_MED_UNNTAK.equals(doknotifikasjonStatus.getMelding());
 
 			NotifikasjonInfoTo notifikasjonInfoTo = doknotifikasjonConsumer.getNotifikasjonInfo(doknotifikasjonStatus.getBestillingsId(), maaInkludereSendtDato);
