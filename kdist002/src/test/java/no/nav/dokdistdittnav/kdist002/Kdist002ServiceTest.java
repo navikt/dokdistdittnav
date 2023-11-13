@@ -68,7 +68,7 @@ class Kdist002ServiceTest {
 				.oppslagsnoekkel(Oppslagsnoekkel.BESTILLINGSID)
 				.verdi(BESTILLINGSID)
 				.build())).thenReturn(FORSENDELSE_ID);
-		when(doknotifikasjonConsumer.getNotifikasjonInfo(DOKNOTIFIKASJON_BESTILLINGSID_OLD, true)).thenReturn(hentNotifikasjonInfoTo());
+		when(doknotifikasjonConsumer.getNotifikasjonInfo(DOKNOTIFIKASJON_BESTILLINGSID_OLD, statuskode == FERDIGSTILT)).thenReturn(hentNotifikasjonInfoTo());
 		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponse());
 
 		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatusWithoutDistribusjonsId(DOKDISTDITTNAV, statuskode.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
@@ -85,7 +85,7 @@ class Kdist002ServiceTest {
 				.oppslagsnoekkel(Oppslagsnoekkel.BESTILLINGSID)
 				.verdi(BESTILLINGSID)
 				.build())).thenReturn(FORSENDELSE_ID);
-		when(doknotifikasjonConsumer.getNotifikasjonInfo(DOKNOTIFIKASJON_BESTILLINGSID_OLD, true)).thenReturn(hentNotifikasjonInfoTo());
+		when(doknotifikasjonConsumer.getNotifikasjonInfo(DOKNOTIFIKASJON_BESTILLINGSID_OLD, false)).thenReturn(hentNotifikasjonInfoTo());
 		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseWithForsendelseStatusFeilet());
 
 		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatusWithoutDistribusjonsId(DOKDISTDITTNAV, OVERSENDT.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
