@@ -1,22 +1,17 @@
 package no.nav.dokdistdittnav.consumer.doknotifikasjon;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.dokdistdittnav.azure.AzureProperties;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.exception.technical.AbstractDokdistdittnavTechnicalException;
 import no.nav.dokdistdittnav.metrics.Monitor;
 import no.nav.dokdistdittnav.utils.NavHeadersFilter;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.publisher.Mono;
+import org.springframework.web.reactive.function.client.WebClientResponseException.NotFound;
 
-import java.util.Map;
 import java.util.function.Consumer;
 
 import static java.lang.String.format;
@@ -27,6 +22,7 @@ import static no.nav.dokdistdittnav.constants.RetryConstants.DELAY_SHORT;
 import static no.nav.dokdistdittnav.constants.RetryConstants.MULTIPLIER_SHORT;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId;
 
 @Slf4j
 @Component
@@ -34,17 +30,14 @@ public class DoknotifikasjonConsumer {
 
 	private final WebClient webClient;
 	private final DokdistdittnavProperties dokdistdittnavProperties;
-	private final ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager;
 
 	public DoknotifikasjonConsumer(WebClient webClient,
-								   DokdistdittnavProperties dokdistdittnavProperties,
-								   ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
+								   DokdistdittnavProperties dokdistdittnavProperties) {
 		this.webClient = webClient.mutate()
 				.filter(new NavHeadersFilter())
 				.defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 				.build();
 		this.dokdistdittnavProperties = dokdistdittnavProperties;
-		this.oAuth2AuthorizedClientManager = oAuth2AuthorizedClientManager;
 	}
 
 	@Monitor(value = DOKNOTIFIKASJON_CONSUMER, extraTags = {PROCESS, "_test_"}, histogram = true)
@@ -52,7 +45,7 @@ public class DoknotifikasjonConsumer {
 	public NotifikasjonInfoTo getNotifikasjonInfo(String bestillingsId, boolean maaInkludereSendtDato) {
 		return webClient.get()
 				.uri(dokdistdittnavProperties.getDoknotifikasjon().getNotifikasjonInfoURI(bestillingsId))
-				.attributes(getOAuth2AuthorizedClient())
+				.attributes(clientRegistrationId(CLIENT_REGISTRATION_DOKNOTIFIKASJON))
 				.retrieve()
 				.bodyToMono(NotifikasjonInfoTo.class)
 				.doOnError(handleError(bestillingsId))
@@ -68,27 +61,27 @@ public class DoknotifikasjonConsumer {
 
 	private Consumer<Throwable> handleError(String bestillingsId) {
 		return error -> {
-			if (error instanceof WebClientResponseException response && ((WebClientResponseException) error).getStatusCode().is4xxClientError()) {
-				log.error("Kall mot doknotifikasjon feilet funksjonelt ved henting av notifikasjon med bestillingsId={}, feilmelding={}", bestillingsId, error.getMessage());
-				throw new DoknotifikasjonFunctionalException(
-						format("Kall mot doknotifikasjon feilet funksjonelt ved henting av notifikasjon med bestillingsId=%s, status=%s, feilmelding=%s",
-								bestillingsId,
-								response.getStatusCode(),
-								response.getMessage()),
-						error);
+			if (error instanceof WebClientResponseException webException) {
+				if (error instanceof NotFound notFound) {
+					String notFoundErrorMsg = format("Fant ikke bestillingsId=%s i doknotifikasjon. Forsøker på nytt", bestillingsId);
+					throw new DoknotifikasjonTechnicalException(notFoundErrorMsg, notFound);
+				} else if (webException.getStatusCode().is4xxClientError()) {
+					String clientErrorMsg = format("Kall mot doknotifikasjon feilet funksjonelt ved henting av notifikasjon med bestillingsId=%s, status=%s, feilmelding=%s",
+							bestillingsId, webException.getStatusCode(), webException.getMessage());
+					log.warn(clientErrorMsg, webException);
+					throw new DoknotifikasjonFunctionalException(clientErrorMsg, error);
+				} else {
+					String serverErrorMsg = format("Kall mot doknotifikasjon feilet teknisk ved henting av notifikasjon med bestillingsId=%s, status=%s ,feilmelding=%s",
+							bestillingsId, webException.getStatusCode(), error.getMessage());
+					log.error(serverErrorMsg, webException);
+					throw new DoknotifikasjonTechnicalException(serverErrorMsg, webException);
+				}
 			} else {
-				log.error("Kall mot doknotifikasjon feilet teknisk ved henting av notifikasjon med bestillingsId={}, feilmelding={}", bestillingsId, error.getMessage());
-				throw new DoknotifikasjonTechnicalException(
-						format("Kall mot doknotifikasjon feilet teknisk ved henting av notifikasjon med bestillingsId=%s ,feilmelding=%s",
-								bestillingsId,
-								error.getMessage()),
-						error);
+				String ukjentErrorMsg = format("Kall mot doknotifikasjon feilet med ukjent teknisk feil ved henting av notifikasjon med bestillingsId=%s ,feilmelding=%s. Se stacktrace",
+						bestillingsId, error.getMessage());
+				log.error(ukjentErrorMsg, error);
+				throw new DoknotifikasjonTechnicalException(ukjentErrorMsg, error);
 			}
 		};
-	}
-
-	private Consumer<Map<String, Object>> getOAuth2AuthorizedClient() {
-		Mono<OAuth2AuthorizedClient> clientMono = oAuth2AuthorizedClientManager.authorize(AzureProperties.getOAuth2AuthorizeRequestForAzure(CLIENT_REGISTRATION_DOKNOTIFIKASJON));
-		return ServerOAuth2AuthorizedClientExchangeFilterFunction.oauth2AuthorizedClient(clientMono.block());
 	}
 }
