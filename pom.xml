@@ -26,7 +26,7 @@
 	<properties>
 		<java.version>17</java.version>
 
-		<brukernotifikasjon.version>v2.5.2</brukernotifikasjon.version>
+		<brukernotifikasjon.version>2.6.0</brukernotifikasjon.version>
 		<kafka-avro-serializer.version>7.5.1</kafka-avro-serializer.version>
 		<teamdokumenthandtering-avro-schemas.version>3aec620a</teamdokumenthandtering-avro-schemas.version>
 		<camel.version>4.2.0</camel.version>

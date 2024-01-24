@@ -43,6 +43,7 @@ public class ForsendelseMapper {
 
 	private static final String AARSOPPGAVE_DOKUMENTTYPEID = "000053";
 	private static final Integer SIKKERHETSNIVAA = 3;
+	private static final Integer SYNLIGEDAGER = 10;
 
 	static {
 		VEDTAK_EPOSTTEKST = getFileAndAssertNotNullOrEmpty("varseltekster/vedtak_epostvarseltekst.html");
@@ -67,6 +68,7 @@ public class ForsendelseMapper {
 				.withTekst(format(BESKJED_TEKST, hentForsendelseResponse.getForsendelseTittel()))
 				.withLink(mapLink(url, hentForsendelseResponse))
 				.withEksternVarsling(true)
+				.withSynligFremTil(now(ZoneId.of("UTC")).plusDays(SYNLIGEDAGER))
 				.withEpostVarslingstekst(mapEpostTekst(dokumenttypeId))
 				.withEpostVarslingstittel(mapInternEpostVarslingstittel(dokumenttypeId))
 				.withSmsVarslingstekst(mapInternSmsVarslingstekst(dokumenttypeId))
@@ -96,6 +98,7 @@ public class ForsendelseMapper {
 		var oppgaveBuilder = new OppgaveInputBuilder()
 				.withTidspunkt(now(ZoneId.of("UTC")))
 				.withLink(mapLink(url, forsendelse))
+				.withSynligFremTil(now(ZoneId.of("UTC")).plusDays(SYNLIGEDAGER))
 				.withEksternVarsling(true)
 				.withSikkerhetsnivaa(SIKKERHETSNIVAA);
 

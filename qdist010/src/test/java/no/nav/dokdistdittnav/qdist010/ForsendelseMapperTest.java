@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collections;
 
 import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_AARSOPPGAVE_TEKST;
@@ -24,6 +26,8 @@ import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.opprettOppgave;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.classpathToString;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ForsendelseMapperTest {
 
@@ -43,6 +47,7 @@ public class ForsendelseMapperTest {
 		assertEquals(beskjed.getEpostVarslingstekst(), classpathToString(epostVarslingstekstPath));
 		assertEquals(beskjed.getEpostVarslingstittel(), epostTittel);
 		assertEquals(beskjed.getSmsVarslingstekst(), smsVarslingstekst);
+		assertNotNull(beskjed.getSynligFremTil());
 	}
 
 	@ParameterizedTest
