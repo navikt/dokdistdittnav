@@ -10,8 +10,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collections;
 
+import static java.time.LocalDateTime.now;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_AARSOPPGAVE_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.VEDTAK_SMSTEKST;
@@ -25,6 +30,7 @@ import static no.nav.dokdistdittnav.utils.DokdistUtils.classpathToString;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ForsendelseMapperTest {
 
@@ -40,11 +46,12 @@ public class ForsendelseMapperTest {
 	public void shouldMapBeskjed(String dokumenttypeId, String epostVarslingstekstPath, String epostTittel, String smsVarslingstekst) {
 		HentForsendelseResponse forsendelse = createForsendelse(dokumenttypeId, ANNET);
 		BeskjedInput beskjed = opprettBeskjed("https://url.no", forsendelse);
+		LocalDateTime synligFremTil = Instant.ofEpochMilli(beskjed.getSynligFremTil()).atZone(ZoneId.of("Europe/Oslo")).toLocalDateTime();
 
 		assertEquals(beskjed.getEpostVarslingstekst(), classpathToString(epostVarslingstekstPath));
 		assertEquals(beskjed.getEpostVarslingstittel(), epostTittel);
 		assertEquals(beskjed.getSmsVarslingstekst(), smsVarslingstekst);
-		assertNotNull(beskjed.getSynligFremTil());
+		assertTrue(SECONDS.between(synligFremTil, now(ZoneId.of("Europe/Oslo")).plusDays(10)) < 1);
 	}
 
 	@ParameterizedTest
