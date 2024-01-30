@@ -59,14 +59,15 @@ public class ForsendelseMapperTest {
 
 	@ParameterizedTest
 	@CsvSource(value = {
-			"VIKTIG" + ", " + "varseltekster/viktig_epostvarseltekst.html" + ", " + VIKTIG_EPOSTTITTEL + ", " + "du har fått et brev som du må lese:" + ", " + VIKTIG_SMSTEKST,
-			"VEDTAK" + ", " + "varseltekster/vedtak_epostvarseltekst.html" + ", " + VEDTAK_EPOSTTITTEL + ", " + "du har fått et vedtak som gjelder:" + ", " + VEDTAK_SMSTEKST
+			"VIKTIG" + ", " + "varseltekster/viktig_epostvarseltekst.html" + ", " + VIKTIG_EPOSTTITTEL + ", " + "Du har fått et brev som du må lese:" + ", " + VIKTIG_SMSTEKST,
+			"VEDTAK" + ", " + "varseltekster/vedtak_epostvarseltekst.html" + ", " + VEDTAK_EPOSTTITTEL + ", " + "Du har fått et vedtak som gjelder" + ", " + VEDTAK_SMSTEKST
 	})
 	public void shouldMapOppgave(String kode, String epostPath, String expectedEpostTittel, String expectedTittel, String expectedSmsTekst) {
 		HentForsendelseResponse forsendelse = createForsendelse("123456", DistribusjonsTypeKode.valueOf(kode));
 		OppgaveInput oppgave = opprettOppgave("https://url.no", forsendelse);
 
-		assertThat(oppgave.getTekst().contains(expectedTittel));
+		assertNotNull(oppgave);
+		assertThat(oppgave.getTekst()).contains(expectedTittel);
 		assertEquals(oppgave.getEpostVarslingstekst(), classpathToString(epostPath));
 		assertEquals(oppgave.getEpostVarslingstittel(), expectedEpostTittel);
 		assertEquals(oppgave.getSmsVarslingstekst(), expectedSmsTekst);
