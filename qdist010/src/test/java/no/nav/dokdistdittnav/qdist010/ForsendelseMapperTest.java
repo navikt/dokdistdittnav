@@ -10,8 +10,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.time.Instant;
 import java.util.Collections;
 
+import static java.time.temporal.ChronoUnit.DAYS;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_AARSOPPGAVE_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.VEDTAK_SMSTEKST;
@@ -22,8 +25,10 @@ import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.VIKTIG_EPOSTTITTE
 import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.opprettBeskjed;
 import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.opprettOppgave;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.classpathToString;
+import static org.assertj.core.api.Assertions.within;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ForsendelseMapperTest {
 
@@ -39,25 +44,30 @@ public class ForsendelseMapperTest {
 	public void shouldMapBeskjed(String dokumenttypeId, String epostVarslingstekstPath, String epostTittel, String smsVarslingstekst) {
 		HentForsendelseResponse forsendelse = createForsendelse(dokumenttypeId, ANNET);
 		BeskjedInput beskjed = opprettBeskjed("https://url.no", forsendelse);
+		Instant beskjedSynligFremTil = Instant.ofEpochMilli(beskjed.getSynligFremTil());
 
 		assertEquals(beskjed.getEpostVarslingstekst(), classpathToString(epostVarslingstekstPath));
 		assertEquals(beskjed.getEpostVarslingstittel(), epostTittel);
 		assertEquals(beskjed.getSmsVarslingstekst(), smsVarslingstekst);
+		assertThat(beskjedSynligFremTil).isCloseTo(Instant.now().plus(10, DAYS), within(1, SECONDS));
 	}
 
 	@ParameterizedTest
 	@CsvSource(value = {
-			"VIKTIG" + ", " + "varseltekster/viktig_epostvarseltekst.html" + ", " + VIKTIG_EPOSTTITTEL + ", " + "du har fått et brev som du må lese:" + ", " + VIKTIG_SMSTEKST,
-			"VEDTAK" + ", " + "varseltekster/vedtak_epostvarseltekst.html" + ", " + VEDTAK_EPOSTTITTEL + ", " + "du har fått et vedtak som gjelder:" + ", " + VEDTAK_SMSTEKST
+			"VIKTIG" + ", " + "varseltekster/viktig_epostvarseltekst.html" + ", " + VIKTIG_EPOSTTITTEL + ", " + "Du har fått et brev som du må lese:" + ", " + VIKTIG_SMSTEKST,
+			"VEDTAK" + ", " + "varseltekster/vedtak_epostvarseltekst.html" + ", " + VEDTAK_EPOSTTITTEL + ", " + "Du har fått et vedtak som gjelder" + ", " + VEDTAK_SMSTEKST
 	})
 	public void shouldMapOppgave(String kode, String epostPath, String expectedEpostTittel, String expectedTittel, String expectedSmsTekst) {
 		HentForsendelseResponse forsendelse = createForsendelse("123456", DistribusjonsTypeKode.valueOf(kode));
 		OppgaveInput oppgave = opprettOppgave("https://url.no", forsendelse);
 
-		assertThat(oppgave.getTekst().contains(expectedTittel));
+		assertNotNull(oppgave);
+		assertThat(oppgave.getTekst()).contains(expectedTittel);
 		assertEquals(oppgave.getEpostVarslingstekst(), classpathToString(epostPath));
 		assertEquals(oppgave.getEpostVarslingstittel(), expectedEpostTittel);
 		assertEquals(oppgave.getSmsVarslingstekst(), expectedSmsTekst);
+		assertThat(Instant.ofEpochMilli(oppgave.getSynligFremTil()))
+				.isCloseTo(Instant.now().plus(10, DAYS), within(1, SECONDS));
 	}
 
 	@ParameterizedTest
