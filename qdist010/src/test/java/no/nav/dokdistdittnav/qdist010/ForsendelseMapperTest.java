@@ -13,9 +13,11 @@ import org.junit.jupiter.params.provider.CsvSource;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 
 import static java.time.LocalDateTime.now;
+import static java.time.temporal.ChronoUnit.DAYS;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_AARSOPPGAVE_TEKST;
 import static no.nav.dokdistdittnav.constants.DomainConstants.SMS_TEKST;
@@ -27,6 +29,7 @@ import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.VIKTIG_EPOSTTITTE
 import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.opprettBeskjed;
 import static no.nav.dokdistdittnav.qdist010.ForsendelseMapper.opprettOppgave;
 import static no.nav.dokdistdittnav.utils.DokdistUtils.classpathToString;
+import static org.assertj.core.api.Assertions.within;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -46,12 +49,12 @@ public class ForsendelseMapperTest {
 	public void shouldMapBeskjed(String dokumenttypeId, String epostVarslingstekstPath, String epostTittel, String smsVarslingstekst) {
 		HentForsendelseResponse forsendelse = createForsendelse(dokumenttypeId, ANNET);
 		BeskjedInput beskjed = opprettBeskjed("https://url.no", forsendelse);
-		LocalDateTime synligFremTil = Instant.ofEpochMilli(beskjed.getSynligFremTil()).atZone(ZoneId.of("Europe/Oslo")).toLocalDateTime();
+		Instant beskjedSynligFremTil = Instant.ofEpochMilli(beskjed.getSynligFremTil());
 
 		assertEquals(beskjed.getEpostVarslingstekst(), classpathToString(epostVarslingstekstPath));
 		assertEquals(beskjed.getEpostVarslingstittel(), epostTittel);
 		assertEquals(beskjed.getSmsVarslingstekst(), smsVarslingstekst);
-		assertTrue(SECONDS.between(synligFremTil, now(ZoneId.of("Europe/Oslo")).plusDays(10)) < 1);
+		assertThat(beskjedSynligFremTil).isCloseTo(Instant.now().plus(10, DAYS), within(1, SECONDS));
 	}
 
 	@ParameterizedTest
@@ -67,6 +70,8 @@ public class ForsendelseMapperTest {
 		assertEquals(oppgave.getEpostVarslingstekst(), classpathToString(epostPath));
 		assertEquals(oppgave.getEpostVarslingstittel(), expectedEpostTittel);
 		assertEquals(oppgave.getSmsVarslingstekst(), expectedSmsTekst);
+		assertThat(Instant.ofEpochMilli(oppgave.getSynligFremTil()))
+				.isCloseTo(Instant.now().plus(10, DAYS), within(1, SECONDS));
 	}
 
 	@ParameterizedTest
