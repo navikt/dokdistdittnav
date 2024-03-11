@@ -57,15 +57,15 @@ public class DokarkivConsumer {
 			if (error instanceof WebClientResponseException response && ((WebClientResponseException) error).getStatusCode().is4xxClientError()) {
 				log.error("Kall mot dokarkiv feilet funksjonelt ved registrering av lest status for journalpost med id={}, feilmelding={}", journalpostId.value(), error.getMessage());
 				throw new DokarkivOppdaterDistribusjonsinfoFunctionalException(format("Kall mot dokarkiv feilet funksjonelt ved registrering av lest status for journalpost med id=%s, status=%s, feilmelding=%s",
-								journalpostId.value(),
-								response.getStatusCode(),
-								response.getMessage()),
+						journalpostId.value(),
+						response.getStatusCode(),
+						response.getMessage()),
 						error);
 			} else {
 				log.error("Kall mot dokarkiv feilet teknisk ved registrering av lest status for journalpost med id={}, feilmelding={}", journalpostId.value(), error.getMessage());
 				throw new DokarkivOppdaterDistribusjonsinfoTechnicalException(format("Kall mot dokarkiv feilet teknisk ved registrering av lest status for journalpost med id=%s ,feilmelding=%s",
-								journalpostId.value(),
-								error.getMessage()),
+						journalpostId.value(),
+						error.getMessage()),
 						error);
 			}
 		};

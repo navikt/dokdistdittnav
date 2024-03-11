@@ -86,11 +86,6 @@ public class Kdist001Route extends RouteBuilder {
 		}
 	}
 
-	private String createLoggingFraHeader(Exchange exchange) {
-		DefaultKafkaManualCommit manualCommit = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
-		return createLogging(manualCommit);
-	}
-
 	private String createLogging(DefaultKafkaManualCommit manualCommit) {
 		return format("(topic=%s, partition={%s, offset=%s, groupId=%s).", manualCommit.getTopicName(), manualCommit.getPartition().partition(), manualCommit.getRecordOffset(), camelKafkaProperties.getGroupId());
 	}
