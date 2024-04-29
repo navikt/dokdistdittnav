@@ -44,7 +44,7 @@ public class Kdist001Route extends RouteBuilder {
 					Throwable exception = exchange.getProperty(EXCEPTION_CAUGHT, Throwable.class);
 					if (exception != null && !(exception instanceof AbstractDokdistdittnavFunctionalException)) {
 						DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
-						manual.getConsumer().seek(manual.getPartition(), manual.getRecordOffset());
+						manual.getCamelExchangePayload().consumer.seek(manual.getPartition(), manual.getRecordOffset());
 
 						log.error("Kdist001 Teknisk feil. Seek tilbake til record(topic={}, partition={}, offset={})", manual.getTopicName(),
 								manual.getPartition().partition(), manual.getRecordOffset());
@@ -84,11 +84,6 @@ public class Kdist001Route extends RouteBuilder {
 			}
 			manualCommit.commit();
 		}
-	}
-
-	private String createLoggingFraHeader(Exchange exchange) {
-		DefaultKafkaManualCommit manualCommit = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
-		return createLogging(manualCommit);
 	}
 
 	private String createLogging(DefaultKafkaManualCommit manualCommit) {

@@ -91,30 +91,28 @@ public class Kdist002Route extends RouteBuilder {
 		from(camelKafkaProperties.buildKafkaUrl(dittnavProperties.getDoknotifikasjon().getStatustopic(), camelKafkaProperties.kafkaConsumer()))
 				.id(KDIST002_ID)
 				.process(new MDCProcessor())
-				.process(exchange -> log.info("Kdist002 mottatt " + createLoggingFraHeader(exchange)))
 				.routePolicy(metricsRoutePolicy)
 				.choice()
-				.when(simple("${body.bestillerId}").isNotEqualTo(dittnavProperties.getAppnavn()))
-					.process(this::defaultKafkaManualCommit)
-					.endChoice()
-				.otherwise()
-				.bean(kdist002Service)
-					.choice()
-					.when(simple("${body}").isNull())
+					.when(simple("${body.bestillerId}").isNotEqualTo(dittnavProperties.getAppnavn()))
 						.process(this::defaultKafkaManualCommit)
-						.endChoice()
 					.otherwise()
-						.process(exchange -> {
-							DoneEventRequest doneEventRequest = exchange.getIn().getBody(DoneEventRequest.class);
-							exchange.setProperty(PROPERTY_DITTNAV_FEILET_FORSENDELSE_ID, doneEventRequest.getDittnavFeiletForsendelseId());
-							exchange.setProperty(PROPERTY_PRINT_FORSENDELSE_ID, doneEventRequest.getPrintForsendelseId());
-							exchange.setProperty(PROPERTY_DITTNAV_BESTILLINGS_ID, doneEventRequest.getDittnavBestillingsId());
-							exchange.setProperty(PROPERTY_PRINT_BESTILLINGS_ID, doneEventRequest.getPrintBestillingsId());
-
-						})
-						.multicast()
-						.to("direct:" + QDIST009)
-						.to("direct:" + DONE_EVENT)
+						.bean(kdist002Service)
+						.choice()
+							.when(simple("${body}").isNull())
+								.process(this::defaultKafkaManualCommit)
+							.otherwise()
+								.process(exchange -> {
+									DoneEventRequest doneEventRequest = exchange.getIn().getBody(DoneEventRequest.class);
+									exchange.setProperty(PROPERTY_DITTNAV_FEILET_FORSENDELSE_ID, doneEventRequest.getDittnavFeiletForsendelseId());
+									exchange.setProperty(PROPERTY_PRINT_FORSENDELSE_ID, doneEventRequest.getPrintForsendelseId());
+									exchange.setProperty(PROPERTY_DITTNAV_BESTILLINGS_ID, doneEventRequest.getDittnavBestillingsId());
+									exchange.setProperty(PROPERTY_PRINT_BESTILLINGS_ID, doneEventRequest.getPrintBestillingsId());
+								})
+								.multicast()
+									.to("direct:" + QDIST009)
+									.to("direct:" + DONE_EVENT)
+								.end()
+						.end()
 				.end()
 				.process(this::defaultKafkaManualCommit);
 
@@ -142,7 +140,7 @@ public class Kdist002Route extends RouteBuilder {
 
 	private static String getIdsForLoggingDittnav() {
 		return "dittnavBestillingsId=${exchangeProperty." + PROPERTY_DITTNAV_BESTILLINGS_ID + "}, " +
-				"dittnavFeiletForsendelseId=${exchangeProperty." + PROPERTY_DITTNAV_FEILET_FORSENDELSE_ID + "}";
+			   "dittnavFeiletForsendelseId=${exchangeProperty." + PROPERTY_DITTNAV_FEILET_FORSENDELSE_ID + "}";
 	}
 
 	private static String getIdsForLoggingPrint() {
@@ -153,16 +151,11 @@ public class Kdist002Route extends RouteBuilder {
 	private void defaultKafkaManualCommit(Exchange exchange) {
 		DefaultKafkaManualCommit manualCommit = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
 		if (manualCommit != null) {
-			if(log.isDebugEnabled()) {
+			if (log.isDebugEnabled()) {
 				log.debug("Kdist002 manual commit " + createLogging(manualCommit));
 			}
 			manualCommit.commit();
 		}
-	}
-
-	private String createLoggingFraHeader(Exchange exchange) {
-		DefaultKafkaManualCommit manualCommit = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
-		return createLogging(manualCommit);
 	}
 
 	private String createLogging(DefaultKafkaManualCommit manualCommit) {
