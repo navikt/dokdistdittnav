@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.2.5</version>
+		<version>3.2.7</version>
 	</parent>
 
 	<groupId>no.nav.dokdistdittnav</groupId>
@@ -29,7 +29,7 @@
 		<brukernotifikasjon.version>2.6.0</brukernotifikasjon.version>
 		<kafka-avro-serializer.version>7.6.0</kafka-avro-serializer.version>
 		<teamdokumenthandtering-avro-schemas.version>1.1.0</teamdokumenthandtering-avro-schemas.version>
-		<camel.version>4.5.0</camel.version>
+		<camel.version>4.6.0</camel.version>
 		<logstash-logback-encoder.version>7.4</logstash-logback-encoder.version>
 		<ibm-mq.version>9.3.5.1</ibm-mq.version>
 		<melding-virksomhet-dokdistfordeling.version>7-18c61bf</melding-virksomhet-dokdistfordeling.version>
