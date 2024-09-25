@@ -1,7 +1,6 @@
 package no.nav.dokdistdittnav.utils;
 
 import lombok.SneakyThrows;
-import org.apache.commons.compress.utils.IOUtils;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
