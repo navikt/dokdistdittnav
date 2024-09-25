@@ -1,6 +1,8 @@
 package no.nav.dokdistdittnav.kdist002.itest.config;
 
 
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.Queue;
 import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
 import org.apache.activemq.artemis.jms.client.ActiveMQQueue;
@@ -8,10 +10,8 @@ import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
-
-import jakarta.jms.ConnectionFactory;
-import jakarta.jms.Queue;
 
 @Configuration
 @Profile("itest")
@@ -45,7 +45,8 @@ public class JmsItestConfig {
 	}
 
 	@Bean
-	public ConnectionFactory activemqConnectionFactory(EmbeddedActiveMQ embeddedActiveMQ) { // EmbeddedActiveMQ must be initialized before we try to connect, therefore we depend on it here
+	@DependsOn("broker")
+	public ConnectionFactory activemqConnectionFactory() {
 		ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory("vm://localhost?create=false");
 
 		JmsPoolConnectionFactory pooledFactory = new JmsPoolConnectionFactory();
