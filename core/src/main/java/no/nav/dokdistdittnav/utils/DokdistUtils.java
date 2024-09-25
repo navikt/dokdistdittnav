@@ -1,7 +1,6 @@
 package no.nav.dokdistdittnav.utils;
 
 import lombok.SneakyThrows;
-import org.apache.commons.compress.utils.IOUtils;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
@@ -18,11 +17,8 @@ public final class DokdistUtils {
 
 	@SneakyThrows
 	public static String classpathToString(String path) {
-		try {
-			InputStream inputStream = new ClassPathResource(path).getInputStream();
-			String message = new String(inputStream.readAllBytes(), UTF_8);
-			IOUtils.closeQuietly(inputStream);
-			return message;
+		try (InputStream inputStream = new ClassPathResource(path).getInputStream()) {
+			return new String(inputStream.readAllBytes(), UTF_8);
 		} catch (IOException e) {
 			throw new IOException(format("Kunne ikke åpne classpath-ressurs %s", path), e);
 		}
