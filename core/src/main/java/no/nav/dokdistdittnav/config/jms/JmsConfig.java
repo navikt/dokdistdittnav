@@ -3,8 +3,11 @@ package no.nav.dokdistdittnav.config.jms;
 
 import com.ibm.mq.jakarta.jms.MQConnectionFactory;
 import com.ibm.mq.jakarta.jms.MQQueue;
-import no.nav.dokdistdittnav.config.properties.MqGatewayAlias;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSException;
+import jakarta.jms.Queue;
 import no.nav.dokdistdittnav.config.properties.DokdistDittnavServiceuser;
+import no.nav.dokdistdittnav.config.properties.MqGatewayAlias;
 import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -12,9 +15,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jms.connection.UserCredentialsConnectionFactoryAdapter;
 
-import jakarta.jms.ConnectionFactory;
-import jakarta.jms.JMSException;
-import jakarta.jms.Queue;
 import javax.net.ssl.SSLSocketFactory;
 
 import static com.ibm.mq.constants.CMQC.MQENC_NATIVE;
@@ -52,14 +52,12 @@ public class JmsConfig {
 
 	@Bean
 	public ConnectionFactory connectionFactory(final MqGatewayAlias mqGatewayAlias,
-											   final @Value("${dokdistdittnav_channel.name}") String channelName,
 											   final @Value("${dokdistdittnav_channel_secure.name}") String channelNameSecure,
 											   final DokdistDittnavServiceuser dokdistDittnavServiceuser) throws JMSException {
-		return createConnectionFactory(mqGatewayAlias, channelName, channelNameSecure, dokdistDittnavServiceuser);
+		return createConnectionFactory(mqGatewayAlias, channelNameSecure, dokdistDittnavServiceuser);
 	}
 
 	private JmsPoolConnectionFactory createConnectionFactory(final MqGatewayAlias mqGatewayAlias,
-															 final String channelName,
 															 final String channelNameSecure,
 															 final DokdistDittnavServiceuser dokdistDittnavServiceuser) throws JMSException {
 		MQConnectionFactory connectionFactory = new MQConnectionFactory();
@@ -67,15 +65,11 @@ public class JmsConfig {
 		connectionFactory.setPort(mqGatewayAlias.getPort());
 		connectionFactory.setBooleanProperty(USER_AUTHENTICATION_MQCSP, true);
 
-		if (mqGatewayAlias.isEnableTls()) {
-			// https://www.ibm.com/docs/en/ibm-mq/9.1?topic=mm-migrating-existing-security-configurations-use-any-tls12-higher-cipherspec
-			connectionFactory.setSSLCipherSuite(ANY_TLS13_OR_HIGHER);
-			SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-			connectionFactory.setSSLSocketFactory(factory);
-			connectionFactory.setChannel(channelNameSecure);
-		} else {
-			connectionFactory.setChannel(channelName);
-		}
+		// https://www.ibm.com/docs/en/ibm-mq/9.1?topic=mm-migrating-existing-security-configurations-use-any-tls12-higher-cipherspec
+		connectionFactory.setSSLCipherSuite(ANY_TLS13_OR_HIGHER);
+		SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+		connectionFactory.setSSLSocketFactory(factory);
+		connectionFactory.setChannel(channelNameSecure);
 
 		connectionFactory.setQueueManager(mqGatewayAlias.getName());
 		connectionFactory.setTransportType(WMQ_CM_CLIENT);

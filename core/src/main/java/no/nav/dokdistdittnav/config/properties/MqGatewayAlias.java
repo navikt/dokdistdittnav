@@ -21,5 +21,4 @@ public class MqGatewayAlias {
 	private String name;
 	@Min(0)
 	private int port;
-	private boolean enableTls;
 }
