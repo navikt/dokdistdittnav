@@ -28,7 +28,7 @@
 
 		<brukernotifikasjon.version>2.6.0</brukernotifikasjon.version>
 		<kafka-avro-serializer.version>7.7.1</kafka-avro-serializer.version>
-		<teamdokumenthandtering-avro-schemas.version>1.1.0</teamdokumenthandtering-avro-schemas.version>
+		<teamdokumenthandtering-avro-schemas.version>1.1.6</teamdokumenthandtering-avro-schemas.version>
 		<camel.version>4.8.0</camel.version>
 		<logstash-logback-encoder.version>8.0</logstash-logback-encoder.version>
 		<ibm-mq.version>9.4.0.5</ibm-mq.version>
