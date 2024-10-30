@@ -9,8 +9,8 @@
             "status": "FERDIGSTILT",
             "kanal": "EPOST",
             "kontaktInfo": "test@nav.no",
-            "tittel": "Du har fått en oppgave fra NAV",
-            "tekst": "<!DOCTYPE html><html><head><title>Oppgave</title></head><body><p>Hei!</p><p>Du har fått en ny oppgave på Ditt NAV. Logg inn og se hva oppgaven gjelder.</p><p>Vennlig hilsen</p><p>NAV</p></body></html>\n",
+            "tittel": "Du har fått en oppgave fra Nav",
+            "tekst": "<!DOCTYPE html><html><head><title>Oppgave</title></head><body><p>Hei!</p><p>Du har fått en ny oppgave på Ditt Nav. Logg inn og se hva oppgaven gjelder.</p><p>Vennlig hilsen</p><p>Nav</p></body></html>\n",
             "sendtDato": "2022-06-01T09:36:02.897387"
         },
         {
@@ -18,7 +18,7 @@
             "status": "FERDIGSTILT",
             "kanal": "SMS",
             "kontaktInfo": "12345678",
-            "tittel": "Du har fått en oppgave fra NAV",
+            "tittel": "Du har fått en oppgave fra Nav",
             "tekst": "<tekst>",
             "sendtDato": "2022-06-08T08:30:00.241415"
         }

@@ -57,7 +57,7 @@ public class Qdist010Route extends RouteBuilder {
 		onException(UtenforKjernetidException.class)
 				.handled(true)
 				.useOriginalMessage()
-				.log(INFO, log, "Forsendelse til DittNAV er utenfor kjernetid. Legges på kø. " + getIdsForLogging())
+				.log(INFO, log, "Forsendelse til DittNav er utenfor kjernetid. Legges på kø. " + getIdsForLogging())
 				.to("jms:" + qdist010UtenforKjernetid.getQueueName());
 
 		onException(AbstractDokdistdittnavFunctionalException.class, JAXBException.class, ValidationException.class)

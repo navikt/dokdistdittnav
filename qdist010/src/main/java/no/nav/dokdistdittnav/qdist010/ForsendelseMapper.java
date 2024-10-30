@@ -31,13 +31,13 @@ import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 public class ForsendelseMapper {
 
 
-	public static final String BESKJED_TITTEL = "Melding fra NAV";
-	public static final String AARSOPPGAVE_TITTEL = "Årsoppgave fra NAV";
+	public static final String BESKJED_TITTEL = "Melding fra Nav";
+	public static final String AARSOPPGAVE_TITTEL = "Årsoppgave fra Nav";
 	private static final String BESKJED_TEKSTFIL;
 	private static final String AARSOPPPGAVE_TEKSTFIL;
 
-	public static final String VEDTAK_EPOSTTITTEL = "Vedtak fra NAV";
-	public static final String VIKTIG_EPOSTTITTEL = "Brev fra NAV";
+	public static final String VEDTAK_EPOSTTITTEL = "Vedtak fra Nav";
+	public static final String VIKTIG_EPOSTTITTEL = "Brev fra Nav";
 	private static final String VEDTAK_EPOSTTEKST;
 	private static final String VIKTIG_EPOSTTEKST;
 

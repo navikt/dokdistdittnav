@@ -33,8 +33,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class ForsendelseMapperTest {
 
 	private static final String AARSOPPGAVE_ID = "000053";
-	private static final String MELDING_FRA_NAV = "Melding fra NAV";
-	private static final String AARSOPPGAVE_FRA_NAV = "Årsoppgave fra NAV";
+	private static final String MELDING_FRA_NAV = "Melding fra Nav";
+	private static final String AARSOPPGAVE_FRA_NAV = "Årsoppgave fra Nav";
 
 	@ParameterizedTest
 	@CsvSource(value = {
