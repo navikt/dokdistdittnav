@@ -66,12 +66,12 @@ public class Kdist002Route extends RouteBuilder {
 		errorHandler(defaultErrorHandler()
 				.onExceptionOccurred(exchange -> {
 					Throwable exception = exchange.getProperty(EXCEPTION_CAUGHT, Throwable.class);
-					if (exception != null) {
+					if (exception != null && !(exception instanceof AbstractDokdistdittnavFunctionalException)) {
 						DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
 						manual.getCamelExchangePayload().consumer.seek(manual.getPartition(), manual.getRecordOffset());
 
 						log.error("Kdist002 Teknisk feil. Seek tilbake til record(topic={}, partition={}, offset={})",
-								manual.getTopicName(), manual.getPartition().partition(), manual.getRecordOffset());
+								manual.getTopicName(), manual.getPartition().partition(), manual.getRecordOffset(), exception);
 					}
 				})
 				.retryAttemptedLogLevel(ERROR)
