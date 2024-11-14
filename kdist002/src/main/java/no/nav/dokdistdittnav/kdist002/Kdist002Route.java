@@ -11,6 +11,7 @@ import no.nav.dokdistdittnav.metrics.DittnavMetricsRoutePolicy;
 import no.nav.dokdistdittnav.utils.MDCProcessor;
 import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKanal;
 import org.apache.camel.Exchange;
+import org.apache.camel.builder.PredicateBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.kafka.consumer.DefaultKafkaManualCommit;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
@@ -35,23 +36,24 @@ public class Kdist002Route extends RouteBuilder {
 
 	private static final String QDIST009 = "qdist009";
 	private static final String DONE_EVENT = "doknotifikasjon_done";
+	public static final String TMS_EKSTERN_VARSLING = "tms-ekstern-varsling";
 
 	private final CamelKafkaProperties camelKafkaProperties;
 	private final Kdist002Service kdist002Service;
-	private final DokdistdittnavProperties dittnavProperties;
+	private final DokdistdittnavProperties dokdistdittnavProperties;
 	private final Queue qdist009;
 	private final DoneEventProducer doneEventProducer;
 	private final DittnavMetricsRoutePolicy metricsRoutePolicy;
 
 	public Kdist002Route(CamelKafkaProperties camelKafkaProperties,
 						 Kdist002Service kdist002Service,
-						 DokdistdittnavProperties dittnavProperties,
+						 DokdistdittnavProperties dokdistdittnavProperties,
 						 Queue qdist009,
 						 DoneEventProducer doneEventProducer,
 						 DittnavMetricsRoutePolicy metricsRoutePolicy) {
 		this.camelKafkaProperties = camelKafkaProperties;
 		this.kdist002Service = kdist002Service;
-		this.dittnavProperties = dittnavProperties;
+		this.dokdistdittnavProperties = dokdistdittnavProperties;
 		this.qdist009 = qdist009;
 		this.doneEventProducer = doneEventProducer;
 		this.metricsRoutePolicy = metricsRoutePolicy;
@@ -88,12 +90,15 @@ public class Kdist002Route extends RouteBuilder {
 				.log(WARN, log, "${exception}");
 
 
-		from(camelKafkaProperties.buildKafkaUrl(dittnavProperties.getDoknotifikasjon().getStatustopic(), camelKafkaProperties.kafkaConsumer()))
+		from(camelKafkaProperties.buildKafkaUrl(dokdistdittnavProperties.getDoknotifikasjon().getStatustopic(), camelKafkaProperties.kafkaConsumer()))
+				.autoStartup(dokdistdittnavProperties.isAutostartup())
 				.id(KDIST002_ID)
 				.process(new MDCProcessor())
 				.routePolicy(metricsRoutePolicy)
 				.choice()
-					.when(simple("${body.bestillerId}").isNotEqualTo(dittnavProperties.getAppnavn()))
+					.when(PredicateBuilder.and(
+							simple("${body.bestillerId}").isNotEqualTo(dokdistdittnavProperties.getAppnavn()),
+							simple("${body.bestillerId}").isNotEqualTo(TMS_EKSTERN_VARSLING)))
 						.process(this::defaultKafkaManualCommit)
 					.otherwise()
 						.bean(kdist002Service)
@@ -133,7 +138,7 @@ public class Kdist002Route extends RouteBuilder {
 		from("direct:" + DONE_EVENT)
 				.id(DONE_EVENT)
 				.bean(doneEventProducer)
-				.log(INFO, "Kdist002 skrevet hendelse med " + getIdsForLoggingDittnav() + " til topic=" + dittnavProperties.getBrukernotifikasjon().getTopicdone())
+				.log(INFO, "Kdist002 skrevet hendelse med " + getIdsForLoggingDittnav() + " til topic=" + dokdistdittnavProperties.getBrukernotifikasjon().getTopicdone())
 				.end();
 		//@formatter:on
 	}
