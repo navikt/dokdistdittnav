@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -40,6 +41,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static no.nav.dokdistdittnav.kdist002.Kdist002Route.TMS_EKSTERN_VARSLING;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FEILET;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FERDIGSTILT;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.OVERSENDT;
@@ -136,15 +138,16 @@ public class Kdist002ITest extends ApplicationTestConfig {
 		return map;
 	}
 
-	@Test
-	public void shouldFeilregistrerForsendelseOgOppdaterForsendelse() {
+	@ParameterizedTest
+	@ValueSource(strings = {DOKDISTDITTNAV, TMS_EKSTERN_VARSLING})
+	public void shouldFeilregistrerForsendelseOgOppdaterForsendelse(String appnavn) {
 		stubGetFinnForsendelse(OK.value());
 		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json", OK.value());
 		stubPostOpprettForsendelse(OK.value());
 		stubPutFeilregistrerforsendelse(OK.value());
 		stubPutOppdaterForsendelse(OK.value());
 
-		sendMessageToDoknotifikasjonStatusTopic(doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name()));
+		sendMessageToDoknotifikasjonStatusTopic(doknotifikasjonStatus(appnavn, FEILET.name()));
 
 		await().atMost(10, SECONDS).untilAsserted(() -> {
 			//Sjekk at riktig forsendelseId blir sendt til qdist009/print
@@ -167,7 +170,7 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	}
 
 	@Test
-	public void shouldAvsluttBehandlingenWhenBestillerIdIsNotDittnav() {
+	public void shouldAvsluttBehandlingenWhenBestillerIdIsNotDittnavOrTmsEksternVarsling() {
 		stubGetFinnForsendelse(OK.value());
 
 		sendMessageToDoknotifikasjonStatusTopic(doknotifikasjonStatus(DOKDISTDPI, FEILET.name()));
