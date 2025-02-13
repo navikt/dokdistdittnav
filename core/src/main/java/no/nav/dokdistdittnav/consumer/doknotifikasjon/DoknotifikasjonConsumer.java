@@ -67,18 +67,15 @@ public class DoknotifikasjonConsumer {
 			} else if (webException.getStatusCode().is4xxClientError()) {
 				String clientErrorMsg = format("Kall mot doknotifikasjon feilet funksjonelt ved henting av notifikasjon med bestillingsId=%s, status=%s, feilmelding=%s",
 						bestillingsId, webException.getStatusCode(), webException.getMessage());
-				log.warn(clientErrorMsg, webException);
 				return new DoknotifikasjonFunctionalException(clientErrorMsg, error);
 			} else {
 				String serverErrorMsg = format("Kall mot doknotifikasjon feilet teknisk ved henting av notifikasjon med bestillingsId=%s, status=%s ,feilmelding=%s",
 						bestillingsId, webException.getStatusCode(), error.getMessage());
-				log.error(serverErrorMsg, webException);
 				return new DoknotifikasjonTechnicalException(serverErrorMsg, webException);
 			}
 		} else {
 			String ukjentErrorMsg = format("Kall mot doknotifikasjon feilet med ukjent teknisk feil ved henting av notifikasjon med bestillingsId=%s ,feilmelding=%s. Se stacktrace",
 					bestillingsId, error.getMessage());
-			log.error(ukjentErrorMsg, error);
 			return new DoknotifikasjonTechnicalException(ukjentErrorMsg, error);
 		}
 	}

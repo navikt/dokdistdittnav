@@ -52,14 +52,12 @@ public class DokarkivConsumer {
 
 	private Throwable mapError(Throwable throwable, JournalpostId journalpostId) {
 		if (throwable instanceof WebClientResponseException response && response.getStatusCode().is4xxClientError()) {
-			log.error("Kall mot dokarkiv feilet funksjonelt ved registrering av lest status for journalpost med id={}, feilmelding={}", journalpostId.value(), throwable.getMessage());
 			throw new DokarkivOppdaterDistribusjonsinfoFunctionalException(format("Kall mot dokarkiv feilet funksjonelt ved registrering av lest status for journalpost med id=%s, status=%s, feilmelding=%s",
 					journalpostId.value(),
 					response.getStatusCode(),
 					response.getMessage()),
 					throwable);
 		} else {
-			log.error("Kall mot dokarkiv feilet teknisk ved registrering av lest status for journalpost med id={}, feilmelding={}", journalpostId.value(), throwable.getMessage());
 			throw new DokarkivOppdaterDistribusjonsinfoTechnicalException(format("Kall mot dokarkiv feilet teknisk ved registrering av lest status for journalpost med id=%s ,feilmelding=%s",
 					journalpostId.value(),
 					throwable.getMessage()),
