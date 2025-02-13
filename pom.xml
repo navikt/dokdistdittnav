@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.4</version>
+		<version>3.4.2</version>
 	</parent>
 
 	<groupId>no.nav.dokdistdittnav</groupId>
@@ -27,17 +27,17 @@
 		<java.version>21</java.version>
 
 		<brukernotifikasjon.version>2.6.0</brukernotifikasjon.version>
-		<kafka-avro-serializer.version>7.7.1</kafka-avro-serializer.version>
+		<kafka-avro-serializer.version>7.8.0</kafka-avro-serializer.version>
 		<teamdokumenthandtering-avro-schemas.version>1.1.6</teamdokumenthandtering-avro-schemas.version>
-		<camel.version>4.8.0</camel.version>
+		<camel.version>4.9.0</camel.version>
 		<logstash-logback-encoder.version>8.0</logstash-logback-encoder.version>
-		<ibm-mq.version>9.4.0.5</ibm-mq.version>
+		<com.ibm.mq.jakarta.client.version>9.4.1.1</com.ibm.mq.jakarta.client.version>
 		<melding-virksomhet-dokdistfordeling.version>7-18c61bf</melding-virksomhet-dokdistfordeling.version>
 		<resilience4j.version>2.2.0</resilience4j.version>
 
 		<!-- Test -->
-		<commons-io.version>2.16.1</commons-io.version>
-		<spring-cloud-contract-wiremock.version>4.1.4</spring-cloud-contract-wiremock.version>
+		<commons-io.version>2.18.0</commons-io.version>
+		<spring-cloud-contract-wiremock.version>4.2.0</spring-cloud-contract-wiremock.version>
 
 		<!-- Plugins -->
 		<maven-toolchains-plugin.version>3.2.0</maven-toolchains-plugin.version>
@@ -108,7 +108,7 @@
 			<dependency>
 				<groupId>com.ibm.mq</groupId>
 				<artifactId>com.ibm.mq.jakarta.client</artifactId>
-				<version>${ibm-mq.version}</version>
+				<version>${com.ibm.mq.jakarta.client.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>no.nav.meldinger.virksomhet</groupId>

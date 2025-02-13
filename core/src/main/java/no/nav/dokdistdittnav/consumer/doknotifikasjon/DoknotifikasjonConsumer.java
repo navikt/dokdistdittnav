@@ -11,8 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.reactive.function.client.WebClientResponseException.NotFound;
-
-import java.util.function.Consumer;
+import reactor.core.publisher.Mono;
 
 import static java.lang.String.format;
 import static no.nav.dokdistdittnav.azure.AzureProperties.CLIENT_REGISTRATION_DOKNOTIFIKASJON;
@@ -48,40 +47,36 @@ public class DoknotifikasjonConsumer {
 				.attributes(clientRegistrationId(CLIENT_REGISTRATION_DOKNOTIFIKASJON))
 				.retrieve()
 				.bodyToMono(NotifikasjonInfoTo.class)
-				.doOnError(handleError(bestillingsId))
-				.doOnSuccess(notifikasjonInfoTo -> {
+				.flatMap(notifikasjonInfoTo -> {
 					if (maaInkludereSendtDato && notifikasjonInfoTo.notifikasjonDistribusjoner().stream()
 							.anyMatch(it -> it.sendtDato() == null)) {
-						throw new NotifikasjonManglerSendtDatoException(
-								format("Notifikasjon med bestillingsId=%s inneholder en eller flere notifikasjonDistribusjoner uten sendtDato", bestillingsId));
+						return Mono.error(new NotifikasjonManglerSendtDatoException(
+								format("Notifikasjon med bestillingsId=%s inneholder en eller flere notifikasjonDistribusjoner uten sendtDato", bestillingsId)));
 					}
+					return Mono.just(notifikasjonInfoTo);
 				})
+				.onErrorMap(throwable -> mapError(throwable, bestillingsId))
 				.block();
 	}
 
-	private Consumer<Throwable> handleError(String bestillingsId) {
-		return error -> {
-			if (error instanceof WebClientResponseException webException) {
-				if (error instanceof NotFound notFound) {
-					String notFoundErrorMsg = format("Fant ikke bestillingsId=%s i doknotifikasjon. Forsøker på nytt", bestillingsId);
-					throw new DoknotifikasjonTechnicalException(notFoundErrorMsg, notFound);
-				} else if (webException.getStatusCode().is4xxClientError()) {
-					String clientErrorMsg = format("Kall mot doknotifikasjon feilet funksjonelt ved henting av notifikasjon med bestillingsId=%s, status=%s, feilmelding=%s",
-							bestillingsId, webException.getStatusCode(), webException.getMessage());
-					log.warn(clientErrorMsg, webException);
-					throw new DoknotifikasjonFunctionalException(clientErrorMsg, error);
-				} else {
-					String serverErrorMsg = format("Kall mot doknotifikasjon feilet teknisk ved henting av notifikasjon med bestillingsId=%s, status=%s ,feilmelding=%s",
-							bestillingsId, webException.getStatusCode(), error.getMessage());
-					log.error(serverErrorMsg, webException);
-					throw new DoknotifikasjonTechnicalException(serverErrorMsg, webException);
-				}
+	private Throwable mapError(Throwable error, String bestillingsId) {
+		if (error instanceof WebClientResponseException webException) {
+			if (error instanceof NotFound notFound) {
+				String notFoundErrorMsg = format("Fant ikke bestillingsId=%s i doknotifikasjon. Forsøker på nytt", bestillingsId);
+				return new DoknotifikasjonTechnicalException(notFoundErrorMsg, notFound);
+			} else if (webException.getStatusCode().is4xxClientError()) {
+				String clientErrorMsg = format("Kall mot doknotifikasjon feilet funksjonelt ved henting av notifikasjon med bestillingsId=%s, status=%s, feilmelding=%s",
+						bestillingsId, webException.getStatusCode(), webException.getMessage());
+				return new DoknotifikasjonFunctionalException(clientErrorMsg, error);
 			} else {
-				String ukjentErrorMsg = format("Kall mot doknotifikasjon feilet med ukjent teknisk feil ved henting av notifikasjon med bestillingsId=%s ,feilmelding=%s. Se stacktrace",
-						bestillingsId, error.getMessage());
-				log.error(ukjentErrorMsg, error);
-				throw new DoknotifikasjonTechnicalException(ukjentErrorMsg, error);
+				String serverErrorMsg = format("Kall mot doknotifikasjon feilet teknisk ved henting av notifikasjon med bestillingsId=%s, status=%s ,feilmelding=%s",
+						bestillingsId, webException.getStatusCode(), error.getMessage());
+				return new DoknotifikasjonTechnicalException(serverErrorMsg, webException);
 			}
-		};
+		} else {
+			String ukjentErrorMsg = format("Kall mot doknotifikasjon feilet med ukjent teknisk feil ved henting av notifikasjon med bestillingsId=%s ,feilmelding=%s. Se stacktrace",
+					bestillingsId, error.getMessage());
+			return new DoknotifikasjonTechnicalException(ukjentErrorMsg, error);
+		}
 	}
 }
