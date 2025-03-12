@@ -5,7 +5,6 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
 import no.nav.dokdistdittnav.exception.functional.UtenforKjernetidException;
-import no.nav.dokdistdittnav.metrics.DittnavMetricsRoutePolicy;
 import no.nav.dokdistdittnav.qdist010.brukernotifikasjon.ProdusentNotifikasjon;
 import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKanal;
 import org.apache.camel.ValidationException;
@@ -30,20 +29,17 @@ public class Qdist010Route extends RouteBuilder {
 	private final Queue qdist010;
 	private final Queue qdist010FunksjonellFeil;
 	private final Queue qdist010UtenforKjernetid;
-	private final DittnavMetricsRoutePolicy qdist010MetricsRoutePolicy;
 
 	public Qdist010Route(ProdusentNotifikasjon produsentNotifikasjon,
 						 DokdistStatusUpdater dokdistStatusUpdater,
 						 Queue qdist010,
 						 Queue qdist010FunksjonellFeil,
-						 Queue qdist010UtenforKjernetid,
-						 DittnavMetricsRoutePolicy qdist010MetricsRoutePolicy) {
+						 Queue qdist010UtenforKjernetid) {
 		this.produsentNotifikasjon = produsentNotifikasjon;
 		this.dokdistStatusUpdater = dokdistStatusUpdater;
 		this.qdist010 = qdist010;
 		this.qdist010FunksjonellFeil = qdist010FunksjonellFeil;
 		this.qdist010UtenforKjernetid = qdist010UtenforKjernetid;
-		this.qdist010MetricsRoutePolicy = qdist010MetricsRoutePolicy;
 	}
 
 	@Override
@@ -70,7 +66,6 @@ public class Qdist010Route extends RouteBuilder {
 				"?transacted=true")
 				.routeId(SERVICE_ID)
 				.setExchangePattern(InOnly)
-				.routePolicy(qdist010MetricsRoutePolicy)
 				.process(new IdsProcessor())
 				.log(INFO, log, "qdist010 har mottatt forsendelse med forsendelseId=${exchangeProperty." + PROPERTY_FORSENDELSE_ID + "}")
 				.to("validator:no/nav/meldinger/virksomhet/dokdistfordeling/xsd/qdist008/out/distribuertilkanal.xsd")

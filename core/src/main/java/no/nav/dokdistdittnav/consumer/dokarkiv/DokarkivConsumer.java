@@ -3,7 +3,6 @@ package no.nav.dokdistdittnav.consumer.dokarkiv;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.exception.technical.AbstractDokdistdittnavTechnicalException;
-import no.nav.dokdistdittnav.metrics.Monitor;
 import no.nav.dokdistdittnav.utils.NavHeadersFilter;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -13,8 +12,6 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import static java.lang.String.format;
 import static no.nav.dokdistdittnav.azure.AzureProperties.CLIENT_REGISTRATION_DOKARKIV;
-import static no.nav.dokdistdittnav.constants.MdcConstants.DOK_CONSUMER;
-import static no.nav.dokdistdittnav.constants.MdcConstants.PROCESS;
 import static no.nav.dokdistdittnav.constants.RetryConstants.DELAY_SHORT;
 import static no.nav.dokdistdittnav.constants.RetryConstants.MAX_ATTEMPTS_SHORT;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
@@ -38,7 +35,6 @@ public class DokarkivConsumer {
 	}
 
 	@Retryable(retryFor = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
-	@Monitor(value = DOK_CONSUMER, extraTags = {PROCESS, "oppdaterDistribusjonsinfo"}, histogram = true)
 	public void settTidLestHoveddokument(JournalpostId journalpostId, OppdaterDistribusjonsInfo oppdaterDistribusjonsinfo) {
 		webClient.patch()
 				.uri(dokdistdittnavProperties.getDokarkiv().getOppdaterDistribusjonsinfoURI(journalpostId))

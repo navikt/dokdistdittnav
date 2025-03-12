@@ -7,7 +7,6 @@ import no.nav.dokdistdittnav.config.kafka.CamelKafkaProperties;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
 import no.nav.dokdistdittnav.kafka.DoneEventRequest;
-import no.nav.dokdistdittnav.metrics.DittnavMetricsRoutePolicy;
 import no.nav.dokdistdittnav.utils.MDCProcessor;
 import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKanal;
 import org.apache.camel.Exchange;
@@ -43,20 +42,17 @@ public class Kdist002Route extends RouteBuilder {
 	private final DokdistdittnavProperties dokdistdittnavProperties;
 	private final Queue qdist009;
 	private final DoneEventProducer doneEventProducer;
-	private final DittnavMetricsRoutePolicy metricsRoutePolicy;
 
 	public Kdist002Route(CamelKafkaProperties camelKafkaProperties,
 						 Kdist002Service kdist002Service,
 						 DokdistdittnavProperties dokdistdittnavProperties,
 						 Queue qdist009,
-						 DoneEventProducer doneEventProducer,
-						 DittnavMetricsRoutePolicy metricsRoutePolicy) {
+						 DoneEventProducer doneEventProducer) {
 		this.camelKafkaProperties = camelKafkaProperties;
 		this.kdist002Service = kdist002Service;
 		this.dokdistdittnavProperties = dokdistdittnavProperties;
 		this.qdist009 = qdist009;
 		this.doneEventProducer = doneEventProducer;
-		this.metricsRoutePolicy = metricsRoutePolicy;
 	}
 
 	@Override
@@ -94,7 +90,6 @@ public class Kdist002Route extends RouteBuilder {
 				.autoStartup(dokdistdittnavProperties.isAutostartup())
 				.id(KDIST002_ID)
 				.process(new MDCProcessor())
-				.routePolicy(metricsRoutePolicy)
 				.choice()
 					.when(PredicateBuilder.and(
 							simple("${body.bestillerId}").isNotEqualTo(dokdistdittnavProperties.getAppnavn()),

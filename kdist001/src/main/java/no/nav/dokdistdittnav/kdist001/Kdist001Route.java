@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistdittnav.config.kafka.CamelKafkaProperties;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
-import no.nav.dokdistdittnav.metrics.DittnavMetricsRoutePolicy;
 import no.nav.dokdistdittnav.utils.MDCProcessor;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -25,19 +24,17 @@ public class Kdist001Route extends RouteBuilder {
 	private final CamelKafkaProperties camelKafkaProperties;
 	private final BehandleHoveddokumentLestService behandleHoveddokumentLestService;
 	private final DokdistdittnavProperties dokdistdittnavProperties;
-	private final DittnavMetricsRoutePolicy metricsRoutePolicy;
 
-	public Kdist001Route(CamelKafkaProperties camelKafkaProperties, BehandleHoveddokumentLestService behandleHoveddokumentLestService,
-						 DokdistdittnavProperties dokdistdittnavProperties, DittnavMetricsRoutePolicy metricsRoutePolicy) {
+	public Kdist001Route(CamelKafkaProperties camelKafkaProperties,
+						 BehandleHoveddokumentLestService behandleHoveddokumentLestService,
+						 DokdistdittnavProperties dokdistdittnavProperties) {
 		this.camelKafkaProperties = camelKafkaProperties;
 		this.behandleHoveddokumentLestService = behandleHoveddokumentLestService;
 		this.dokdistdittnavProperties = dokdistdittnavProperties;
-		this.metricsRoutePolicy = metricsRoutePolicy;
 	}
 
 	@Override
 	public void configure() {
-
 		//@formatter:off
 		errorHandler(defaultErrorHandler()
 				.onExceptionOccurred(exchange -> {
@@ -68,7 +65,6 @@ public class Kdist001Route extends RouteBuilder {
 		from(camelKafkaProperties.buildKafkaUrl(dokdistdittnavProperties.getTopic().getLestavmottaker(), camelKafkaProperties.kafkaConsumer()))
 				.autoStartup(dokdistdittnavProperties.isAutostartup())
 				.id(KDIST001_ID)
-				.routePolicy(metricsRoutePolicy)
 				.process(new MDCProcessor())
 				.bean(behandleHoveddokumentLestService)
 				.process(this::defaultKafkaManualCommit)
