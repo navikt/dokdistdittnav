@@ -2,7 +2,6 @@ package no.nav.dokdistdittnav.kafka;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistdittnav.exception.technical.KafkaTechnicalException;
-import no.nav.dokdistdittnav.metrics.Monitor;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.errors.TopicAuthorizationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +33,6 @@ public class KafkaEventProducer {
 		this.kafkaTemplate = kafkaTemplate;
 	}
 
-	@Monitor(createErrorMetric = true, errorMetricInclude = KafkaTechnicalException.class)
 	@Retryable(retryFor = KafkaTechnicalException.class, maxAttempts = MAX_VALUE, backoff = @Backoff(delay = DELAY_LONG))
 	public void publish(String topic, Object key, Object event) {
 
