@@ -91,7 +91,7 @@
 		</dependency>
 		<dependency>
 			<groupId>no.nav.meldinger.virksomhet</groupId>
-			<artifactId>melding-virksomhet-dokdistfordeling</artifactId>
+			<artifactId>dok-melding-virksomhet-dokdistfordeling</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.micrometer</groupId>
