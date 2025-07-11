@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.5</version>
+		<version>3.5.3</version>
 	</parent>
 
 	<groupId>no.nav.dokdistdittnav</groupId>
@@ -27,17 +27,17 @@
 		<java.version>21</java.version>
 
 		<brukernotifikasjon.version>2.6.0</brukernotifikasjon.version>
-		<kafka-avro-serializer.version>7.8.0</kafka-avro-serializer.version>
+		<kafka-avro-serializer.version>7.9.2</kafka-avro-serializer.version>
 		<teamdokumenthandtering-avro-schemas.version>1.1.6</teamdokumenthandtering-avro-schemas.version>
-		<camel.version>4.11.0</camel.version>
+		<camel.version>4.13.0</camel.version>
 		<logstash-logback-encoder.version>8.1</logstash-logback-encoder.version>
-		<com.ibm.mq.jakarta.client.version>9.4.2.1</com.ibm.mq.jakarta.client.version>
-		<melding-virksomhet-dokdistfordeling.version>7-18c61bf</melding-virksomhet-dokdistfordeling.version>
+		<com.ibm.mq.jakarta.client.version>9.4.3.0</com.ibm.mq.jakarta.client.version>
+		<dok-melding-virksomhet-dokdistfordeling.version>41-d282678</dok-melding-virksomhet-dokdistfordeling.version>
 		<resilience4j.version>2.3.0</resilience4j.version>
 
 		<!-- Test -->
 		<commons-io.version>2.19.0</commons-io.version>
-		<spring-cloud-contract-wiremock.version>4.2.1</spring-cloud-contract-wiremock.version>
+		<spring-cloud-contract-wiremock.version>4.3.0</spring-cloud-contract-wiremock.version>
 
 		<!-- Plugins -->
 		<maven-toolchains-plugin.version>3.2.0</maven-toolchains-plugin.version>
@@ -112,8 +112,8 @@
 			</dependency>
 			<dependency>
 				<groupId>no.nav.meldinger.virksomhet</groupId>
-				<artifactId>melding-virksomhet-dokdistfordeling</artifactId>
-				<version>${melding-virksomhet-dokdistfordeling.version}</version>
+				<artifactId>dok-melding-virksomhet-dokdistfordeling</artifactId>
+				<version>${dok-melding-virksomhet-dokdistfordeling.version}</version>
 			</dependency>
 
 			<!-- Test -->
