@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-JAVA_OPTS="${JAVA_OPTS} -Xmx1024m \
+JAVA_OPTS="${JAVA_OPTS} -XX:MaxRAMPercentage=75 \
                -Djavax.net.ssl.trustStoreType=jks \
                -Djavax.net.ssl.keyStore=${NAV_TRUSTSTORE_PATH} \
                -Djavax.net.ssl.keyStorePassword=${NAV_TRUSTSTORE_PASSWORD} \
