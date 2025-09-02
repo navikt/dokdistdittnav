@@ -1,12 +1,10 @@
 package no.nav.dokdistdittnav.config;
 
-import lombok.extern.slf4j.Slf4j;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import jakarta.annotation.PreDestroy;
 import jakarta.jms.ConnectionFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * Rydder opp ressurser som Spring ikke gjør selv.
@@ -15,8 +13,11 @@ import jakarta.jms.ConnectionFactory;
 @Component
 public class ShutdownHook {
 
-	@Autowired
-	private ConnectionFactory connectionFactory;
+	private final ConnectionFactory connectionFactory;
+
+	public ShutdownHook(ConnectionFactory connectionFactory) {
+		this.connectionFactory = connectionFactory;
+	}
 
 	@PreDestroy
 	public void destroy() {

@@ -6,5 +6,5 @@ public class DoknotifikasjonFunctionalException extends AbstractDokdistdittnavFu
 
 	public DoknotifikasjonFunctionalException(String message, Throwable cause) {
 		super(message, cause);
-	};
+	}
 }

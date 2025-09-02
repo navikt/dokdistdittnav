@@ -61,7 +61,7 @@ public class ForsendelseMapper {
 	}
 
 	public static BeskjedInput opprettBeskjed(String url, HentForsendelseResponse hentForsendelseResponse) {
-		String dokumenttypeId = hentForsendelseResponse.getDokumenter().get(0).getDokumenttypeId();
+		String dokumenttypeId = hentForsendelseResponse.getDokumenter().getFirst().getDokumenttypeId();
 
 		return new BeskjedInputBuilder()
 				.withTidspunkt(now(ZoneId.of("UTC")))
@@ -126,7 +126,7 @@ public class ForsendelseMapper {
 	private static URL mapLink(String url, HentForsendelseResponse hentForsendelseResponse) {
 		try {
 			URI uri = UriComponentsBuilder
-					.fromHttpUrl(url)
+					.fromUriString(url)
 					.path(hentForsendelseResponse.getTema() + "/" + hentForsendelseResponse.getArkivInformasjon().getArkivId())
 					.build().toUri();
 

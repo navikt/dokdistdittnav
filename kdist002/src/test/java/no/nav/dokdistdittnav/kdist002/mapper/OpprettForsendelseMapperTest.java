@@ -66,14 +66,14 @@ class OpprettForsendelseMapperTest {
 		OpprettForsendelseRequest request = mapper.map(hentForsendelseResponse, NEW_BESTILLINGS_ID);
 
 		assertEquals(NEW_BESTILLINGS_ID, request.getBestillingsId());
-		assertEquals(request.getForsendelseTittel(), FORSENDELSE_TITTEL);
-		assertEquals(request.getBatchId(), BATCH_ID);
-		assertEquals(request.getDokumentProdApp(), DOKUMENT_PROD_APP);
-		assertEquals(request.getBestillendeFagsystem(), BESTILLENDE_FAGSYSTEM);
-		assertEquals(request.getArkivInformasjon().getArkivId(), ARKIV_ID);
-		assertEquals(request.getMottaker().getMottakerId(), MOTTAKER_ID);
-		assertEquals(request.getMottaker().getMottakerNavn(), MOTTAKER_ID_NAVN);
-		assertEquals(request.getOriginalDistribusjonId(), OLD_BESTILLINGS_ID);
+		assertEquals(FORSENDELSE_TITTEL,  request.getForsendelseTittel());
+		assertEquals(BATCH_ID,  request.getBatchId());
+		assertEquals(DOKUMENT_PROD_APP,  request.getDokumentProdApp());
+		assertEquals(BESTILLENDE_FAGSYSTEM,  request.getBestillendeFagsystem());
+		assertEquals(ARKIV_ID,  request.getArkivInformasjon().getArkivId());
+		assertEquals(MOTTAKER_ID,  request.getMottaker().getMottakerId());
+		assertEquals(MOTTAKER_ID_NAVN,  request.getMottaker().getMottakerNavn());
+		assertEquals(OLD_BESTILLINGS_ID,  request.getOriginalDistribusjonId());
 		assertNull(request.getPostadresse());
 		assertDokument(request.getDokumenter().get(1));
 	}
@@ -81,7 +81,7 @@ class OpprettForsendelseMapperTest {
 	@Test
 	public void shouldThrowExceptionIfHentForsendelseResponseIsNull() {
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> mapper.map(null, NEW_BESTILLINGS_ID));
-		assertEquals(exception.getMessage(), "HentForsendelseResponse kan ikke være null");
+		assertEquals("HentForsendelseResponse kan ikke være null", exception.getMessage());
 	}
 
 	@Test
@@ -89,30 +89,30 @@ class OpprettForsendelseMapperTest {
 		HentForsendelseResponse hentForsendelseResponse = createHentForsendelseResponseWithTemaNull();
 
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> mapper.map(hentForsendelseResponse, NEW_BESTILLINGS_ID));
-		assertEquals(exception.getMessage(), "tema kan ikke være null");
+		assertEquals("tema kan ikke være null", exception.getMessage());
 	}
 
 	@Test
 	public void shouldThrowExceptionIfMottakerIsNull() {
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> mapper.map(createHentForsendelseResponseWithMottakerNull(), NEW_BESTILLINGS_ID));
-		assertEquals(exception.getMessage(), "Mottaker kan ikke være null");
+		assertEquals("Mottaker kan ikke være null", exception.getMessage());
 	}
 
 	private void assertPostadresseTo(OpprettForsendelseRequest.PostadresseTo postadresse) {
-		assertEquals(postadresse.getAdresselinje1(), ADRESSELINJE_1);
-		assertEquals(postadresse.getAdresselinje2(), ADRESSELINJE_2);
-		assertEquals(postadresse.getAdresselinje3(), ADRESSELINJE_3);
-		assertEquals(postadresse.getPostnummer(), POSTNUMMER);
-		assertEquals(postadresse.getPoststed(), POSTSTED);
-		assertEquals(postadresse.getLandkode(), LAND);
+		assertEquals(ADRESSELINJE_1, postadresse.getAdresselinje1());
+		assertEquals(ADRESSELINJE_2, postadresse.getAdresselinje2());
+		assertEquals(ADRESSELINJE_3, postadresse.getAdresselinje3());
+		assertEquals(POSTNUMMER, postadresse.getPostnummer());
+		assertEquals(POSTSTED, postadresse.getPoststed());
+		assertEquals(LAND, postadresse.getLandkode());
 	}
 
 	private void assertDokument(OpprettForsendelseRequest.DokumentTo dokumentTo) {
-		assertEquals(dokumentTo.getDokumenttypeId(), DOKUMENTTYPE_ID_2);
-		assertEquals(dokumentTo.getDokumentObjektReferanse(), OBJEKT_REFERANSE_2);
-		assertEquals(dokumentTo.getTilknyttetSom(), TILKNYTTET_SOM_VEDLEGG);
-		assertEquals(dokumentTo.getRekkefolge(), 2);
-		assertEquals(dokumentTo.getArkivDokumentInfoId(), ARKIV_DOKUMENTINFO_ID_2);
+		assertEquals(DOKUMENTTYPE_ID_2, dokumentTo.getDokumenttypeId());
+		assertEquals(OBJEKT_REFERANSE_2, dokumentTo.getDokumentObjektReferanse());
+		assertEquals(TILKNYTTET_SOM_VEDLEGG, dokumentTo.getTilknyttetSom());
+		assertEquals(2, dokumentTo.getRekkefolge());
+		assertEquals(ARKIV_DOKUMENTINFO_ID_2, dokumentTo.getArkivDokumentInfoId());
 	}
 
 	private HentForsendelseResponse createHentForsendelseResponseWithMottakerNull() {

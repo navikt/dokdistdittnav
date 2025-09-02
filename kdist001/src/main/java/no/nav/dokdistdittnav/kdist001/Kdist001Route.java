@@ -76,7 +76,7 @@ public class Kdist001Route extends RouteBuilder {
 		DefaultKafkaManualCommit manualCommit = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
 		if (manualCommit != null) {
 			if (log.isDebugEnabled()) {
-				log.debug("Kdist001, manual commit " + createLogging(manualCommit));
+				log.debug("Kdist001, manual commit {}", createLogging(manualCommit));
 			}
 			manualCommit.commit();
 		}

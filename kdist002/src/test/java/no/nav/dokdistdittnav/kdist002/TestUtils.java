@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.SneakyThrows;
 import no.nav.dokdistdittnav.consumer.doknotifikasjon.NotifikasjonInfoTo;
-import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.ClassPathResource;
