@@ -29,7 +29,7 @@
 		<brukernotifikasjon.version>2.6.0</brukernotifikasjon.version>
 		<kafka-avro-serializer.version>7.9.2</kafka-avro-serializer.version>
 		<teamdokumenthandtering-avro-schemas.version>1.1.6</teamdokumenthandtering-avro-schemas.version>
-		<camel-spring-boot-bom.version>4.14.0</camel-spring-boot-bom.version>
+		<camel-spring-boot-bom.version>4.14.1</camel-spring-boot-bom.version>
 		<logstash-logback-encoder.version>8.1</logstash-logback-encoder.version>
 		<com.ibm.mq.jakarta.client.version>9.4.3.1</com.ibm.mq.jakarta.client.version>
 		<dok-legacy-tjenestespesifikasjoner.version>41-d282678</dok-legacy-tjenestespesifikasjoner.version>
