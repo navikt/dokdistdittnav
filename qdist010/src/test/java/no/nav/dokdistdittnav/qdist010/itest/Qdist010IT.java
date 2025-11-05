@@ -7,6 +7,7 @@ import jakarta.jms.TextMessage;
 import jakarta.xml.bind.JAXBElement;
 import no.nav.dokdistdittnav.qdist010.brukernotifikasjon.ProdusentNotifikasjon;
 import no.nav.dokdistdittnav.qdist010.config.ApplicationTestConfig;
+import no.nav.tms.varsel.builder.BuilderEnvironment;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -85,6 +87,13 @@ class Qdist010IT extends ApplicationTestConfig {
 	@BeforeEach
 	public void setupBefore() {
 		CALL_ID = UUID.randomUUID().toString();
+
+		// Brukt av no.nav.tms.varsel sin java-builder
+		BuilderEnvironment.extend(Map.of(
+				"NAIS_CLUSTER_NAME", "test-fss",
+				"NAIS_NAMESPACE", "teamdokumenthandtering",
+				"NAIS_APP_NAME", "dokdistdittnav")
+		);
 
 		stubAzure();
 	}

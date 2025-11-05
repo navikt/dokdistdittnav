@@ -74,20 +74,24 @@ public class ProdusentNotifikasjon {
 	}
 
 	private void publiserOppgaveEllerBeskjed(HentForsendelseResponse forsendelse, NokkelInput noekkel) {
-		if (erDistribusjonstypeVedtakViktigEllerNull(forsendelse.getDistribusjonstype()) && harJournalpostId(forsendelse)) {
-			OppgaveInput oppgaveIntern = opprettOppgave(properties.getBrukernotifikasjon().getLink(), forsendelse);
-			log.info("Har opprettet oppgave med eventId/bestillingsId={}", forsendelse.getBestillingsId());
+		var distribusjonstype = forsendelse.getDistribusjonstype();
 
-			kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicoppgave(), noekkel, oppgaveIntern);
-			log.info("Har publisert oppgave med eventId/bestillingsId={} til topic={}", forsendelse.getBestillingsId(), properties.getBrukernotifikasjon().getTopicoppgave());
+		if (erDistribusjonstypeVedtakViktigEllerNull(distribusjonstype) && harJournalpostId(forsendelse)) {
+			String oppgave = opprettOppgave(properties.getBrukernotifikasjon().getLink(), forsendelse);
+			log.info("Har opprettet oppgave med varselId (bestillingsId)={}", forsendelse.getBestillingsId());
+
+			// Bruk samme topic
+			kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicoppgave(), noekkel, oppgave);
+			log.info("Har publisert oppgave med varselId (bestillingsId)={} til topic={}", forsendelse.getBestillingsId(), properties.getBrukernotifikasjon().getTopicoppgave());
 		}
 
-		if (erDistribusjonstypeAnnet(forsendelse.getDistribusjonstype()) && harJournalpostId(forsendelse)) {
-			BeskjedInput beskjedIntern = opprettBeskjed(properties.getBrukernotifikasjon().getLink(), forsendelse);
-			log.info("Har opprettet beskjed med eventId/bestillingsId={}", forsendelse.getBestillingsId());
+		if (erDistribusjonstypeAnnet(distribusjonstype) && harJournalpostId(forsendelse)) {
+			String beskjed = opprettBeskjed(properties.getBrukernotifikasjon().getLink(), forsendelse);
+			log.info("Har opprettet beskjed med varselId (bestillingsId)={}", forsendelse.getBestillingsId());
 
-			kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicbeskjed(), noekkel, beskjedIntern);
-			log.info("Har publisert beskjed med eventId/bestillingsId={} til topic={}", forsendelse.getBestillingsId(), properties.getBrukernotifikasjon().getTopicbeskjed());
+			// Bruk samme topic
+			kafkaEventProducer.publish(properties.getBrukernotifikasjon().getTopicbeskjed(), noekkel, beskjed);
+			log.info("Har publisert beskjed med varselId (bestillingsId)={} til topic={}", forsendelse.getBestillingsId(), properties.getBrukernotifikasjon().getTopicbeskjed());
 		}
 	}
 

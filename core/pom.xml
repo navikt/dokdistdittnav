@@ -17,10 +17,16 @@
 			<groupId>org.springframework.kafka</groupId>
 			<artifactId>spring-kafka</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>com.github.navikt</groupId>
 			<artifactId>brukernotifikasjon-schemas</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>no.nav.tms.varsel</groupId>
+			<artifactId>java-builder</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>io.confluent</groupId>
 			<artifactId>kafka-avro-serializer</artifactId>
