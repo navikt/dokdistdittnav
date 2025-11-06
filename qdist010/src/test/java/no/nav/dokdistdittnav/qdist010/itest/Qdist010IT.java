@@ -5,8 +5,8 @@ import jakarta.jms.Message;
 import jakarta.jms.Queue;
 import jakarta.jms.TextMessage;
 import jakarta.xml.bind.JAXBElement;
-import no.nav.dokdistdittnav.qdist010.brukernotifikasjon.ProdusentNotifikasjon;
 import no.nav.dokdistdittnav.qdist010.config.ApplicationTestConfig;
+import no.nav.dokdistdittnav.qdist010.minsidevarsling.VarselService;
 import no.nav.tms.varsel.builder.BuilderEnvironment;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -82,7 +82,7 @@ class Qdist010IT extends ApplicationTestConfig {
 	private Queue qdist010Bq;
 
 	@Autowired
-	private ProdusentNotifikasjon produsentNotifikasjon;
+	private VarselService varselService;
 
 	@BeforeEach
 	public void setupBefore() {
@@ -109,9 +109,9 @@ class Qdist010IT extends ApplicationTestConfig {
 
 	@ParameterizedTest
 	@ValueSource(strings = {
-			"rdist001/getForsendelse_withAdresse-happy.json",
-			"rdist001/forsendelse_distribusjontype_vedtak.json",
-			"rdist001/forsendelse_distribusjontype_null.json"
+			"rdist001/hentforsendelse_happy.json",
+			"rdist001/hentforsendelse_distribusjontype_vedtak.json",
+			"rdist001/hentforsendelse_distribusjontype_null.json"
 	})
 	void skalPublisereOppgaveNaarDistribusjonstypeErVedtakViktigEllerNull(String filnavn) throws Exception {
 		stubHentForsendelse(OK, filnavn);
@@ -124,7 +124,7 @@ class Qdist010IT extends ApplicationTestConfig {
 
 	@Test
 	void skalPublisereBeskjedNaarDistribusjonstypeErAnnet() throws Exception {
-		stubHentForsendelse(OK, "rdist001/forsendelse_distribusjontype_annet.json");
+		stubHentForsendelse(OK, "rdist001/hentforsendelse_distribusjontype_annet.json");
 		stubPutOppdaterForsendelse(OK);
 
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
@@ -172,6 +172,38 @@ class Qdist010IT extends ApplicationTestConfig {
 	}
 
 	@Test
+	void skalHavnePaaFunksjonellBoqHvisForsendelsestatusErUlikKlarForDist() throws Exception {
+		stubHentForsendelse(OK, "rdist001/hentforsendelse_forsendelsestatus_ulik_klarfordist.json");
+
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
+
+		await().atMost(10, SECONDS).untilAsserted(() -> {
+			String resultOnQdist010FunksjonellFeilQueue = receive(qdist010FunksjonellFeil, CALL_ID);
+			assertNotNull(resultOnQdist010FunksjonellFeilQueue);
+			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-happy.xml"));
+		});
+
+		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
+		verify(0, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
+	}
+
+	@Test
+	void skalHavnePaaFunksjonellBoqHvisForsendelseIkkeErArkivertIJoark() throws Exception {
+		stubHentForsendelse(OK, "rdist001/hentforsendelse_ikke_arkivert_i_joark.json");
+
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
+
+		await().atMost(10, SECONDS).untilAsserted(() -> {
+			String resultOnQdist010FunksjonellFeilQueue = receive(qdist010FunksjonellFeil, CALL_ID);
+			assertNotNull(resultOnQdist010FunksjonellFeilQueue);
+			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-happy.xml"));
+		});
+
+		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
+		verify(0, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
+	}
+
+	@Test
 	void skalHavnePaaFunksjonellBoqHvis404FraHentForsendelse() throws Exception {
 		stubHentForsendelse(NOT_FOUND, "");
 
@@ -205,7 +237,7 @@ class Qdist010IT extends ApplicationTestConfig {
 
 	@Test
 	void skalHavnePaaFunksjonellBoqHvis404FraOppdaterForsendelse() throws Exception {
-		stubHentForsendelse(OK, "rdist001/getForsendelse_withAdresse-happy.json");
+		stubHentForsendelse(OK, "rdist001/hentforsendelse_happy.json");
 		stubPutOppdaterForsendelse(NOT_FOUND);
 
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
@@ -221,7 +253,7 @@ class Qdist010IT extends ApplicationTestConfig {
 
 	@Test
 	void skalHavnePaaTekniskBoqHvis500FraOppdaterForsendelse() throws Exception {
-		stubHentForsendelse(OK, "rdist001/getForsendelse_withAdresse-happy.json");
+		stubHentForsendelse(OK, "rdist001/hentforsendelse_happy.json");
 		stubPutOppdaterForsendelse(INTERNAL_SERVER_ERROR);
 
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
@@ -243,9 +275,9 @@ class Qdist010IT extends ApplicationTestConfig {
 		LocalDate today = LocalDate.now(OSLO_ZONE);
 		LocalDateTime todayMidnight = LocalDateTime.of(today, morgen);
 		Clock fixedClock = Clock.fixed(todayMidnight.toInstant(UTC), OSLO_ZONE);
-		ReflectionTestUtils.setField(produsentNotifikasjon, "clock", fixedClock);
+		ReflectionTestUtils.setField(varselService, "clock", fixedClock);
 
-		stubHentForsendelse(OK, "rdist001/getForsendelse_withKjernetid.json");
+		stubHentForsendelse(OK, "rdist001/hentforsendelse_distribusjonstidspunkt_kjernetid.json");
 		stubPutOppdaterForsendelse(OK);
 
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
@@ -266,9 +298,9 @@ class Qdist010IT extends ApplicationTestConfig {
 		LocalDate today = LocalDate.of(2022, 4, 29);
 		LocalDateTime todayMidnight = LocalDateTime.of(today, morgen);
 		Clock fixedClock = Clock.fixed(todayMidnight.atZone(OSLO_ZONE).toInstant(), OSLO_ZONE);
-		ReflectionTestUtils.setField(produsentNotifikasjon, "clock", fixedClock);
+		ReflectionTestUtils.setField(varselService, "clock", fixedClock);
 
-		stubHentForsendelse(OK, "rdist001/getForsendelse_withKjernetid.json");
+		stubHentForsendelse(OK, "rdist001/hentforsendelse_distribusjonstidspunkt_kjernetid.json");
 		stubPutOppdaterForsendelse(OK);
 
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));

@@ -18,6 +18,7 @@ public class DokdistdittnavProperties {
 	private String appnavn;
 
 	private final Topic topic = new Topic();
+	private final MinSide minside = new MinSide();
 	private final Brukernotifikasjon brukernotifikasjon = new Brukernotifikasjon();
 	private final Doknotifikasjon doknotifikasjon = new Doknotifikasjon();
 	private final Dokarkiv dokarkiv = new Dokarkiv();
@@ -30,17 +31,21 @@ public class DokdistdittnavProperties {
 		private String lestavmottaker;
 	}
 
+	// Legacy - blir fjernet i MMA-8388
 	@Data
 	@Validated
 	public static class Brukernotifikasjon {
 		@NotNull
-		private String topicbeskjed;
-		@NotNull
-		private String topicoppgave;
-		@NotNull
 		private String topicdone;
-		@NotNull
-		private String link;
+	}
+
+	@Data
+	@Validated
+	public static class MinSide {
+		@NotEmpty
+		private String varseltopic;
+		@NotEmpty
+		private String dokumentarkivLink;
 	}
 
 	@Data

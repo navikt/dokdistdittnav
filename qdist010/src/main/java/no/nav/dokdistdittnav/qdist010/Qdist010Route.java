@@ -5,7 +5,7 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import no.nav.dokdistdittnav.exception.functional.AbstractDokdistdittnavFunctionalException;
 import no.nav.dokdistdittnav.exception.functional.UtenforKjernetidException;
-import no.nav.dokdistdittnav.qdist010.brukernotifikasjon.ProdusentNotifikasjon;
+import no.nav.dokdistdittnav.qdist010.minsidevarsling.VarselService;
 import no.nav.meldinger.virksomhet.dokdistfordeling.qdist008.out.DistribuerTilKanal;
 import org.apache.camel.ValidationException;
 import org.apache.camel.builder.RouteBuilder;
@@ -24,18 +24,18 @@ import static org.apache.camel.LoggingLevel.WARN;
 @Component
 public class Qdist010Route extends RouteBuilder {
 
-	private final ProdusentNotifikasjon produsentNotifikasjon;
+	private final VarselService varselService;
 	private final DokdistStatusUpdater dokdistStatusUpdater;
 	private final Queue qdist010;
 	private final Queue qdist010FunksjonellFeil;
 	private final Queue qdist010UtenforKjernetid;
 
-	public Qdist010Route(ProdusentNotifikasjon produsentNotifikasjon,
+	public Qdist010Route(VarselService varselService,
 						 DokdistStatusUpdater dokdistStatusUpdater,
 						 Queue qdist010,
 						 Queue qdist010FunksjonellFeil,
 						 Queue qdist010UtenforKjernetid) {
-		this.produsentNotifikasjon = produsentNotifikasjon;
+		this.varselService = varselService;
 		this.dokdistStatusUpdater = dokdistStatusUpdater;
 		this.qdist010 = qdist010;
 		this.qdist010FunksjonellFeil = qdist010FunksjonellFeil;
@@ -53,7 +53,7 @@ public class Qdist010Route extends RouteBuilder {
 		onException(UtenforKjernetidException.class)
 				.handled(true)
 				.useOriginalMessage()
-				.log(INFO, log, "Forsendelse til DittNav er utenfor kjernetid. Legges på kø. " + getIdsForLogging())
+				.log(INFO, log, "Forsøk på sending av varsel til Min Side utenfor kjernetid. Legger melding på vente-kø. " + getIdsForLogging())
 				.to("jms:" + qdist010UtenforKjernetid.getQueueName());
 
 		onException(AbstractDokdistdittnavFunctionalException.class, JAXBException.class, ValidationException.class)
@@ -74,10 +74,10 @@ public class Qdist010Route extends RouteBuilder {
 					DistribuerTilKanal distribuerTilKanal = exchange.getIn().getBody(DistribuerTilKanal.class);
 					exchange.setProperty(PROPERTY_FORSENDELSE_ID, distribuerTilKanal.getForsendelseId());
 				})
-				.bean(produsentNotifikasjon)
-				.log(INFO, log, "qdist010 har sendt notifikasjon for forsendelse med " + getIdsForLogging())
+				.bean(varselService, "sendVarselTilMinSide")
+				.log(INFO, log, "qdist010 har sendt varsel til Min Side for forsendelse med " + getIdsForLogging())
 				.bean(dokdistStatusUpdater)
-				.log(INFO, log, "qdist010 har sendt varsel og oppdatert forsendelseStatus=OVERSENDT og varselStatus=OPPRETTET i dokdistDb for forsendelse med " + getIdsForLogging());
+				.log(INFO, log, "qdist010 har oppdatert forsendelseStatus=OVERSENDT og varselStatus=OPPRETTET i dokdistDb for forsendelse med " + getIdsForLogging());
 	}
 
 	public static String getIdsForLogging() {

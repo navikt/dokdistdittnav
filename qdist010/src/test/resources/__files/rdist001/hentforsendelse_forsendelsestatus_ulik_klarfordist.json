@@ -1,0 +1,45 @@
+{
+  "bestillingsId": "811c0c5d-e74c-491a-8b8c-d94075c822c3",
+  "modus": "T",
+  "forsendelseStatus": "OVERSENDT",
+  "tema": "DAG",
+  "distribusjonstidspunkt": "UMIDDELBART",
+  "forsendelseTittel": "forsendelseTittel",
+  "distribusjonstype": "VIKTIG",
+  "mottaker": {
+    "mottakerId": "12345678912",
+    "mottakerNavn": "mottakerNavn",
+    "mottakerType": "PERSON"
+  },
+  "postadresse": {
+    "adresselinje1": "adresselinjeEn",
+    "adresselinje2": "adresselinjeTo",
+    "adresselinje3": "adresselinjeTre",
+    "postnummer": "123",
+    "poststed": "poststed",
+    "landkode": "NO"
+  },
+  "arkivInformasjon": {
+    "arkivId": "123"
+  },
+  "dokumenter": [
+    {
+      "tilknyttetSom": "HOVEDDOKUMENT",
+      "dokumentObjektReferanse": "dokumentObjektReferanseHoveddok",
+      "arkivDokumentInfoId": "arkivDokumentInfoId1",
+      "dokumenttypeId": "dokumenttypeIdHoveddok"
+    },
+    {
+      "tilknyttetSom": "VEDLEGG",
+      "dokumentObjektReferanse": "dokumentObjektReferanseVedlegg1",
+      "arkivDokumentInfoId": "arkivDokumentInfoId2",
+      "dokumenttypeId": "dokumenttypeId2Vedlegg1"
+    },
+    {
+      "tilknyttetSom": "VEDLEGG",
+      "dokumentObjektReferanse": "dokumentObjektReferanseVedlegg2",
+      "arkivDokumentInfoId": "arkivDokumentInfoId3",
+      "dokumenttypeId": "dokumenttypeIdVedlegg2"
+    }
+  ]
+}
