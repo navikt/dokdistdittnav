@@ -19,6 +19,7 @@
     "landkode": "NO"
   },
   "arkivInformasjon": {
+    "arkivSystem": "JOARK",
     "arkivId": "123"
   },
   "dokumenter": [

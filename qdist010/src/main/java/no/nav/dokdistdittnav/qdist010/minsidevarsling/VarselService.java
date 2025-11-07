@@ -109,12 +109,14 @@ public class VarselService {
 	}
 
 	private boolean forsendelseHarUgyldigStatus(HentForsendelseResponse forsendelse) {
-		return !erArkivert(forsendelse) || !KLAR_FOR_DIST.name().equals(forsendelse.getForsendelseStatus());
+		return !erArkivertIJoark(forsendelse) || !KLAR_FOR_DIST.name().equals(forsendelse.getForsendelseStatus());
 	}
 
 	// For at lenken til dokumentarkivet skal fungere må journalposten ligge i Joark
-	private boolean erArkivert(HentForsendelseResponse forsendelse) {
-		return forsendelse.getArkivInformasjon() != null && forsendelse.getArkivInformasjon().getArkivId() != null;
+	private boolean erArkivertIJoark(HentForsendelseResponse forsendelse) {
+		return forsendelse.getArkivInformasjon() != null
+			   && forsendelse.getArkivInformasjon().getArkivSystem().equals("JOARK")
+			   && !forsendelse.getArkivInformasjon().getArkivId().isBlank();
 	}
 
 	private boolean erDistribusjonstypeVedtakViktigEllerNull(DistribusjonsTypeKode distribusjonstype) {
@@ -137,7 +139,7 @@ public class VarselService {
 	private void settExchangeProperties(Exchange exchange, HentForsendelseResponse forsendelse) {
 		exchange.setProperty(PROPERTY_BESTILLINGS_ID, forsendelse.getBestillingsId());
 
-		if (erArkivert(forsendelse)) {
+		if (erArkivertIJoark(forsendelse)) {
 			exchange.setProperty(PROPERTY_JOURNALPOST_ID, forsendelse.getArkivInformasjon().getArkivId());
 		}
 	}

@@ -187,9 +187,15 @@ class Qdist010IT extends ApplicationTestConfig {
 		verify(0, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
 	}
 
-	@Test
-	void skalHavnePaaFunksjonellBoqHvisForsendelseIkkeErArkivertIJoark() throws Exception {
-		stubHentForsendelse(OK, "rdist001/hentforsendelse_ikke_arkivert_i_joark.json");
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"rdist001/hentforsendelse_ikke_arkivert_i_joark_arkivinformasjon_null.json",
+			"rdist001/hentforsendelse_ikke_arkivert_i_joark_feil_arkivsystem.json",
+			"rdist001/hentforsendelse_ikke_arkivert_i_joark_manglende_arkivid.json",
+			"rdist001/hentforsendelse_ikke_arkivert_i_joark_blank_arkivid.json"
+	})
+	void skalHavnePaaFunksjonellBoqHvisForsendelseIkkeErArkivertIJoark(String responsMedManglendeEllerFeilArkivinfo) throws Exception {
+		stubHentForsendelse(OK, responsMedManglendeEllerFeilArkivinfo);
 
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
