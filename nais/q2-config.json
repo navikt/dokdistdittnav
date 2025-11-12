@@ -4,7 +4,7 @@
 	"MIN_REPLICAS": "1",
 	"MAX_REPLICAS": "2",
 	"INGRESSES": [
-		"https://dokdistdittnav.dev.intern.nav.no"
+		"https://dokdistdittnav.intern.dev.nav.no"
 	],
 	"AZURE_APP_TOKEN_URL": "https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/oauth2/v2.0/token",
 	"DOKDISTDITTNAV_BRUKERNOTIFIKASJON_TOPICBESKJED": "min-side.aapen-brukernotifikasjon-beskjed-v1",
@@ -20,7 +20,7 @@
 	"DOKDISTDITTNAV_DOKDISTADMIN_OAUTH_SCOPE": "api://dev-fss.teamdokumenthandtering.dokdistadmin/.default",
 	"DOKDISTDITTNAV_DOKDISTADMIN_BASE_URI": "http://dokdistadmin.teamdokumenthandtering.svc.nais.local/rest/v1/administrerforsendelse",
 	"DOKDISTDITTNAV_CHANNEL_SECURE_NAME": "Q2_DOKDISTDITTNAV_SE",
-	"MQGATEWAY01_HOSTNAME": "b27apvl219.preprod.local",
+	"MQGATEWAY01_HOSTNAME": "mqls01.preprod.local",
 	"MQGATEWAY01_PORT": "1413",
 	"MQGATEWAY01_NAME": "MQLS01",
 	"DOKDISTDITTNAV_QDIST010_FUNK_FEIL_QUEUENAME": "QA.Q2_DOKDISTDITTNAV.QDIST010_FUNK_FEIL",
