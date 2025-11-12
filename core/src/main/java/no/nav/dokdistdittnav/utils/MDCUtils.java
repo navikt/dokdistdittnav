@@ -4,10 +4,11 @@ import org.slf4j.MDC;
 
 import java.util.UUID;
 
-import static no.nav.dokdistdittnav.constants.MdcConstants.MDC_CALL_ID;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public final class MDCUtils {
+
+	public static final String MDC_CALL_ID = "callId";
 
 	private MDCUtils() {
 	}

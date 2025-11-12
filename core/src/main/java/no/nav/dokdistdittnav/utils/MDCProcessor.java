@@ -7,7 +7,7 @@ import org.slf4j.MDC;
 import java.util.UUID;
 
 import static java.util.Objects.isNull;
-import static no.nav.dokdistdittnav.constants.MdcConstants.MDC_CALL_ID;
+import static no.nav.dokdistdittnav.utils.MDCUtils.MDC_CALL_ID;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class MDCProcessor implements Processor {

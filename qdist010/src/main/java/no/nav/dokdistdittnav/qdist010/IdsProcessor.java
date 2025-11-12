@@ -10,7 +10,7 @@ import org.slf4j.MDC;
 import java.util.UUID;
 
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDELSE_ID;
-import static no.nav.dokdistdittnav.constants.MdcConstants.MDC_CALL_ID;
+import static no.nav.dokdistdittnav.utils.MDCUtils.MDC_CALL_ID;
 
 public class IdsProcessor implements Processor {
 
