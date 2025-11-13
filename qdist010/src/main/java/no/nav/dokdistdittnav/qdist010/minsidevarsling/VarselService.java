@@ -60,10 +60,9 @@ public class VarselService {
 		String forsendelseId = distribuerTilKanal.getForsendelseId();
 
 		HentForsendelseResponse forsendelse = administrerForsendelse.hentForsendelse(forsendelseId);
-		log.info("Hentet forsendelse med forsendelseId={} og bestillingsId={} fra rdist001", forsendelseId, forsendelse.getBestillingsId());
 		settExchangeProperties(exchange, forsendelse);
 
-		if (forsendelseHarUgyldigStatus(forsendelse)) {
+		if (forsendelse.forsendelseHarUgyldigStatus()) {
 			log.error("Forsendelse med bestillingsId={} har feil forsendelseStatus, eller er ikke arkivert i Joark. Avbryter sending av varsel til Min Side.", forsendelse.getBestillingsId());
 			throw new ForsendelseErIkkeGyldigForDistribusjonTilMinSideException("Forsendelse har ugyldig forsendelseStatus, eller er ikke arkivert. Legges på funk. feilkø.");
 		}
@@ -78,11 +77,9 @@ public class VarselService {
 
 	private void sendOppgaveEllerBeskjed(HentForsendelseResponse forsendelse) {
 		String lenkeTilVarsel = lagLenkeMedTemaOgArkivId(properties.getMinside().getDokumentarkivLink(), forsendelse);
-
 		String varselId = forsendelse.getBestillingsId();
-		DistribusjonsTypeKode distribusjonstype = forsendelse.getDistribusjonstype();
 
-		if (erDistribusjonstypeVedtakViktigEllerNull(distribusjonstype)) {
+		if (forsendelse.erDistribusjonstypeVedtakViktigEllerNull()) {
 			String oppgave = opprettOppgave(forsendelse, lenkeTilVarsel);
 			log.info("Har opprettet oppgave med varselId (bestillingsId)={}", varselId);
 
@@ -90,7 +87,7 @@ public class VarselService {
 			log.info("Har sendt oppgave med varselId (bestillingsId)={} til topic={}", varselId, properties.getMinside().getVarseltopic());
 		}
 
-		if (erDistribusjonstypeAnnet(distribusjonstype)) {
+		if (forsendelse.erDistribusjonstypeAnnet()) {
 			String beskjed = opprettBeskjed(forsendelse, lenkeTilVarsel);
 			log.info("Har opprettet beskjed med varselId (bestillingsId)={}", varselId);
 
@@ -108,25 +105,6 @@ public class VarselService {
 		return (tid.isAfter(kjernetidStart) && tid.isBefore(kjernetidSlutt));
 	}
 
-	private boolean forsendelseHarUgyldigStatus(HentForsendelseResponse forsendelse) {
-		return !erArkivertIJoark(forsendelse) || !KLAR_FOR_DIST.name().equals(forsendelse.getForsendelseStatus());
-	}
-
-	// For at lenken til dokumentarkivet skal fungere må journalposten ligge i Joark
-	private boolean erArkivertIJoark(HentForsendelseResponse forsendelse) {
-		return forsendelse.getArkivInformasjon() != null
-			   && forsendelse.getArkivInformasjon().getArkivSystem().equals("JOARK")
-			   && !forsendelse.getArkivInformasjon().getArkivId().isBlank();
-	}
-
-	private boolean erDistribusjonstypeVedtakViktigEllerNull(DistribusjonsTypeKode distribusjonstype) {
-		return distribusjonstype == null || distribusjonstype == VIKTIG || distribusjonstype == VEDTAK;
-	}
-
-	private boolean erDistribusjonstypeAnnet(DistribusjonsTypeKode distribusjonstype) {
-		return distribusjonstype == ANNET;
-	}
-
 	public static String lagLenkeMedTemaOgArkivId(String url, HentForsendelseResponse forsendelse) {
 		URI uri = UriComponentsBuilder
 				.fromUriString(url)
@@ -139,7 +117,7 @@ public class VarselService {
 	private void settExchangeProperties(Exchange exchange, HentForsendelseResponse forsendelse) {
 		exchange.setProperty(PROPERTY_BESTILLINGS_ID, forsendelse.getBestillingsId());
 
-		if (erArkivertIJoark(forsendelse)) {
+		if (forsendelse.erArkivertIJoark()) {
 			exchange.setProperty(PROPERTY_JOURNALPOST_ID, forsendelse.getArkivInformasjon().getArkivId());
 		}
 	}

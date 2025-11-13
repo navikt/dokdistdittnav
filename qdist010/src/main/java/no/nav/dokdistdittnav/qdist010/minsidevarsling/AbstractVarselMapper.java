@@ -7,7 +7,7 @@ import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 
 public abstract class AbstractVarselMapper {
 
-	public static final Integer SYNLIGEDAGER = 10;
+	public static final int SYNLIGEDAGER = 10;
 	public static final String SPRAAKKODE_BOKMAAL = "nb";
 
 	public static String getFileAndAssertNotNullOrEmpty(String path) {
