@@ -5,11 +5,14 @@ import lombok.Value;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonstidspunktKode;
 
+import java.time.Clock;
+import java.time.LocalTime;
 import java.util.List;
 
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.ANNET;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VEDTAK;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VIKTIG;
+import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonstidspunktKode.UMIDDELBART;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.KLAR_FOR_DIST;
 
 @Value
@@ -86,6 +89,16 @@ public class HentForsendelseResponse {
 
 	public boolean erDistribusjonstypeAnnet() {
 		return distribusjonstype == ANNET;
+	}
+
+	public boolean skalDistribueresSenere(Clock clock, LocalTime kjernetidStart, LocalTime kjernetidSlutt) {
+		if (distribusjonstidspunkt == null || distribusjonstidspunkt == UMIDDELBART) {
+			return false;
+		}
+
+		// distribusjonstidspunkt er KJERNETIDSPUNKT
+		LocalTime tid = LocalTime.now(clock);
+		return !(tid.isAfter(kjernetidStart) && tid.isBefore(kjernetidSlutt));
 	}
 
 }

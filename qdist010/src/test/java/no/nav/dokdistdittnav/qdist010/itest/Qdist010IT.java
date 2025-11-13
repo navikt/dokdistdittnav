@@ -12,6 +12,8 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -24,12 +26,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Clock;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -62,6 +63,9 @@ class Qdist010IT extends ApplicationTestConfig {
 	private static final String FORSENDELSE_ID = "33333";
 	private static final String OPPDATERFORSENDELSE_PATH = "/rest/v1/administrerforsendelse/oppdaterforsendelse";
 	private static final String HENTFORSENDELSE_PATH = "/rest/v1/administrerforsendelse/" + FORSENDELSE_ID;
+	private static final LocalDateTime DISTRIBUSJON_INNENFOR_KJERNETID = LocalDateTime.of(2022, 4, 29, 13, 30, 0);
+	private static final LocalDateTime DISTRIBUSJON_FOER_KJERNETID = LocalDateTime.of(2022, 4, 29, 3, 0, 0);
+	private static final LocalDateTime DISTRIBUSJON_ETTER_KJERNETID = LocalDateTime.of(2022, 4, 29, 23, 30, 0);
 
 	private static final ZoneId OSLO_ZONE = ZoneId.of("Europe/Oslo");
 	private static String CALL_ID;
@@ -100,18 +104,15 @@ class Qdist010IT extends ApplicationTestConfig {
 
 	@Bean
 	public Clock clock() {
-		//15.30.00 -> UTC
-		LocalTime morgen = LocalTime.of(13, 30, 0);
-		LocalDate today = LocalDate.now(OSLO_ZONE);
-		LocalDateTime todayMidnight = LocalDateTime.of(today, morgen);
-		return Clock.fixed(todayMidnight.toInstant(UTC), OSLO_ZONE);
+		return Clock.fixed(DISTRIBUSJON_INNENFOR_KJERNETID.toInstant(UTC), OSLO_ZONE);
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = {
 			"rdist001/hentforsendelse_happy.json",
 			"rdist001/hentforsendelse_distribusjontype_vedtak.json",
-			"rdist001/hentforsendelse_distribusjontype_null.json"
+			"rdist001/hentforsendelse_distribusjontype_null.json",
+			"rdist001/hentforsendelse_distribusjontype_mangler.json"
 	})
 	void skalPublisereOppgaveNaarDistribusjonstypeErVedtakViktigEllerNull(String filnavn) throws Exception {
 		stubHentForsendelse(OK, filnavn);
@@ -119,7 +120,10 @@ class Qdist010IT extends ApplicationTestConfig {
 
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
-		await().atMost(10, SECONDS).untilAsserted(() -> verifyAllStubs(1));
+		await().atMost(10, SECONDS).untilAsserted(() -> {
+			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
+			verify(1, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
+		});
 	}
 
 	@Test
@@ -129,7 +133,10 @@ class Qdist010IT extends ApplicationTestConfig {
 
 		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
 
-		await().atMost(10, SECONDS).untilAsserted(() -> verifyAllStubs(1));
+		await().atMost(10, SECONDS).untilAsserted(() -> {
+			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
+			verify(1, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
+		});
 	}
 
 	@Test
@@ -142,7 +149,8 @@ class Qdist010IT extends ApplicationTestConfig {
 			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
-		verifyAllStubs(0);
+		verify(0, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
+		verify(0, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
 	}
 
 	@Test
@@ -155,7 +163,8 @@ class Qdist010IT extends ApplicationTestConfig {
 			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-feilId.xml"));
 		});
 
-		verifyAllStubs(0);
+		verify(0, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
+		verify(0, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
 	}
 
 	@Test
@@ -168,7 +177,8 @@ class Qdist010IT extends ApplicationTestConfig {
 			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-tom-forsendelseId.xml"));
 		});
 
-		verifyAllStubs(0);
+		verify(0, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
+		verify(0, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
 	}
 
 	@Test
@@ -254,7 +264,8 @@ class Qdist010IT extends ApplicationTestConfig {
 			assertEquals(resultOnQdist010FunksjonellFeilQueue, classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
-		verifyAllStubs(1);
+		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
+		verify(1, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
 	}
 
 	@Test
@@ -274,13 +285,39 @@ class Qdist010IT extends ApplicationTestConfig {
 		verify(3, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
 	}
 
-	@Test
-	void skalHavnePaaUtenforKjernetidBoqHvisKlokkenErFoerKjernetid() throws Exception {
-		//05.00.00 -> UTC
-		LocalTime morgen = LocalTime.of(3, 0, 0);
-		LocalDate today = LocalDate.now(OSLO_ZONE);
-		LocalDateTime todayMidnight = LocalDateTime.of(today, morgen);
-		Clock fixedClock = Clock.fixed(todayMidnight.toInstant(UTC), OSLO_ZONE);
+	@ParameterizedTest
+	@MethodSource
+	void skalDistribuereUmiddelbartOgsaaUtenforKjernetidDersomDistribusjonstidspunktManglerEllerErUmiddelbart(LocalDateTime sendingstidspunkt, String responsMedDistribusjonstidspunkt) throws Exception {
+		Clock fixedClock = Clock.fixed(sendingstidspunkt.atZone(OSLO_ZONE).toInstant(), OSLO_ZONE);
+		ReflectionTestUtils.setField(varselService, "clock", fixedClock);
+
+		stubHentForsendelse(OK, responsMedDistribusjonstidspunkt);
+		stubPutOppdaterForsendelse(OK);
+
+		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
+
+		await().atMost(10, SECONDS).untilAsserted(() -> {
+			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
+			verify(1, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
+		});
+	}
+
+	private static Stream<Arguments> skalDistribuereUmiddelbartOgsaaUtenforKjernetidDersomDistribusjonstidspunktManglerEllerErUmiddelbart() {
+
+		return Stream.of(
+				Arguments.of(DISTRIBUSJON_FOER_KJERNETID, "rdist001/hentforsendelse_distribusjonstidspunkt_umiddelbart.json"),
+				Arguments.of(DISTRIBUSJON_FOER_KJERNETID, "rdist001/hentforsendelse_distribusjonstidspunkt_null.json"),
+				Arguments.of(DISTRIBUSJON_FOER_KJERNETID, "rdist001/hentforsendelse_distribusjonstidspunkt_mangler.json"),
+				Arguments.of(DISTRIBUSJON_ETTER_KJERNETID, "rdist001/hentforsendelse_distribusjonstidspunkt_umiddelbart.json"),
+				Arguments.of(DISTRIBUSJON_ETTER_KJERNETID, "rdist001/hentforsendelse_distribusjonstidspunkt_null.json"),
+				Arguments.of(DISTRIBUSJON_ETTER_KJERNETID, "rdist001/hentforsendelse_distribusjonstidspunkt_mangler.json")
+		);
+	}
+
+	@ParameterizedTest
+	@MethodSource
+	void skalHavnePaaUtenforKjernetidBoqHvisSendingstidspunktErUtenforKjernetidForDistribusjonstidspunktKjernetid(LocalDateTime sendingstidspunkt) throws Exception {
+		Clock fixedClock = Clock.fixed(sendingstidspunkt.toInstant(UTC), OSLO_ZONE);
 		ReflectionTestUtils.setField(varselService, "clock", fixedClock);
 
 		stubHentForsendelse(OK, "rdist001/hentforsendelse_distribusjonstidspunkt_kjernetid.json");
@@ -297,27 +334,11 @@ class Qdist010IT extends ApplicationTestConfig {
 		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
 	}
 
-	@Test
-	void skalHavnePaaUtenforKjernetidBoqHvisKlokkenErEtterKjernetid() throws Exception {
-		//23.30.00 -> UTC
-		LocalTime morgen = LocalTime.of(23, 30, 0);
-		LocalDate today = LocalDate.of(2022, 4, 29);
-		LocalDateTime todayMidnight = LocalDateTime.of(today, morgen);
-		Clock fixedClock = Clock.fixed(todayMidnight.atZone(OSLO_ZONE).toInstant(), OSLO_ZONE);
-		ReflectionTestUtils.setField(varselService, "clock", fixedClock);
-
-		stubHentForsendelse(OK, "rdist001/hentforsendelse_distribusjonstidspunkt_kjernetid.json");
-		stubPutOppdaterForsendelse(OK);
-
-		sendStringMessage(qdist010, classpathToString("qdist010/qdist010-happy.xml"));
-
-		await().atMost(10, SECONDS).untilAsserted(() -> {
-			String resultOnQdist010UtenforKjernetidQueue = receive(qdist010UtenforKjernetid);
-			assertNotNull(resultOnQdist010UtenforKjernetidQueue);
-			assertEquals(resultOnQdist010UtenforKjernetidQueue, classpathToString("qdist010/qdist010-happy.xml"));
-		});
-
-		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
+	private static Stream<Arguments> skalHavnePaaUtenforKjernetidBoqHvisSendingstidspunktErUtenforKjernetidForDistribusjonstidspunktKjernetid() {
+		return Stream.of(
+				Arguments.of(DISTRIBUSJON_FOER_KJERNETID),
+				Arguments.of(DISTRIBUSJON_ETTER_KJERNETID)
+		);
 	}
 
 	private void stubAzure() {
@@ -378,15 +399,11 @@ class Qdist010IT extends ApplicationTestConfig {
 		}
 	}
 
-	private void verifyAllStubs(int count) {
-		verify(count, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
-		verify(count, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
-	}
-
 	private String classpathToString(String classpathResource) throws IOException {
 		InputStream inputStream = new ClassPathResource(classpathResource).getInputStream();
 		String message = IOUtils.toString(inputStream, UTF_8);
 		IOUtils.closeQuietly(inputStream);
 		return message;
 	}
+
 }

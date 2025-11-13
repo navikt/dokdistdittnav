@@ -3,8 +3,6 @@ package no.nav.dokdistdittnav.qdist010.minsidevarsling;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
-import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode;
-import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonstidspunktKode;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import no.nav.dokdistdittnav.exception.functional.ForsendelseErIkkeGyldigForDistribusjonTilMinSideException;
 import no.nav.dokdistdittnav.exception.functional.UtenforKjernetidException;
@@ -22,11 +20,6 @@ import java.time.LocalTime;
 
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_JOURNALPOST_ID;
-import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.ANNET;
-import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VEDTAK;
-import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VIKTIG;
-import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonstidspunktKode.UMIDDELBART;
-import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.KLAR_FOR_DIST;
 import static no.nav.dokdistdittnav.qdist010.minsidevarsling.BeskjedMapper.opprettBeskjed;
 import static no.nav.dokdistdittnav.qdist010.minsidevarsling.OppgaveMapper.opprettOppgave;
 
@@ -67,12 +60,12 @@ public class VarselService {
 			throw new ForsendelseErIkkeGyldigForDistribusjonTilMinSideException("Forsendelse har ugyldig forsendelseStatus, eller er ikke arkivert. Legges på funk. feilkø.");
 		}
 
-		if (!innenforKjernetid(forsendelse.getDistribusjonstidspunkt())) {
+		if (forsendelse.skalDistribueresSenere(clock, kjernetidStart, kjernetidSlutt)) {
 			log.info("Legger melding med distribusjonstidspunkt={} på vente-kø for varselId (bestillingsId)={}", forsendelse.getDistribusjonstidspunkt(), forsendelse.getBestillingsId());
 			throw new UtenforKjernetidException("Utenfor kjernetid, legges på ventekø");
-		} else {
-			sendOppgaveEllerBeskjed(forsendelse);
 		}
+
+		sendOppgaveEllerBeskjed(forsendelse);
 	}
 
 	private void sendOppgaveEllerBeskjed(HentForsendelseResponse forsendelse) {
@@ -94,15 +87,6 @@ public class VarselService {
 			kafkaEventProducer.publish(properties.getMinside().getVarseltopic(), varselId, beskjed);
 			log.info("Har sendt beskjed med varselId (bestillingsId)={} til topic={}", varselId, properties.getMinside().getVarseltopic());
 		}
-	}
-
-	private boolean innenforKjernetid(DistribusjonstidspunktKode distribusjonstidspunkt) {
-		if (distribusjonstidspunkt == null || distribusjonstidspunkt.equals(UMIDDELBART)) {
-			return true;
-		}
-
-		LocalTime tid = LocalTime.now(clock);
-		return (tid.isAfter(kjernetidStart) && tid.isBefore(kjernetidSlutt));
 	}
 
 	public static String lagLenkeMedTemaOgArkivId(String url, HentForsendelseResponse forsendelse) {
