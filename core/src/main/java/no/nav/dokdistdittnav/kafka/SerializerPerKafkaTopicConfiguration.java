@@ -16,7 +16,7 @@ import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CL
 import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG;
 
 @Configuration
-public class CustomKafkaTemplate {
+public class SerializerPerKafkaTopicConfiguration {
 
 	@Bean
 	public RoutingKafkaTemplate routingTemplate(ProducerFactory<Object, Object> defaultProducerFactory) {

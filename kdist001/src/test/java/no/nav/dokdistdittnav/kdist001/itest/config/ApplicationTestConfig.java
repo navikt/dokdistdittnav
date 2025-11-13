@@ -4,7 +4,7 @@ import no.nav.dokdistdittnav.azure.AzureProperties;
 import no.nav.dokdistdittnav.config.properties.DokdistDittnavServiceuser;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.config.properties.MqGatewayAlias;
-import no.nav.dokdistdittnav.kafka.CustomKafkaTemplate;
+import no.nav.dokdistdittnav.kafka.SerializerPerKafkaTopicConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,7 +27,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 })
 @Import({
 		JmsItestConfig.class,
-		CustomKafkaTemplate.class
+		SerializerPerKafkaTopicConfiguration.class
 })
 @EmbeddedKafka(
 		partitions = 1,
