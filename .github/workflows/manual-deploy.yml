@@ -8,11 +8,11 @@ on:
       environment:
         description: 'Environment'
         required: true
-        default: 'q1'
+        default: 'q2'
         type: choice
         options:
           - p
-          - q1
+          - q2
       ref_name:
         description: 'Git ref_name. branch or tag'
         required: true
