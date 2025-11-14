@@ -1,6 +1,7 @@
 package no.nav.dokdistdittnav.qdist010.minsidevarsling;
 
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
+import no.nav.dokdistdittnav.exception.functional.FeilDistribusjonstypeForVarselTilMinSideException;
 import no.nav.tms.varsel.builder.OpprettVarselBuilder;
 
 import java.time.ZoneId;
@@ -31,6 +32,10 @@ public class BeskjedMapper extends AbstractVarselMapper {
 	}
 
 	public static String opprettBeskjed(HentForsendelseResponse forsendelse, String lenkeTilVarsel) {
+		if (!forsendelse.erDistribusjonstypeAnnet()) {
+			throw new FeilDistribusjonstypeForVarselTilMinSideException("Sender kun varsel med type=beskjed til Min Side for distribusjonstype ANNET. Mottok=%s".formatted(forsendelse.getDistribusjonstype()));
+		}
+
 		String dokumenttypeId = forsendelse.getDokumenter().getFirst().getDokumenttypeId();
 
 		return OpprettVarselBuilder.newInstance()

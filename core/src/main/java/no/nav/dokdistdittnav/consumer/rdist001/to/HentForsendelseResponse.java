@@ -91,6 +91,10 @@ public class HentForsendelseResponse {
 		return distribusjonstype == ANNET;
 	}
 
+	public boolean erDistribusjonstypeVedtak() {
+		return distribusjonstype == VEDTAK;
+	}
+
 	public boolean skalDistribueresSenere(Clock clock, LocalTime kjernetidStart, LocalTime kjernetidSlutt) {
 		if (distribusjonstidspunkt == null || distribusjonstidspunkt == UMIDDELBART) {
 			return false;

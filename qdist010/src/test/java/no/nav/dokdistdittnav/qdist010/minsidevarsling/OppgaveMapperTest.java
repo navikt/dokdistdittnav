@@ -2,6 +2,7 @@ package no.nav.dokdistdittnav.qdist010.minsidevarsling;
 
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
+import no.nav.dokdistdittnav.exception.functional.FeilDistribusjonstypeForVarselTilMinSideException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -20,12 +21,13 @@ import static no.nav.dokdistdittnav.qdist010.minsidevarsling.OppgaveMapper.VEDTA
 import static no.nav.dokdistdittnav.qdist010.minsidevarsling.OppgaveMapper.VEDTAK_EPOSTVARSLINGSTITTEL;
 import static no.nav.dokdistdittnav.qdist010.minsidevarsling.OppgaveMapper.VEDTAK_SMSVARSLINGSTEKST;
 import static no.nav.dokdistdittnav.qdist010.minsidevarsling.OppgaveMapper.VEDTAK_VARSELTEKST;
-import static no.nav.dokdistdittnav.qdist010.minsidevarsling.OppgaveMapper.VIKTIG_EPOSTVARSLINGSTEKST;
-import static no.nav.dokdistdittnav.qdist010.minsidevarsling.OppgaveMapper.VIKTIG_EPOSTVARSLINGSTITTEL;
-import static no.nav.dokdistdittnav.qdist010.minsidevarsling.OppgaveMapper.VIKTIG_SMSVARSLINGSTEKST;
-import static no.nav.dokdistdittnav.qdist010.minsidevarsling.OppgaveMapper.VIKTIG_VARSELTEKST;
+import static no.nav.dokdistdittnav.qdist010.minsidevarsling.OppgaveMapper.VIKTIG_ELLER_NULL_EPOSTVARSLINGSTEKST;
+import static no.nav.dokdistdittnav.qdist010.minsidevarsling.OppgaveMapper.VIKTIG_ELLER_NULL_EPOSTVARSLINGSTITTEL;
+import static no.nav.dokdistdittnav.qdist010.minsidevarsling.OppgaveMapper.VIKTIG_ELLER_NULL_SMSVARSLINGSTEKST;
+import static no.nav.dokdistdittnav.qdist010.minsidevarsling.OppgaveMapper.VIKTIG_ELLER_NULL_VARSELTEKST;
 import static no.nav.dokdistdittnav.qdist010.minsidevarsling.OppgaveMapper.opprettOppgave;
 import static no.nav.dokdistdittnav.qdist010.minsidevarsling.VarselService.lagLenkeMedTemaOgArkivId;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.within;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -74,8 +76,8 @@ class OppgaveMapperTest extends AbstractVarselMapperTest {
 	private static Stream<Arguments> skalLageOppgave() {
 		return Stream.of(
 				Arguments.of(VEDTAK, VEDTAK_VARSELTEKST, VEDTAK_SMSVARSLINGSTEKST, VEDTAK_EPOSTVARSLINGSTITTEL, VEDTAK_EPOSTVARSLINGSTEKST),
-				Arguments.of(VIKTIG, VIKTIG_VARSELTEKST, VIKTIG_SMSVARSLINGSTEKST, VIKTIG_EPOSTVARSLINGSTITTEL, VIKTIG_EPOSTVARSLINGSTEKST),
-				Arguments.of(null, VIKTIG_VARSELTEKST, VIKTIG_SMSVARSLINGSTEKST, VIKTIG_EPOSTVARSLINGSTITTEL, VIKTIG_EPOSTVARSLINGSTEKST)
+				Arguments.of(VIKTIG, VIKTIG_ELLER_NULL_VARSELTEKST, VIKTIG_ELLER_NULL_SMSVARSLINGSTEKST, VIKTIG_ELLER_NULL_EPOSTVARSLINGSTITTEL, VIKTIG_ELLER_NULL_EPOSTVARSLINGSTEKST),
+				Arguments.of(null, VIKTIG_ELLER_NULL_VARSELTEKST, VIKTIG_ELLER_NULL_SMSVARSLINGSTEKST, VIKTIG_ELLER_NULL_EPOSTVARSLINGSTITTEL, VIKTIG_ELLER_NULL_EPOSTVARSLINGSTEKST)
 		);
 	}
 
@@ -84,9 +86,9 @@ class OppgaveMapperTest extends AbstractVarselMapperTest {
 		HentForsendelseResponse forsendelse = createForsendelse(DOKUMENTTYPE_ID, ANNET);
 		String lenkeTilVarsel = lagLenkeMedTemaOgArkivId("https://url.no", forsendelse);
 
-		String oppgave = opprettOppgave(forsendelse, lenkeTilVarsel);
-
-		assertThat(oppgave).isBlank();
+		assertThatExceptionOfType(FeilDistribusjonstypeForVarselTilMinSideException.class)
+				.isThrownBy(() -> opprettOppgave(forsendelse, lenkeTilVarsel))
+				.withMessageContaining("Sender kun varsel med type=oppgave til Min Side for distribusjonstype VEDTAK, VIKTIG, eller null. Mottok=ANNET");
 	}
 
 }

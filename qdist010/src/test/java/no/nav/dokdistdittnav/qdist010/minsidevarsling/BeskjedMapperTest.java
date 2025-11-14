@@ -1,10 +1,14 @@
 package no.nav.dokdistdittnav.qdist010.minsidevarsling;
 
+import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
+import no.nav.dokdistdittnav.exception.functional.FeilDistribusjonstypeForVarselTilMinSideException;
 import org.json.JSONObject;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullSource;
 
 import java.time.ZonedDateTime;
 import java.util.stream.Stream;
@@ -22,8 +26,10 @@ import static no.nav.dokdistdittnav.qdist010.minsidevarsling.BeskjedMapper.ANNET
 import static no.nav.dokdistdittnav.qdist010.minsidevarsling.BeskjedMapper.ANNET_VARSELTEKST;
 import static no.nav.dokdistdittnav.qdist010.minsidevarsling.BeskjedMapper.opprettBeskjed;
 import static no.nav.dokdistdittnav.qdist010.minsidevarsling.VarselService.lagLenkeMedTemaOgArkivId;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.within;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.params.provider.EnumSource.Mode.EXCLUDE;
 
 class BeskjedMapperTest extends AbstractVarselMapperTest {
 
@@ -72,6 +78,18 @@ class BeskjedMapperTest extends AbstractVarselMapperTest {
 				Arguments.of(DOKUMENTTYPE_ID, ANNET_SMSVARSLINGSTEKST, ANNET_EPOSTVARSLINGSTITTEL, ANNET_EPOSTVARSLINGSTEKST),
 				Arguments.of(AARSOPPGAVE_DOKUMENTTYPEID, AARSOPPGAVE_SMSVARSLINGSTEKST, AARSOPPGAVE_EPOSTVARSLINGSTITTEL, AARSOPPGAVE_EPOSTVARSLINGSTEKST)
 		);
+	}
+
+	@ParameterizedTest
+	@EnumSource(value = DistribusjonsTypeKode.class, names = "ANNET", mode = EXCLUDE)
+	@NullSource
+	public void skalIkkeLageBeskjedForAndreDistribusjonstyperEnnAnnet(DistribusjonsTypeKode distribusjonstype) {
+		HentForsendelseResponse forsendelse = createForsendelse(DOKUMENTTYPE_ID, distribusjonstype);
+		String lenkeTilVarsel = lagLenkeMedTemaOgArkivId(LENKE_DOKUMENTARKIV, forsendelse);
+
+		assertThatExceptionOfType(FeilDistribusjonstypeForVarselTilMinSideException.class)
+				.isThrownBy(() -> opprettBeskjed(forsendelse, lenkeTilVarsel))
+				.withMessageContaining("Sender kun varsel med type=beskjed til Min Side for distribusjonstype ANNET. Mottok=%s".formatted(distribusjonstype != null ? distribusjonstype.name() : distribusjonstype));
 	}
 
 }
