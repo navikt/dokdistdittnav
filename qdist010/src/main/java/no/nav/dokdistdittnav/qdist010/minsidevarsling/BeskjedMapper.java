@@ -43,7 +43,7 @@ public class BeskjedMapper extends AbstractVarselMapper {
 				.withVarselId(forsendelse.getBestillingsId())
 				.withIdent(forsendelse.getMottaker().getMottakerId())
 				.withTekst(SPRAAKKODE_BOKMAAL, format(ANNET_VARSELTEKST, forsendelse.getForsendelseTittel()), true)
-				.withLink(lenkeTilVarsel)
+				.withLink(lagLenkeTilVarsel(lenkeTilVarsel, forsendelse))
 				.withSensitivitet(Substantial)
 				.withAktivFremTil(ZonedDateTime.now(ZoneId.of("UTC")).plusDays(SYNLIGEDAGER))
 				.withEksternVarsling(OpprettVarselBuilder.eksternVarsling()

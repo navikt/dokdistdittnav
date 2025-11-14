@@ -5,12 +5,22 @@ import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse.ArkivInformasjonTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse.DokumentTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse.MottakerTo;
+import no.nav.dokdistdittnav.exception.functional.UgyldigVarsellenkeMinSideException;
 import no.nav.tms.varsel.builder.BuilderEnvironment;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static java.util.Collections.singletonList;
+import static no.nav.dokdistdittnav.qdist010.minsidevarsling.AbstractVarselMapper.validerArkivId;
+import static no.nav.dokdistdittnav.qdist010.minsidevarsling.AbstractVarselMapper.validerTema;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 abstract class AbstractVarselMapperTest {
 
@@ -33,6 +43,54 @@ abstract class AbstractVarselMapperTest {
 				"NAIS_CLUSTER_NAME", "test-fss",
 				"NAIS_NAMESPACE", "teamdokumenthandtering",
 				"NAIS_APP_NAME", "dokdistdittnav")
+		);
+	}
+
+	@Test
+	void skalValidereTema() {
+		assertThatNoException().isThrownBy(() -> validerTema(TEMA));
+	}
+
+	@ParameterizedTest
+	@MethodSource
+	void skalKasteExceptionForUgyldigTema(String tema, String feilmelding) {
+		assertThatExceptionOfType(UgyldigVarsellenkeMinSideException.class)
+				.isThrownBy(() -> validerTema(tema))
+				.withMessage(feilmelding);
+	}
+
+	private static Stream<Arguments> skalKasteExceptionForUgyldigTema() {
+		return Stream.of(
+				Arguments.of(null, "Tema i lenke til Min Side er null eller tom."),
+				Arguments.of("", "Tema i lenke til Min Side er null eller tom."),
+				Arguments.of(" ", "Tema i lenke til Min Side er null eller tom."),
+				Arguments.of("FA", "Tema i lenke til Min Side har ikke 3 tegn. Mottok=FA"),
+				Arguments.of("FARA", "Tema i lenke til Min Side har ikke 3 tegn. Mottok=FARA"),
+				Arguments.of("F1R", "Tema i lenke til Min Side består ikke av kun bokstaver. Mottok=F1R"),
+				Arguments.of(" FA", "Tema i lenke til Min Side består ikke av kun bokstaver. Mottok= FA")
+		);
+	}
+
+	@Test
+	void skalValidereArkivId() {
+		assertThatNoException().isThrownBy(() -> validerArkivId(ARKIV_ID));
+	}
+
+	@ParameterizedTest
+	@MethodSource
+	void skalKasteExceptionForUgyldigArkivId(String arkivId, String feilmelding) {
+		assertThatExceptionOfType(UgyldigVarsellenkeMinSideException.class)
+				.isThrownBy(() -> validerArkivId(arkivId))
+				.withMessage(feilmelding);
+	}
+
+	private static Stream<Arguments> skalKasteExceptionForUgyldigArkivId() {
+		return Stream.of(
+				Arguments.of(null, "ArkivId i lenke til Min Side er null eller tom."),
+				Arguments.of("", "ArkivId i lenke til Min Side er null eller tom."),
+				Arguments.of(" ", "ArkivId i lenke til Min Side er null eller tom."),
+				Arguments.of("12345a", "ArkivId i lenke til Min Side består ikke av kun tall. Mottok=12345a"),
+				Arguments.of("a23456", "ArkivId i lenke til Min Side består ikke av kun tall. Mottok=a23456")
 		);
 	}
 

@@ -25,7 +25,6 @@ import static no.nav.dokdistdittnav.qdist010.minsidevarsling.BeskjedMapper.ANNET
 import static no.nav.dokdistdittnav.qdist010.minsidevarsling.BeskjedMapper.ANNET_SMSVARSLINGSTEKST;
 import static no.nav.dokdistdittnav.qdist010.minsidevarsling.BeskjedMapper.ANNET_VARSELTEKST;
 import static no.nav.dokdistdittnav.qdist010.minsidevarsling.BeskjedMapper.opprettBeskjed;
-import static no.nav.dokdistdittnav.qdist010.minsidevarsling.VarselService.lagLenkeMedTemaOgArkivId;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.within;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -37,9 +36,8 @@ class BeskjedMapperTest extends AbstractVarselMapperTest {
 	@MethodSource
 	public void skalLageBeskjed(String dokumenttypeId, String smsVarslingstekst, String epostVarslingstittel, String epostVarslingstekst) {
 		HentForsendelseResponse forsendelse = createForsendelse(dokumenttypeId, ANNET);
-		String lenkeTilVarsel = lagLenkeMedTemaOgArkivId(LENKE_DOKUMENTARKIV, forsendelse);
 
-		String beskjed = opprettBeskjed(forsendelse, lenkeTilVarsel);
+		String beskjed = opprettBeskjed(forsendelse, LENKE_DOKUMENTARKIV);
 
 		var jsonResponse = new JSONObject(beskjed);
 
@@ -85,10 +83,9 @@ class BeskjedMapperTest extends AbstractVarselMapperTest {
 	@NullSource
 	public void skalIkkeLageBeskjedForAndreDistribusjonstyperEnnAnnet(DistribusjonsTypeKode distribusjonstype) {
 		HentForsendelseResponse forsendelse = createForsendelse(DOKUMENTTYPE_ID, distribusjonstype);
-		String lenkeTilVarsel = lagLenkeMedTemaOgArkivId(LENKE_DOKUMENTARKIV, forsendelse);
 
 		assertThatExceptionOfType(FeilDistribusjonstypeForVarselTilMinSideException.class)
-				.isThrownBy(() -> opprettBeskjed(forsendelse, lenkeTilVarsel))
+				.isThrownBy(() -> opprettBeskjed(forsendelse, LENKE_DOKUMENTARKIV))
 				.withMessageContaining("Sender kun varsel med type=beskjed til Min Side for distribusjonstype ANNET. Mottok=%s".formatted(distribusjonstype != null ? distribusjonstype.name() : distribusjonstype));
 	}
 

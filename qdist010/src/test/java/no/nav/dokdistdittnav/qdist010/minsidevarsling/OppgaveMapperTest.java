@@ -26,7 +26,6 @@ import static no.nav.dokdistdittnav.qdist010.minsidevarsling.OppgaveMapper.VIKTI
 import static no.nav.dokdistdittnav.qdist010.minsidevarsling.OppgaveMapper.VIKTIG_ELLER_NULL_SMSVARSLINGSTEKST;
 import static no.nav.dokdistdittnav.qdist010.minsidevarsling.OppgaveMapper.VIKTIG_ELLER_NULL_VARSELTEKST;
 import static no.nav.dokdistdittnav.qdist010.minsidevarsling.OppgaveMapper.opprettOppgave;
-import static no.nav.dokdistdittnav.qdist010.minsidevarsling.VarselService.lagLenkeMedTemaOgArkivId;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.within;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -37,9 +36,8 @@ class OppgaveMapperTest extends AbstractVarselMapperTest {
 	@MethodSource
 	public void skalLageOppgave(DistribusjonsTypeKode distribusjonstype, String varseltekst, String smsVarslingstekst, String epostVarslingstittel, String epostVarslingstekst) {
 		HentForsendelseResponse forsendelse = createForsendelse(DOKUMENTTYPE_ID, distribusjonstype);
-		String lenkeTilVarsel = lagLenkeMedTemaOgArkivId(LENKE_DOKUMENTARKIV, forsendelse);
 
-		String oppgave = opprettOppgave(forsendelse, lenkeTilVarsel);
+		String oppgave = opprettOppgave(forsendelse, LENKE_DOKUMENTARKIV);
 
 		var jsonResponse = new JSONObject(oppgave);
 
@@ -84,10 +82,9 @@ class OppgaveMapperTest extends AbstractVarselMapperTest {
 	@Test
 	public void skalIkkeLageOppgaveForDistribusjonstypeAnnet() {
 		HentForsendelseResponse forsendelse = createForsendelse(DOKUMENTTYPE_ID, ANNET);
-		String lenkeTilVarsel = lagLenkeMedTemaOgArkivId("https://url.no", forsendelse);
 
 		assertThatExceptionOfType(FeilDistribusjonstypeForVarselTilMinSideException.class)
-				.isThrownBy(() -> opprettOppgave(forsendelse, lenkeTilVarsel))
+				.isThrownBy(() -> opprettOppgave(forsendelse, LENKE_DOKUMENTARKIV))
 				.withMessageContaining("Sender kun varsel med type=oppgave til Min Side for distribusjonstype VEDTAK, VIKTIG, eller null. Mottok=ANNET");
 	}
 

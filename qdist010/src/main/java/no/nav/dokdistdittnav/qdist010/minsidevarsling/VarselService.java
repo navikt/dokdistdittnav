@@ -12,9 +12,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Handler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.time.Clock;
 import java.time.LocalTime;
 
@@ -69,11 +67,11 @@ public class VarselService {
 	}
 
 	private void sendOppgaveEllerBeskjed(HentForsendelseResponse forsendelse) {
-		String lenkeTilVarsel = lagLenkeMedTemaOgArkivId(properties.getMinside().getDokumentarkivLink(), forsendelse);
+		String dokumentarkivLenke = properties.getMinside().getDokumentarkivLink();
 		String varselId = forsendelse.getBestillingsId();
 
 		if (forsendelse.erDistribusjonstypeVedtakViktigEllerNull()) {
-			String oppgave = opprettOppgave(forsendelse, lenkeTilVarsel);
+			String oppgave = opprettOppgave(forsendelse, dokumentarkivLenke);
 			log.info("Har opprettet oppgave med varselId (bestillingsId)={}", varselId);
 
 			kafkaEventProducer.publish(properties.getMinside().getVarseltopic(), varselId, oppgave);
@@ -81,21 +79,12 @@ public class VarselService {
 		}
 
 		if (forsendelse.erDistribusjonstypeAnnet()) {
-			String beskjed = opprettBeskjed(forsendelse, lenkeTilVarsel);
+			String beskjed = opprettBeskjed(forsendelse, dokumentarkivLenke);
 			log.info("Har opprettet beskjed med varselId (bestillingsId)={}", varselId);
 
 			kafkaEventProducer.publish(properties.getMinside().getVarseltopic(), varselId, beskjed);
 			log.info("Har sendt beskjed med varselId (bestillingsId)={} til topic={}", varselId, properties.getMinside().getVarseltopic());
 		}
-	}
-
-	public static String lagLenkeMedTemaOgArkivId(String url, HentForsendelseResponse forsendelse) {
-		URI uri = UriComponentsBuilder
-				.fromUriString(url)
-				.path(forsendelse.getTema() + "/" + forsendelse.getArkivInformasjon().getArkivId())
-				.build().toUri();
-
-		return uri.toString();
 	}
 
 	private void settExchangeProperties(Exchange exchange, HentForsendelseResponse forsendelse) {
