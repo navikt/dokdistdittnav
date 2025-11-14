@@ -63,28 +63,29 @@ public class VarselService {
 			throw new UtenforKjernetidException("Utenfor kjernetid, legges på ventekø");
 		}
 
-		sendOppgaveEllerBeskjed(forsendelse);
+		String oppgaveEllerBeskjed = opprettOppgaveEllerBeskjed(forsendelse);
+
+		sendVarsel(forsendelse.getBestillingsId(), oppgaveEllerBeskjed);
 	}
 
-	private void sendOppgaveEllerBeskjed(HentForsendelseResponse forsendelse) {
+	private String opprettOppgaveEllerBeskjed(HentForsendelseResponse forsendelse) {
 		String dokumentarkivLenke = properties.getMinside().getDokumentarkivLink();
 		String varselId = forsendelse.getBestillingsId();
 
 		if (forsendelse.erDistribusjonstypeVedtakViktigEllerNull()) {
 			String oppgave = opprettOppgave(forsendelse, dokumentarkivLenke);
 			log.info("Har opprettet oppgave med varselId (bestillingsId)={}", varselId);
-
-			kafkaEventProducer.publish(properties.getMinside().getVarseltopic(), varselId, oppgave);
-			log.info("Har sendt oppgave med varselId (bestillingsId)={} til topic={}", varselId, properties.getMinside().getVarseltopic());
-		}
-
-		if (forsendelse.erDistribusjonstypeAnnet()) {
+			return oppgave;
+		} else {
 			String beskjed = opprettBeskjed(forsendelse, dokumentarkivLenke);
 			log.info("Har opprettet beskjed med varselId (bestillingsId)={}", varselId);
-
-			kafkaEventProducer.publish(properties.getMinside().getVarseltopic(), varselId, beskjed);
-			log.info("Har sendt beskjed med varselId (bestillingsId)={} til topic={}", varselId, properties.getMinside().getVarseltopic());
+			return beskjed;
 		}
+	}
+
+	private void sendVarsel(String varselId, String varsel) {
+		kafkaEventProducer.publish(properties.getMinside().getVarseltopic(), varselId, varsel);
+		log.info("Har sendt varsel med varselId (bestillingsId)={}", varselId);
 	}
 
 	private void settExchangeProperties(Exchange exchange, HentForsendelseResponse forsendelse) {
