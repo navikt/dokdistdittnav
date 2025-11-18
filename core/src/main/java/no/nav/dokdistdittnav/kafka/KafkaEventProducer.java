@@ -4,10 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistdittnav.exception.technical.KafkaTechnicalException;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.errors.TopicAuthorizationException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.KafkaException;
 import org.springframework.kafka.core.KafkaProducerException;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.core.RoutingKafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -26,11 +25,10 @@ public class KafkaEventProducer {
 	private static final String KAFKA_NOT_AUTHENTICATED = "Not authenticated to publish to topic: ";
 	private static final String KAFKA_FAILED_TO_SEND = "Failed to send message to kafka. Topic: ";
 
-	private final KafkaTemplate<Object, Object> kafkaTemplate;
+	private final RoutingKafkaTemplate routingKafkaTemplate;
 
-	@Autowired
-	KafkaEventProducer(KafkaTemplate<Object, Object> kafkaTemplate) {
-		this.kafkaTemplate = kafkaTemplate;
+	public KafkaEventProducer(RoutingKafkaTemplate routingKafkaTemplate) {
+		this.routingKafkaTemplate = routingKafkaTemplate;
 	}
 
 	@Retryable(retryFor = KafkaTechnicalException.class, maxAttempts = MAX_VALUE, backoff = @Backoff(delay = DELAY_LONG))
@@ -39,7 +37,7 @@ public class KafkaEventProducer {
 		ProducerRecord<Object, Object> producerRecord = new ProducerRecord<>(topic, null, currentTimeMillis(), key, event);
 
 		try {
-			SendResult<Object, Object> sendResult = kafkaTemplate.send(producerRecord).get();
+			SendResult<Object, Object> sendResult = routingKafkaTemplate.send(producerRecord).get();
 
 			log.info("Hendelse skrevet til topic. Timestamp={}, partition={}, topic={}",
 					sendResult.getRecordMetadata().timestamp(),

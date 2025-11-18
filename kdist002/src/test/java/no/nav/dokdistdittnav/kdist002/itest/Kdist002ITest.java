@@ -68,8 +68,8 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	private static final String NY_FORSENDELSE_ID = "33333";
 	private static final String DOKNOTIFIKASJON_BESTILLINGSID = "B-dokdistdittnav-811c0c5d-e74c-491a-8b8c-d94075c822c3";
 	private static final String BESTILLINGSID = "811c0c5d-e74c-491a-8b8c-d94075c822c3";
-	private static final String DOKNOTIFIKASJON_STATUS_TOPIC = "aapen-dok-notifikasjon-status";
-	private static final String DONE_EVENT_TOPIC = "done-test";
+	private static final String DOKNOTIFIKASJON_STATUS_TOPIC = "teamdokumenthandtering.aapen-dok-notifikasjon-status-test";
+	private static final String DONE_EVENT_TOPIC = "min-side.aapen-brukernotifikasjon-done-v1-test";
 	private static final String MELDING = "Altinn feilet";
 	private static final String DOKDISTDPI = "dokdistdpi";
 	private static final String DOKDISTDITTNAV = "dokdistdittnav";

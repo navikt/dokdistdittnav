@@ -7,8 +7,7 @@ Dei tre tenestene er:
   Brukarnotifikasjon og oppdaterer interne statusar.
 - kdist002 BehandleEksternNotifikasjonStatus: Fangar opp eksterne notifikasjonar som har feila, og distribuerer
   dokumentet via sentral print.
-- qdist010 DistribuerForsendelseTilDittNav: Oppretting av brukarnotifikasjon med ekstern notifikasjon via
-  Brukarnotifikasjon.
+- qdist010 DistribuerForsendelseTilDittNav: Sending av varsel med ekstern notifikasjon til Min Side.
 
 Dei tre tenestene les meldingar frå ulike stadar.
 

@@ -5,6 +5,7 @@ import no.nav.dokdistdittnav.azure.AzureProperties;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.config.properties.MqGatewayAlias;
 import no.nav.dokdistdittnav.config.properties.DokdistDittnavServiceuser;
+import no.nav.dokdistdittnav.kafka.SerializerPerKafkaTopicConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -15,7 +16,8 @@ import org.springframework.retry.annotation.EnableRetry;
 @EnableRetry
 @Import({
 		CoreConfig.class,
-		KafkaConfig.class
+		KafkaConfig.class,
+		SerializerPerKafkaTopicConfiguration.class
 })
 @EnableConfigurationProperties({
 		DokdistDittnavServiceuser.class,

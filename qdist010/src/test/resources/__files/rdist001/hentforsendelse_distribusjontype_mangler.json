@@ -4,7 +4,6 @@
   "forsendelseStatus": "KLAR_FOR_DIST",
   "tema": "DAG",
   "forsendelseTittel": "forsendelseTittel",
-  "distribusjonstype": "VEDTAK",
   "mottaker": {
     "mottakerId": "12345678912",
     "mottakerNavn": "mottakerNavn",
@@ -19,6 +18,7 @@
     "landkode": "NO"
   },
   "arkivInformasjon": {
+    "arkivSystem": "JOARK",
     "arkivId": "123"
   },
   "dokumenter": [

@@ -5,11 +5,20 @@ import lombok.Value;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode;
 import no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonstidspunktKode;
 
+import java.time.Clock;
+import java.time.LocalTime;
 import java.util.List;
+
+import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.ANNET;
+import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VEDTAK;
+import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VIKTIG;
+import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonstidspunktKode.UMIDDELBART;
+import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.KLAR_FOR_DIST;
 
 @Value
 @Builder
 public class HentForsendelseResponse {
+
 	String bestillingsId;
 	String konversasjonId;
 	String bestillendeFagsystem;
@@ -62,5 +71,38 @@ public class HentForsendelseResponse {
 		String arkivDokumentInfoId;
 		String dokumenttypeId;
 	}
-}
 
+	public boolean forsendelseHarUgyldigStatus() {
+		return !erArkivertIJoark() || !KLAR_FOR_DIST.name().equals(forsendelseStatus);
+	}
+
+	// For at lenken til dokumentarkivet skal fungere må journalposten ligge i Joark
+	public boolean erArkivertIJoark() {
+		return arkivInformasjon != null
+			   && arkivInformasjon.getArkivSystem().equals("JOARK")
+			   && !arkivInformasjon.getArkivId().isBlank();
+	}
+
+	public boolean erDistribusjonstypeVedtakViktigEllerNull() {
+		return distribusjonstype == null || distribusjonstype == VIKTIG || distribusjonstype == VEDTAK;
+	}
+
+	public boolean erDistribusjonstypeAnnet() {
+		return distribusjonstype == ANNET;
+	}
+
+	public boolean erDistribusjonstypeVedtak() {
+		return distribusjonstype == VEDTAK;
+	}
+
+	public boolean skalDistribueresSenere(Clock clock, LocalTime kjernetidStart, LocalTime kjernetidSlutt) {
+		if (distribusjonstidspunkt == null || distribusjonstidspunkt == UMIDDELBART) {
+			return false;
+		}
+
+		// distribusjonstidspunkt er KJERNETIDSPUNKT
+		LocalTime tid = LocalTime.now(clock);
+		return !(tid.isAfter(kjernetidStart) && tid.isBefore(kjernetidSlutt));
+	}
+
+}

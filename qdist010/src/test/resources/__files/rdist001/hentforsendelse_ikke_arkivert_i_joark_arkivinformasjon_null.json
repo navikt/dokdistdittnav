@@ -1,9 +1,9 @@
 {
   "bestillingsId": "811c0c5d-e74c-491a-8b8c-d94075c822c3",
   "modus": "T",
-  "forsendelseStatus": "KLAR_FOR_DIST",
+  "forsendelseStatus": "OVERSENDT",
   "tema": "DAG",
-  "distribusjonstidspunkt": "KJERNETID",
+  "distribusjonstidspunkt": "UMIDDELBART",
   "forsendelseTittel": "forsendelseTittel",
   "distribusjonstype": "VIKTIG",
   "mottaker": {
@@ -18,9 +18,6 @@
     "postnummer": "123",
     "poststed": "poststed",
     "landkode": "NO"
-  },
-  "arkivInformasjon": {
-    "arkivId": "123"
   },
   "dokumenter": [
     {

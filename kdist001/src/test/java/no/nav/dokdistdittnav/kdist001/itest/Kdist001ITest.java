@@ -161,7 +161,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 
 	private void putMessageOnKafkaTopic(HoveddokumentLest hoveddokumentLest) {
 		kafkaEventProducer.publish(
-				"privat-dokdistdittnav-lestavmottaker", "key",
+				"teamdokumenthandtering.privat-dokdistdittnav-lestavmottaker-test", "key",
 				hoveddokumentLest
 		);
 	}

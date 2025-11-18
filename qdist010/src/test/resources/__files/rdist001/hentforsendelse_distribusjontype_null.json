@@ -3,9 +3,8 @@
   "modus": "T",
   "forsendelseStatus": "KLAR_FOR_DIST",
   "tema": "DAG",
-  "distribusjonstidspunkt": "UMIDDELBART",
   "forsendelseTittel": "forsendelseTittel",
-  "distribusjonstype": "VIKTIG",
+  "distribusjonstype": null,
   "mottaker": {
     "mottakerId": "12345678912",
     "mottakerNavn": "mottakerNavn",
@@ -20,6 +19,7 @@
     "landkode": "NO"
   },
   "arkivInformasjon": {
+    "arkivSystem": "JOARK",
     "arkivId": "123"
   },
   "dokumenter": [
