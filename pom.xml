@@ -40,7 +40,7 @@
 		<resilience4j-spring-boot3.version>2.3.0</resilience4j-spring-boot3.version>
 
 		<!-- Test -->
-		<commons-io.version>2.20.0</commons-io.version>
+		<commons-io.version>2.21.0</commons-io.version>
 		<spring-cloud-contract-wiremock.version>4.3.0</spring-cloud-contract-wiremock.version>
 
 		<!-- Plugins -->
