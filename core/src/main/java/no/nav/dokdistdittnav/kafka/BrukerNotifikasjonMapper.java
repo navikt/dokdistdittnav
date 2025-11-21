@@ -24,16 +24,6 @@ public class BrukerNotifikasjonMapper {
 				.build();
 	}
 
-	public NokkelInput mapNokkelForKdist002(DoneEventRequest doneEventRequest, String appnavn) {
-		return new NokkelInputBuilder()
-				.withEventId(doneEventRequest.getDittnavBestillingsId())
-				.withGrupperingsId(doneEventRequest.getDittnavFeiletForsendelseId())
-				.withFodselsnummer(doneEventRequest.getMottakerId())
-				.withNamespace(NAMESPACE)
-				.withAppnavn(appnavn)
-				.build();
-	}
-
 	public DoneInput mapDoneInput() {
 		return new DoneInputBuilder()
 				.withTidspunkt(now(UTC))

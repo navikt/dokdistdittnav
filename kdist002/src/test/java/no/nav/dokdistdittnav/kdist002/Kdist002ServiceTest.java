@@ -10,14 +10,13 @@ import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OppdaterForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseResponse;
-import no.nav.dokdistdittnav.kafka.DoneEventRequest;
+import no.nav.dokdistdittnav.kafka.InfoForMinSideOgPrintForsendelse;
 import no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import static no.nav.dokdistdittnav.kdist002.TestUtils.BESTILLINGSID;
 import static no.nav.dokdistdittnav.kdist002.TestUtils.DOKDISTDITTNAV;
@@ -50,8 +49,6 @@ class Kdist002ServiceTest {
 
 	private AdministrerForsendelse administrerForsendelse;
 	private DoknotifikasjonConsumer doknotifikasjonConsumer;
-
-	@Autowired
 	private Kdist002Service kdist002Service;
 
 	@BeforeEach
@@ -71,12 +68,12 @@ class Kdist002ServiceTest {
 		when(doknotifikasjonConsumer.getNotifikasjonInfo(DOKNOTIFIKASJON_BESTILLINGSID_OLD, statuskode == FERDIGSTILT)).thenReturn(hentNotifikasjonInfoTo());
 		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponse());
 
-		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatusWithoutDistribusjonsId(DOKDISTDITTNAV, statuskode.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
+		InfoForMinSideOgPrintForsendelse infoForMinSideOgPrintForsendelse = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatusWithoutDistribusjonsId(DOKDISTDITTNAV, statuskode.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
 
 		verify(administrerForsendelse, times(1)).finnForsendelse(any());
 		verify(administrerForsendelse, times(1)).oppdaterVarselInfo(any());
 		verify(administrerForsendelse, times(1)).oppdaterForsendelse(any(OppdaterForsendelseRequest.class));
-		assertNull(doneEventRequest);
+		assertNull(infoForMinSideOgPrintForsendelse);
 	}
 
 	@Test
@@ -88,12 +85,12 @@ class Kdist002ServiceTest {
 		when(doknotifikasjonConsumer.getNotifikasjonInfo(DOKNOTIFIKASJON_BESTILLINGSID_OLD, false)).thenReturn(hentNotifikasjonInfoTo());
 		when(administrerForsendelse.hentForsendelse(anyString())).thenReturn(hentForsendelseResponseWithForsendelseStatusFeilet());
 
-		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatusWithoutDistribusjonsId(DOKDISTDITTNAV, OVERSENDT.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
+		InfoForMinSideOgPrintForsendelse infoForMinSideOgPrintForsendelse = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatusWithoutDistribusjonsId(DOKDISTDITTNAV, OVERSENDT.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
 
 		verify(administrerForsendelse, times(1)).finnForsendelse(any());
 		verify(administrerForsendelse, times(1)).oppdaterVarselInfo(any());
 		verify(administrerForsendelse, times(0)).oppdaterForsendelse(any(OppdaterForsendelseRequest.class));
-		assertNull(doneEventRequest);
+		assertNull(infoForMinSideOgPrintForsendelse);
 	}
 
 	@Test
@@ -107,9 +104,9 @@ class Kdist002ServiceTest {
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
 
-		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
+		InfoForMinSideOgPrintForsendelse infoForMinSideOgPrintForsendelse = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
 
-		assertNotNull(doneEventRequest);
+		assertNotNull(infoForMinSideOgPrintForsendelse);
 	}
 
 	@Test
@@ -123,10 +120,10 @@ class Kdist002ServiceTest {
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
 
-		DoneEventRequest doneEventRequest = kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD));
+		InfoForMinSideOgPrintForsendelse infoForMinSideOgPrintForsendelse = kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD));
 
-		assertNotNull(doneEventRequest);
-		assertEquals(hentForsendelseResponse().getMottaker().getMottakerId(), doneEventRequest.getMottakerId());
+		assertNotNull(infoForMinSideOgPrintForsendelse);
+		assertEquals(hentForsendelseResponse().getMottaker().getMottakerId(), infoForMinSideOgPrintForsendelse.getMottakerId());
 	}
 
 	@Test
@@ -140,10 +137,10 @@ class Kdist002ServiceTest {
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
 
-		DoneEventRequest doneEventRequest = kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID_NEW));
+		InfoForMinSideOgPrintForsendelse infoForMinSideOgPrintForsendelse = kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID_NEW));
 
-		assertNotNull(doneEventRequest);
-		assertEquals(hentForsendelseResponse().getMottaker().getMottakerId(), doneEventRequest.getMottakerId());
+		assertNotNull(infoForMinSideOgPrintForsendelse);
+		assertEquals(hentForsendelseResponse().getMottaker().getMottakerId(), infoForMinSideOgPrintForsendelse.getMottakerId());
 	}
 
 	@Test
@@ -157,9 +154,9 @@ class Kdist002ServiceTest {
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
 
-		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDPI, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
+		InfoForMinSideOgPrintForsendelse infoForMinSideOgPrintForsendelse = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDPI, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
 
-		assertNotNull(doneEventRequest);
+		assertNotNull(infoForMinSideOgPrintForsendelse);
 	}
 
 	@Test
@@ -173,9 +170,9 @@ class Kdist002ServiceTest {
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
 
-		DoneEventRequest doneEventRequest = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDPI, INFO.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
+		InfoForMinSideOgPrintForsendelse infoForMinSideOgPrintForsendelse = assertDoesNotThrow(() -> kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDPI, INFO.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD)));
 
-		assertNull(doneEventRequest);
+		assertNull(infoForMinSideOgPrintForsendelse);
 	}
 
 	@Test
@@ -189,9 +186,9 @@ class Kdist002ServiceTest {
 				.forsendelseId(Long.valueOf(FORSENDELSE_ID))
 				.build());
 
-		DoneEventRequest doneEventRequest = kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD));
+		InfoForMinSideOgPrintForsendelse infoForMinSideOgPrintForsendelse = kdist002Service.sendForsendelse(doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name(), DOKNOTIFIKASJON_BESTILLINGSID_OLD));
 
-		assertNull(doneEventRequest);
+		assertNull(infoForMinSideOgPrintForsendelse);
 	}
 
 	@Test
@@ -214,9 +211,9 @@ class Kdist002ServiceTest {
 		assertEquals("Mottaker kan ikke være null", e.getMessage());
 	}
 
-	public DoknotifikasjonStatus doknotifikasjonStatus(String appnavn, String status, String bestillingsId) {
+	public DoknotifikasjonStatus doknotifikasjonStatus(String bestillerId, String status, String bestillingsId) {
 		return DoknotifikasjonStatus.newBuilder()
-				.setBestillerId(appnavn)
+				.setBestillerId(bestillerId)
 				.setBestillingsId(bestillingsId)
 				.setStatus(status)
 				.setDistribusjonId(1L)
@@ -224,9 +221,9 @@ class Kdist002ServiceTest {
 				.build();
 	}
 
-	public DoknotifikasjonStatus doknotifikasjonStatusWithoutDistribusjonsId(String appnavn, String status, String bestillingsId) {
+	public DoknotifikasjonStatus doknotifikasjonStatusWithoutDistribusjonsId(String bestillerId, String status, String bestillingsId) {
 		return DoknotifikasjonStatus.newBuilder()
-				.setBestillerId(appnavn)
+				.setBestillerId(bestillerId)
 				.setBestillingsId(bestillingsId)
 				.setStatus(status)
 				.setMelding(MELDING)

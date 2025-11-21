@@ -31,7 +31,7 @@ public class DokdistdittnavProperties {
 		private String lestavmottaker;
 	}
 
-	// Legacy - blir fjernet i MMA-8388
+	// Legacy - blir fjernet i MMA-8420
 	@Data
 	@Validated
 	public static class Brukernotifikasjon {
