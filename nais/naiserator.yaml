@@ -8,7 +8,18 @@ metadata:
 spec:
   kafka:
     pool: {{ KAFKA_POOL }}
+  envFrom:
+    - secret: dokdistdittnav
   env:
+    - name: JAVA_TRUSTSTORE_OPTIONS
+      value: "-Djavax.net.ssl.trustStore=$(NAV_TRUSTSTORE_PATH)
+              -Djavax.net.ssl.trustStorePassword=$(NAV_TRUSTSTORE_PASSWORD)"
+    - name: JDK_JAVA_OPTIONS
+      value: "-Djavax.net.ssl.keyStore=$(NAV_TRUSTSTORE_PATH)
+              -Djavax.net.ssl.keyStorePassword=$(NAV_TRUSTSTORE_PASSWORD)
+              -Djavax.net.ssl.keyStoreType=jks
+              -XX:MaxRAMPercentage=75
+              $(JAVA_PROXY_OPTIONS) $(JAVA_TRUSTSTORE_OPTIONS)"
     - name: DOKDISTDITTNAV_BRUKERNOTIFIKASJON_TOPICDONE
       value: {{ DOKDISTDITTNAV_BRUKERNOTIFIKASJON_TOPICDONE }}
     - name: DOKDISTDITTNAV_MINSIDE_VARSELTOPIC
@@ -78,11 +89,6 @@ spec:
       memory: 512Mi
     limits:
       memory: 1024Mi
-  vault:
-    enabled: true
-    paths:
-      - kvPath: {{ SRVDOKDISTDITTNAV }}
-        mountPath: /var/run/secrets/nais.io/srvdokdistdittnav
   azure:
     application:
       enabled: true
