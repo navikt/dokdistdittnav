@@ -5,9 +5,9 @@ import lombok.Data;
 
 @Data
 @Builder
-public class DoneEventRequest {
-	private String dittnavBestillingsId;
-	private String dittnavFeiletForsendelseId;
+public class InfoForMinSideOgPrintForsendelse {
+	private String minSideBestillingsId;
+	private String minSideForsendelseId;
 	private String printBestillingsId;
 	private String printForsendelseId;
 	private String mottakerId;

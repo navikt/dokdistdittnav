@@ -5,8 +5,8 @@ Dei tre tenestene er:
 
 - kdist001 BehandleÅpnetDokument: Får beskjed når ein brukar har lese eit dokument. Sender Done-event til
   Brukarnotifikasjon og oppdaterer interne statusar.
-- kdist002 BehandleEksternNotifikasjonStatus: Fangar opp eksterne notifikasjonar som har feila, og distribuerer
-  dokumentet via sentral print.
+- kdist002 BehandleEksternNotifikasjonStatus: Fangar opp eksterne notifikasjonar som har feila, distribuerer
+  dokumentet via sentral print, og inaktiverer varslinga for den feila Min Side-sendinga.
 - qdist010 DistribuerForsendelseTilDittNav: Sending av varsel med ekstern notifikasjon til Min Side.
 
 Dei tre tenestene les meldingar frå ulike stadar.

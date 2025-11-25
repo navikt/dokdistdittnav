@@ -5,6 +5,7 @@ import jakarta.xml.bind.JAXBElement;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.dokdistdittnav.kdist002.itest.config.ApplicationTestConfig;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
+import no.nav.tms.varsel.builder.BuilderEnvironment;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.AfterEach;
@@ -33,6 +34,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -41,7 +43,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
 import static no.nav.dokdistdittnav.kdist002.Kdist002Route.TMS_EKSTERN_VARSLING;
+import static no.nav.dokdistdittnav.kdist002.TestUtils.MELDING;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FEILET;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.FERDIGSTILT;
 import static no.nav.dokdistdittnav.kdist002.kodeverk.DoknotifikasjonStatusKode.OVERSENDT;
@@ -64,23 +68,19 @@ import static org.springframework.kafka.test.utils.ContainerTestUtils.waitForAss
 @ActiveProfiles("itest")
 public class Kdist002ITest extends ApplicationTestConfig {
 
-	private static final String FORSENDELSE_ID = "1720847";
-	private static final String NY_FORSENDELSE_ID = "33333";
 	private static final String DOKNOTIFIKASJON_BESTILLINGSID = "B-dokdistdittnav-811c0c5d-e74c-491a-8b8c-d94075c822c3";
-	private static final String BESTILLINGSID = "811c0c5d-e74c-491a-8b8c-d94075c822c3";
+	private static final String MINSIDE_FORSENDELSE_ID = "1720847";
+	private static final String MINSIDE_BESTILLINGSID = "811c0c5d-e74c-491a-8b8c-d94075c822c3";
+	private static final String PRINT_FORSENDELSE_ID = "33333";
+
+	private static final String FEIL_BESTILLERID_DOKDISTDPI = "dokdistdpi";
+	private static final String RIKTIG_BESTILLERID_DOKDISTDITTNAV = "dokdistdittnav";
+
 	private static final String DOKNOTIFIKASJON_STATUS_TOPIC = "teamdokumenthandtering.aapen-dok-notifikasjon-status-test";
-	private static final String DONE_EVENT_TOPIC = "min-side.aapen-brukernotifikasjon-done-v1-test";
-	private static final String MELDING = "Altinn feilet";
-	private static final String DOKDISTDPI = "dokdistdpi";
-	private static final String DOKDISTDITTNAV = "dokdistdittnav";
-	private static final String PROPERTY_BESTILLINGSID = "bestillingsId";
+	private static final String INAKTIVER_VARSEL_TOPIC = "min-side.aapen-brukervarsel-v1-test";
 
-	private static final String DONEEVENT_DITTNAV_BESTILLINGSID = "811c0c5d-e74c-491a-8b8c-d94075c822c3";
-	private static final String DONEEVENT_DITTNAV_FORSENDELSEID = "1720847";
-	private static final String DONEEVENT_DITTNAV_MOTTAKERID = "22222222222";
-
-	private static final String ADMINISTRERFORSENDELSE_URL = "/rest/v1/administrerforsendelse";
-	private static final String HENTFORSENDELSE_URL = "/rest/v1/administrerforsendelse/" + FORSENDELSE_ID;
+	private static final String OPPRETTFORSENDELSE_URL = "/rest/v1/administrerforsendelse";
+	private static final String HENTFORSENDELSE_URL = "/rest/v1/administrerforsendelse/" + MINSIDE_FORSENDELSE_ID;
 	private static final String OPPDATERFORSENDELSE_URL = "/rest/v1/administrerforsendelse/oppdaterforsendelse";
 	private static final String FINNFORSENDELSE_URL = "/rest/v1/administrerforsendelse/finnforsendelse/%s/%s";
 	private static final String OPPDATERVARSELINFO_URL = "/rest/v1/administrerforsendelse/oppdatervarselinfo";
@@ -106,18 +106,21 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	@BeforeEach
 	void setUp() {
 		DefaultKafkaConsumerFactory<String, Object> consumerFactory = new DefaultKafkaConsumerFactory<>(getConsumerProperties());
-		ContainerProperties containerProperties = new ContainerProperties(DOKNOTIFIKASJON_STATUS_TOPIC, DONE_EVENT_TOPIC);
+		ContainerProperties containerProperties = new ContainerProperties(DOKNOTIFIKASJON_STATUS_TOPIC, INAKTIVER_VARSEL_TOPIC);
 		container = new KafkaMessageListenerContainer<>(consumerFactory, containerProperties);
 		records = new LinkedBlockingQueue<>();
 		container.setupMessageListener((MessageListener<String, Object>) e -> records.add(e));
 		container.start();
 		waitForAssignment(container, embeddedKafkaBroker.getTopics().size() * embeddedKafkaBroker.getPartitionsPerTopic());
 
-		stubFor(post("/azure_token")
-				.willReturn(aResponse()
-						.withStatus(OK.value())
-						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-						.withBodyFile("azure/token_response_dummy.json")));
+		stubAzure();
+
+		// Brukt av no.nav.tms.varsel sin java-builder
+		BuilderEnvironment.extend(Map.of(
+				"NAIS_CLUSTER_NAME", "test-fss",
+				"NAIS_NAMESPACE", "teamdokumenthandtering",
+				"NAIS_APP_NAME", "dokdistdittnav")
+		);
 	}
 
 	@AfterEach
@@ -139,85 +142,81 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {DOKDISTDITTNAV, TMS_EKSTERN_VARSLING})
-	public void shouldFeilregistrerForsendelseOgOppdaterForsendelse(String appnavn) {
-		stubGetFinnForsendelse(OK.value());
-		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json", OK.value());
-		stubPostOpprettForsendelse(OK.value());
-		stubPutFeilregistrerforsendelse(OK.value());
-		stubPutOppdaterForsendelse(OK.value());
+	@ValueSource(strings = {RIKTIG_BESTILLERID_DOKDISTDITTNAV, TMS_EKSTERN_VARSLING})
+	public void skalFeilregistrereMinSideForsendelseOgLageNyForsendelse(String bestillerId) {
+		stubGetFinnForsendelse();
+		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json");
+		stubPostOpprettForsendelse();
+		stubPutFeilregistrerforsendelse();
+		stubPutOppdaterForsendelse();
 
-		sendMessageToDoknotifikasjonStatusTopic(doknotifikasjonStatus(appnavn, FEILET.name()));
+		sendMessageToDoknotifikasjonStatusTopic(lagDoknotifikasjonStatusMelding(bestillerId, FEILET.name()));
 
 		await().atMost(10, SECONDS).untilAsserted(() -> {
-			//Sjekk at riktig forsendelseId blir sendt til qdist009/print
 			String message = receive(qdist009);
-			assertThat(message).contains(NY_FORSENDELSE_ID);
+			assertThat(message).contains(PRINT_FORSENDELSE_ID);
 
-			//Sjekk at riktig forsendelseId blir sendt til brukernotifikasjon via kafka hendelse
 			assertThat(records.stream())
-					.filteredOn(it -> DONE_EVENT_TOPIC.equals(it.topic()))
+					.filteredOn(it -> INAKTIVER_VARSEL_TOPIC.equals(it.topic()))
 					.hasSize(1)
-					.extracting(ConsumerRecord::key)
+					.extracting(ConsumerRecord::key, ConsumerRecord::value)
 					.asString()
-					.contains(DONEEVENT_DITTNAV_BESTILLINGSID,
-							DONEEVENT_DITTNAV_FORSENDELSEID,
-							DONEEVENT_DITTNAV_MOTTAKERID);
+					.contains(MINSIDE_BESTILLINGSID, "\"varselId\":\"%s\"".formatted(MINSIDE_BESTILLINGSID));
 		});
 
+		// Opprett ny forsendelse, feilregistrer den gamle, og oppdater forsendelsestatus på forsendelse til KLAR_FOR_DIST
+		verify(1, postRequestedFor(urlEqualTo(OPPRETTFORSENDELSE_URL)));
 		verify(1, putRequestedFor(urlEqualTo(FEILREGISTRERFORSENDELSE_URL)));
 		verify(1, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_URL)));
 	}
 
 	@Test
-	public void shouldAvsluttBehandlingenWhenBestillerIdIsNotDittnavOrTmsEksternVarsling() {
-		stubGetFinnForsendelse(OK.value());
-
-		sendMessageToDoknotifikasjonStatusTopic(doknotifikasjonStatus(DOKDISTDPI, FEILET.name()));
+	public void skalAvslutteBehandlingAvMeldingHvisBestillerIdErUlikDittnavEllerTmsEksternVarsling() {
+		sendMessageToDoknotifikasjonStatusTopic(lagDoknotifikasjonStatusMelding(FEIL_BESTILLERID_DOKDISTDPI, FEILET.name()));
 
 		await().atMost(10, SECONDS).untilAsserted(() ->
-				verify(0, getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGSID, BESTILLINGSID))))
+				verify(0, getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGS_ID, MINSIDE_BESTILLINGSID))))
 		);
 	}
 
 	@Test
 	public void shouldLogWhenVarselstatusIsNotEqualToOPPRETTET() {
-		stubGetFinnForsendelse(OK.value());
-		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-forsendelsestatus-feilet.json", OK.value());
+		stubGetFinnForsendelse();
+		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-forsendelsestatus-feilet.json");
 
-		sendMessageToDoknotifikasjonStatusTopic(doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name()));
+		sendMessageToDoknotifikasjonStatusTopic(lagDoknotifikasjonStatusMelding(RIKTIG_BESTILLERID_DOKDISTDITTNAV, FEILET.name()));
 
 		await().atMost(10, SECONDS).untilAsserted(() -> {
-			verify(getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGSID, BESTILLINGSID))));
+			verify(getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGS_ID, MINSIDE_BESTILLINGSID))));
 			verify(getRequestedFor(urlEqualTo(HENTFORSENDELSE_URL)));
 		});
 	}
 
 	@Test
 	public void shouldUpdateDistInfo() {
-		stubGetFinnForsendelse(OK.value());
-		stubNotifikasjonInfo("__files/rnot001/doknot-happy.json", OK.value());
+		stubGetFinnForsendelse();
+		stubNotifikasjonInfo();
 		stubUpdateVarselInfo();
-		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json", OK.value());
-		stubPutOppdaterForsendelse(OK.value());
+		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json");
+		stubPutOppdaterForsendelse();
 
-		sendMessageToDoknotifikasjonStatusTopic(doknotifikasjonStatus(DOKDISTDITTNAV, OVERSENDT.name(), null));
+		sendMessageToDoknotifikasjonStatusTopic(lagDoknotifikasjonStatusMeldingMedDistribusjonsId(RIKTIG_BESTILLERID_DOKDISTDITTNAV, OVERSENDT.name(), null));
 
 		await().atMost(10, SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGSID, BESTILLINGSID))));
+			verify(1, getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGS_ID, MINSIDE_BESTILLINGSID))));
 			verify(1, putRequestedFor((urlEqualTo(OPPDATERVARSELINFO_URL))));
 		});
 	}
 
 	@Test
 	public void shouldLogAndAvsluttBehandlingHvisForsendelseStatusErFEILET() {
-		stubGetFinnForsendelse(OK.value());
-		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-forsendelsestatus-feilet.json", OK.value());
+		stubGetFinnForsendelse();
+		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-forsendelsestatus-feilet.json");
 
-		sendMessageToDoknotifikasjonStatusTopic(doknotifikasjonStatus(DOKDISTDITTNAV, FEILET.name()));
+		sendMessageToDoknotifikasjonStatusTopic(lagDoknotifikasjonStatusMelding(RIKTIG_BESTILLERID_DOKDISTDITTNAV, FEILET.name()));
 
 		await().atMost(10, SECONDS).untilAsserted(() -> {
-			verify(getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGSID, BESTILLINGSID))));
+			verify(getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGS_ID, MINSIDE_BESTILLINGSID))));
 			verify(getRequestedFor(urlEqualTo(HENTFORSENDELSE_URL)));
 			verify(0, putRequestedFor(urlEqualTo(OPPDATERVARSELINFO_URL)));
 		});
@@ -226,13 +225,13 @@ public class Kdist002ITest extends ApplicationTestConfig {
 	@ParameterizedTest
 	@MethodSource
 	public void shouldRetryForFerdigstilteNotifikasjonerSaaLengeSendtDatoMangler(String melding, int antallKall) {
-		stubGetFinnForsendelse(OK.value());
+		stubGetFinnForsendelse();
 		stubUpdateVarselInfo();
-		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json", OK.value());
-		stubPutOppdaterForsendelse(OK.value());
+		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json");
+		stubPutOppdaterForsendelse();
 		stubNotifikasjonInfoHvorSendtDatoManglerToGanger();
 
-		var doknotifikasjonStatus = doknotifikasjonStatus(DOKDISTDITTNAV, FERDIGSTILT.name(), null);
+		var doknotifikasjonStatus = lagDoknotifikasjonStatusMeldingMedDistribusjonsId(RIKTIG_BESTILLERID_DOKDISTDITTNAV, FERDIGSTILT.name(), null);
 		doknotifikasjonStatus.setMelding(melding);
 
 		sendMessageToDoknotifikasjonStatusTopic(doknotifikasjonStatus);
@@ -283,32 +282,40 @@ public class Kdist002ITest extends ApplicationTestConfig {
 						.withBodyFile(responseBodyMedSendtDato)));
 	}
 
-	private void stubGetHentForsendelse(String responsebody, int httpStatusvalue) {
+	private void stubAzure() {
+		stubFor(post("/azure_token")
+				.willReturn(aResponse()
+						.withStatus(OK.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile("azure/token_response_dummy.json")));
+	}
+
+	private void stubGetHentForsendelse(String responsebody) {
 		stubFor(get(HENTFORSENDELSE_URL)
 				.willReturn(aResponse()
-						.withStatus(httpStatusvalue)
+						.withStatus(OK.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBody(classpathToString(responsebody))));
 	}
 
-	void stubGetFinnForsendelse(int httpStatusValue) {
-		stubFor(get(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGSID, BESTILLINGSID))
+	private void stubGetFinnForsendelse() {
+		stubFor(get(format(FINNFORSENDELSE_URL, PROPERTY_BESTILLINGS_ID, MINSIDE_BESTILLINGSID))
 				.willReturn(aResponse()
-						.withStatus(httpStatusValue)
+						.withStatus(OK.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBody(classpathToString("__files/rdist001/finnForsendelseresponse-happy.json"))));
 	}
 
-	private void stubPutOppdaterForsendelse(int httpStatusvalue) {
+	private void stubPutOppdaterForsendelse() {
 		stubFor(put(OPPDATERFORSENDELSE_URL)
 				.willReturn(aResponse()
-						.withStatus(httpStatusvalue)));
+						.withStatus(OK.value())));
 	}
 
-	private void stubPutFeilregistrerforsendelse(int httpStatusValue) {
+	private void stubPutFeilregistrerforsendelse() {
 		stubFor(put(FEILREGISTRERFORSENDELSE_URL)
 				.willReturn(aResponse()
-						.withStatus(httpStatusValue)));
+						.withStatus(OK.value())));
 	}
 
 	private void stubUpdateVarselInfo() {
@@ -317,19 +324,19 @@ public class Kdist002ITest extends ApplicationTestConfig {
 						.withStatus(OK.value())));
 	}
 
-	private void stubNotifikasjonInfo(String responseBody, int httpStatusValue) {
+	private void stubNotifikasjonInfo() {
 		stubFor(get(NOTIFIKASJONINFO_URL)
 				.willReturn(aResponse()
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-						.withStatus(httpStatusValue)
-						.withBody(classpathToString(responseBody))));
+						.withStatus(OK.value())
+						.withBody(classpathToString("__files/rnot001/doknot-happy.json"))));
 	}
 
-	private void stubPostOpprettForsendelse(int httpStatusValue) {
-		stubFor(post(urlEqualTo(ADMINISTRERFORSENDELSE_URL))
+	private void stubPostOpprettForsendelse() {
+		stubFor(post(urlEqualTo(OPPRETTFORSENDELSE_URL))
 				.willReturn(aResponse()
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-						.withStatus(httpStatusValue)
+						.withStatus(OK.value())
 						.withBody(classpathToString("__files/rdist001/opprettForsendelseResponse-happy.json"))));
 	}
 
@@ -346,9 +353,13 @@ public class Kdist002ITest extends ApplicationTestConfig {
 		kafkaEventProducer.publish(DOKNOTIFIKASJON_STATUS_TOPIC, "key", status);
 	}
 
-	public DoknotifikasjonStatus doknotifikasjonStatus(String appnavn, String status, Long distribusjonsId) {
+	private DoknotifikasjonStatus lagDoknotifikasjonStatusMelding(String bestillerId, String status) {
+		return lagDoknotifikasjonStatusMeldingMedDistribusjonsId(bestillerId, status, 1L);
+	}
+
+	private DoknotifikasjonStatus lagDoknotifikasjonStatusMeldingMedDistribusjonsId(String bestillerId, String status, Long distribusjonsId) {
 		return DoknotifikasjonStatus.newBuilder()
-				.setBestillerId(appnavn)
+				.setBestillerId(bestillerId)
 				.setBestillingsId(DOKNOTIFIKASJON_BESTILLINGSID)
 				.setStatus(status)
 				.setDistribusjonId(distribusjonsId)
@@ -356,7 +367,4 @@ public class Kdist002ITest extends ApplicationTestConfig {
 				.build();
 	}
 
-	public DoknotifikasjonStatus doknotifikasjonStatus(String appnavn, String status) {
-		return doknotifikasjonStatus(appnavn, status, 1L);
-	}
 }

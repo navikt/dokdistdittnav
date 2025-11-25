@@ -12,7 +12,7 @@ import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OppdaterForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseRequest;
 import no.nav.dokdistdittnav.consumer.rdist001.to.OpprettForsendelseResponse;
-import no.nav.dokdistdittnav.kafka.DoneEventRequest;
+import no.nav.dokdistdittnav.kafka.InfoForMinSideOgPrintForsendelse;
 import no.nav.dokdistdittnav.kdist002.mapper.OpprettForsendelseMapper;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import org.apache.camel.Handler;
@@ -60,7 +60,7 @@ public class Kdist002Service {
 	}
 
 	@Handler
-	public DoneEventRequest sendForsendelse(DoknotifikasjonStatus doknotifikasjonStatus) {
+	public InfoForMinSideOgPrintForsendelse sendForsendelse(DoknotifikasjonStatus doknotifikasjonStatus) {
 		log.info("Kdist002 hentet doknotifikasjonstatus med bestillingsId={} og status={} fra topic={}.", doknotifikasjonStatus.getBestillingsId(), doknotifikasjonStatus.getStatus(), properties.getDoknotifikasjon().getStatustopic());
 		String oldBestillingsId = extractDokdistBestillingsId(doknotifikasjonStatus.getBestillingsId());
 		String forsendelseId = finnForsendelse(oldBestillingsId);
@@ -78,7 +78,7 @@ public class Kdist002Service {
 			administrerForsendelse.oppdaterVarselInfo(mapNotifikasjonBestilling(forsendelseId, notifikasjonInfoTo));
 			log.info("Kdist002 har oppdatert distribusjonsinfo for notifikasjonen={} for bestillingsId={} med forsendelseId={}", notifikasjonInfoTo.id(), oldBestillingsId, forsendelseId);
 
-			oppdaterForsendelseStatus(forsendelseId, oldBestillingsId);
+			oppdaterForsendelseStatusTilEkspedert(forsendelseId, oldBestillingsId);
 		}
 
 		if (!FEILET.name().equals(doknotifikasjonStatus.getStatus())) {
@@ -90,14 +90,14 @@ public class Kdist002Service {
 		log.info("Hentet forsendelse med bestillingsId={}, varselStatus={} og forsendelseStatus={} ", hentForsendelseResponse.getBestillingsId(), hentForsendelseResponse.getVarselStatus(), hentForsendelseResponse.getForsendelseStatus());
 
 		return (isOpprettetVarselStatus(hentForsendelseResponse)) ?
-				createNewAndFeilRegistrerOldForsendelse(forsendelseId, hentForsendelseResponse, doknotifikasjonStatus) : null;
+				lagNyForsendelseOgFeilregistrerMinSideForsendelse(forsendelseId, hentForsendelseResponse, doknotifikasjonStatus) : null;
 	}
 
-	private void oppdaterForsendelseStatus(String forsendelseId, String bestillingsId) {
+	private void oppdaterForsendelseStatusTilEkspedert(String forsendelseId, String bestillingsId) {
 		HentForsendelseResponse forsendelse = administrerForsendelse.hentForsendelse(forsendelseId);
 
 		if (nonNull(forsendelse)) {
-			if (skalOppdatereForsendelseStatus(forsendelse)) {
+			if (skalOppdatereForsendelseStatusTilEkspedert(forsendelse)) {
 				log.info("Kdist002 oppdaterer forsendelse med forsendelseId={} til forsendelseStatus=EKSPEDERT for bestillingsId={}", forsendelseId, bestillingsId);
 
 				administrerForsendelse.oppdaterForsendelse(new OppdaterForsendelseRequest(Long.valueOf(forsendelseId), EKSPEDERT.name(), null));
@@ -112,17 +112,14 @@ public class Kdist002Service {
 		}
 	}
 
-	private static boolean skalOppdatereForsendelseStatus(HentForsendelseResponse forsendelse) {
-		return ForsendelseStatus.OVERSENDT.name().equals(forsendelse.getForsendelseStatus()) ||
-			   BEKREFTET.name().equals(forsendelse.getForsendelseStatus());
+	private static boolean skalOppdatereForsendelseStatusTilEkspedert(HentForsendelseResponse forsendelse) {
+		return ForsendelseStatus.OVERSENDT.name().equals(forsendelse.getForsendelseStatus()) || BEKREFTET.name().equals(forsendelse.getForsendelseStatus());
 	}
 
 	private static boolean skalInformasjonOmVarselLagres(DoknotifikasjonStatus doknotifikasjonStatus) {
-		return (OVERSENDT.name().equals(doknotifikasjonStatus.getStatus()) ||
-				FERDIGSTILT.name().equals(doknotifikasjonStatus.getStatus())
-			   ) && isNull(doknotifikasjonStatus.getDistribusjonId());
+		return (OVERSENDT.name().equals(doknotifikasjonStatus.getStatus()) || FERDIGSTILT.name().equals(doknotifikasjonStatus.getStatus()))
+			   && isNull(doknotifikasjonStatus.getDistribusjonId());
 	}
-
 
 	private String finnForsendelse(String bestillingsId) {
 		return administrerForsendelse.finnForsendelse(FinnForsendelseRequest.builder()
@@ -131,7 +128,7 @@ public class Kdist002Service {
 				.build());
 	}
 
-	private DoneEventRequest createNewAndFeilRegistrerOldForsendelse(String gammelForsendelseId, HentForsendelseResponse hentForsendelseResponse, DoknotifikasjonStatus doknotifikasjonStatus) {
+	private InfoForMinSideOgPrintForsendelse lagNyForsendelseOgFeilregistrerMinSideForsendelse(String gammelForsendelseId, HentForsendelseResponse hentForsendelseResponse, DoknotifikasjonStatus doknotifikasjonStatus) {
 		String gammelBestillingsId = hentForsendelseResponse.getBestillingsId();
 		String nyBestillingsId = UUID.randomUUID().toString();
 		OpprettForsendelseRequest request = opprettForsendelseMapper.map(hentForsendelseResponse, nyBestillingsId);
@@ -149,10 +146,10 @@ public class Kdist002Service {
 
 		administrerForsendelse.oppdaterForsendelse(new OppdaterForsendelseRequest(nyForsendelseId, KLAR_FOR_DIST.name(), null));
 
-		return DoneEventRequest.builder()
-				.dittnavFeiletForsendelseId(gammelForsendelseId)
+		return InfoForMinSideOgPrintForsendelse.builder()
+				.minSideForsendelseId(gammelForsendelseId)
+				.minSideBestillingsId(gammelBestillingsId)
 				.printForsendelseId(valueOf(nyForsendelseId))
-				.dittnavBestillingsId(gammelBestillingsId)
 				.printBestillingsId(nyBestillingsId)
 				.mottakerId(getMottakerId(hentForsendelseResponse))
 				.build();
