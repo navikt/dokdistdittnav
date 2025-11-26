@@ -19,10 +19,8 @@ import org.springframework.stereotype.Component;
 import java.time.OffsetDateTime;
 
 import static no.nav.dokdistdittnav.constants.DomainConstants.HOVEDDOKUMENT;
-import static no.nav.dokdistdittnav.constants.DomainConstants.KANAL_DITTNAV;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.Oppslagsnoekkel.JOURNALPOSTID;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatusCode.FERDIGSTILT;
-import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatusCode.OPPRETTET;
 import static org.apache.camel.component.kafka.KafkaConstants.OFFSET;
 import static org.apache.camel.component.kafka.KafkaConstants.PARTITION;
 import static org.apache.camel.component.kafka.KafkaConstants.TOPIC;
@@ -89,11 +87,7 @@ public class BehandleHoveddokumentLestService {
 	}
 
 	private boolean isValidForsendelse(HentForsendelseResponse forsendelse, HoveddokumentLest hoveddokumentLest) {
-		return forsendelse != null && erVarselstatusOpprettetOgKanalDittNav(forsendelse) && erHoveddokumentMedRiktigDokumentInfoId(forsendelse, hoveddokumentLest);
-	}
-
-	private boolean erVarselstatusOpprettetOgKanalDittNav(HentForsendelseResponse forsendelse) {
-		return OPPRETTET.name().equals(forsendelse.getVarselStatus()) && KANAL_DITTNAV.equals(forsendelse.getDistribusjonKanal());
+		return forsendelse != null && forsendelse.erVarselstatusOpprettetOgKanalDittNav() && erHoveddokumentMedRiktigDokumentInfoId(forsendelse, hoveddokumentLest);
 	}
 
 	public boolean erHoveddokumentMedRiktigDokumentInfoId(HentForsendelseResponse forsendelse, HoveddokumentLest hoveddokumentLest) {

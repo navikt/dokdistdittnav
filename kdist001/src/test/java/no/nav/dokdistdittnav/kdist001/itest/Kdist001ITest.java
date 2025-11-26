@@ -1,19 +1,14 @@
 package no.nav.dokdistdittnav.kdist001.itest;
 
-import lombok.SneakyThrows;
 import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import no.nav.dokdistdittnav.kdist001.itest.config.ApplicationTestConfig;
 import no.nav.safselvbetjening.schemas.HoveddokumentLest;
-import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.ActiveProfiles;
-
-import java.io.InputStream;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -27,7 +22,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static java.lang.String.format;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
@@ -60,7 +54,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	@Test
 	public void skalBehandleHoveddokumentLestMelding() {
 		stubGetFinnForsendelse();
-		stubGetHentForsendelse("__files/rdist001/hentforsendelse_happy.json", OK.value());
+		stubGetHentForsendelse("rdist001/hentforsendelse_happy.json", OK.value());
 		stubPatchOppdaterDistribusjonsinfo();
 		stubPutOppdaterForsendelse();
 
@@ -77,7 +71,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	@Test
 	public void skalAvslutteBehandlingAvHoveddokumentLestHvisForsendelseErNull() {
 		stubGetFinnForsendelse();
-		stubGetHentForsendelse("__files/rdist001/hentforsendelse_ingen_innhold.json", NO_CONTENT.value());
+		stubGetHentForsendelse("rdist001/hentforsendelse_ingen_innhold.json", NO_CONTENT.value());
 		stubPutOppdaterForsendelse();
 
 		putMessageOnKafkaTopic(lagHoveddokumentLest());
@@ -92,8 +86,8 @@ public class Kdist001ITest extends ApplicationTestConfig {
 
 	@ParameterizedTest
 	@ValueSource(strings = {
-			"__files/rdist001/hentforsendelse_varselstatus_ferdigstilt.json",
-			"__files/rdist001/hentforsendelse_varselstatus_feilet.json"
+			"rdist001/hentforsendelse_varselstatus_ferdigstilt.json",
+			"rdist001/hentforsendelse_varselstatus_feilet.json"
 	})
 	public void skalAvslutteBehandlingAvHoveddokumentLestHvisVarselstatusErUlikOpprettet(String fil) {
 		stubGetFinnForsendelse();
@@ -113,7 +107,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	@Test
 	public void skalAvslutteBehandlingAvHoveddokumentLestHvisHoveddokumentMangler() {
 		stubGetFinnForsendelse();
-		stubGetHentForsendelse("__files/rdist001/hentforsendelse_hoveddokument_mangler.json", OK.value());
+		stubGetHentForsendelse("rdist001/hentforsendelse_hoveddokument_mangler.json", OK.value());
 		stubPatchOppdaterDistribusjonsinfo();
 
 		putMessageOnKafkaTopic(lagHoveddokumentLest());
@@ -129,7 +123,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	@Test
 	public void skalAvslutteBehandlingAvHoveddokumentLestHvisHoveddokumentHarFeilArkivDokumentInfoId() {
 		stubGetFinnForsendelse();
-		stubGetHentForsendelse("__files/rdist001/hentforsendelse_feil_dokumentinfoid.json", OK.value());
+		stubGetHentForsendelse("rdist001/hentforsendelse_feil_dokumentinfoid.json", OK.value());
 		stubPatchOppdaterDistribusjonsinfo();
 
 		putMessageOnKafkaTopic(lagHoveddokumentLest());
@@ -145,7 +139,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 	@Test
 	public void skalAvslutteBehandlingAvHoveddokumentLestHvisDistribusjonskanalErUlikDittNav() {
 		stubGetFinnForsendelse();
-		stubGetHentForsendelse("__files/rdist001/hentforsendelse_distribusjonskanal_sdp.json", OK.value());
+		stubGetHentForsendelse("rdist001/hentforsendelse_distribusjonskanal_sdp.json", OK.value());
 		stubPutOppdaterForsendelse();
 
 		putMessageOnKafkaTopic(lagHoveddokumentLest());
@@ -170,7 +164,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 				.willReturn(aResponse()
 						.withStatus(httpStatusvalue)
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-						.withBody(classpathToString(responsebody))));
+						.withBodyFile(responsebody)));
 	}
 
 	void stubGetFinnForsendelse() {
@@ -178,7 +172,7 @@ public class Kdist001ITest extends ApplicationTestConfig {
 				.willReturn(aResponse()
 						.withStatus(OK.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-						.withBody(classpathToString("__files/rdist001/finnforsendelse_happy.json"))));
+						.withBodyFile("rdist001/finnforsendelse_happy.json")));
 	}
 
 	private void stubPutOppdaterForsendelse() {
@@ -208,9 +202,4 @@ public class Kdist001ITest extends ApplicationTestConfig {
 						.withBodyFile("azure/token_response_dummy.json")));
 	}
 
-	@SneakyThrows
-	private static String classpathToString(String classpathResource) {
-		InputStream inputStream = new ClassPathResource(classpathResource).getInputStream();
-		return IOUtils.toString(inputStream, UTF_8);
-	}
 }
