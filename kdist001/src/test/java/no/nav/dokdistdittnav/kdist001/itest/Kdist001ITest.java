@@ -7,6 +7,8 @@ import no.nav.safselvbetjening.schemas.HoveddokumentLest;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.ActiveProfiles;
@@ -16,7 +18,6 @@ import java.io.InputStream;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.patch;
 import static com.github.tomakehurst.wiremock.client.WireMock.patchRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -24,7 +25,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -40,123 +40,151 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class Kdist001ITest extends ApplicationTestConfig {
 
 	private static final String DOKUMENTINFO_ID = "236434";
-	private static final String DOKUMENTINFOID_2 = "111111";
 	private static final String JOURNALPOST_ID = "153781366";
 	private static final String FORSENDELSE_ID = "1720847";
 	private static final String PROPERTY_JOURNALPOST = "journalpostId";
 
-	private static final String URL_HENTFORSENDELSE = "/rest/v1/administrerforsendelse/" + FORSENDELSE_ID;
-	private static final String URL_FINNFORSENDELSE = "/rest/v1/administrerforsendelse/finnforsendelse/%s/%s";
-	private static final String URL_OPPDATERFORSENDELSE = "/rest/v1/administrerforsendelse/oppdaterforsendelse";
+	private static final String HENTFORSENDELSE_URL = "/rest/v1/administrerforsendelse/" + FORSENDELSE_ID;
+	private static final String FINNFORSENDELSE_URL = "/rest/v1/administrerforsendelse/finnforsendelse/%s/%s";
+	private static final String OPPDATERFORSENDELSE_URL = "/rest/v1/administrerforsendelse/oppdaterforsendelse";
+	private static final String OPPDATERDISTRIBUSJONSINFO_URL = "/rest/journalpostapi/v1/journalpost/%s/oppdaterDistribusjonsinfo";
 
 	@Autowired
 	private KafkaEventProducer kafkaEventProducer;
 
 	@BeforeEach
-	public void stubAzureToken() {
-		stubFor(post("/azure_token")
-				.willReturn(aResponse()
-						.withStatus(OK.value())
-						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-						.withBodyFile("azure/token_response_dummy.json")));
+	public void setUp() {
+		stubAzure();
 	}
 
 	@Test
-	public void shouldReadMessageFromLestavmottakerTopicen() {
-		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
-		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-happy.json", FORSENDELSE_ID, OK.value());
-		stubPutOppdaterForsendelse(OK.value());
-		stubPatchOppdaterDistribusjonsinfo(JOURNALPOST_ID, OK.value());
+	public void skalBehandleHoveddokumentLestMelding() {
+		stubGetFinnForsendelse();
+		stubGetHentForsendelse("__files/rdist001/hentforsendelse_happy.json", OK.value());
+		stubPatchOppdaterDistribusjonsinfo();
+		stubPutOppdaterForsendelse();
 
-		HoveddokumentLest hoveddokumentLest = HoveddokumentLest.newBuilder()
+		putMessageOnKafkaTopic(lagHoveddokumentLest());
+
+		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
+			verify(1, getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_JOURNALPOST, JOURNALPOST_ID))));
+			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_URL)));
+			verify(1, patchRequestedFor(urlEqualTo(format(OPPDATERDISTRIBUSJONSINFO_URL, JOURNALPOST_ID))));
+			verify(1, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_URL)));
+		});
+	}
+
+	@Test
+	public void skalAvslutteBehandlingAvHoveddokumentLestHvisForsendelseErNull() {
+		stubGetFinnForsendelse();
+		stubGetHentForsendelse("__files/rdist001/hentforsendelse_ingen_innhold.json", NO_CONTENT.value());
+		stubPutOppdaterForsendelse();
+
+		putMessageOnKafkaTopic(lagHoveddokumentLest());
+
+		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
+			verify(1, getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_JOURNALPOST, JOURNALPOST_ID))));
+			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_URL)));
+			verify(0, patchRequestedFor(urlEqualTo(format(OPPDATERDISTRIBUSJONSINFO_URL, JOURNALPOST_ID))));
+			verify(0, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_URL)));
+		});
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"__files/rdist001/hentforsendelse_varselstatus_ferdigstilt.json",
+			"__files/rdist001/hentforsendelse_varselstatus_feilet.json"
+	})
+	public void skalAvslutteBehandlingAvHoveddokumentLestHvisVarselstatusErUlikOpprettet(String fil) {
+		stubGetFinnForsendelse();
+		stubGetHentForsendelse(fil, OK.value());
+		stubPutOppdaterForsendelse();
+
+		putMessageOnKafkaTopic(lagHoveddokumentLest());
+
+		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
+			verify(1, getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_JOURNALPOST, JOURNALPOST_ID))));
+			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_URL)));
+			verify(0, patchRequestedFor(urlEqualTo(format(OPPDATERDISTRIBUSJONSINFO_URL, JOURNALPOST_ID))));
+			verify(0, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_URL)));
+		});
+	}
+
+	@Test
+	public void skalAvslutteBehandlingAvHoveddokumentLestHvisHoveddokumentMangler() {
+		stubGetFinnForsendelse();
+		stubGetHentForsendelse("__files/rdist001/hentforsendelse_hoveddokument_mangler.json", OK.value());
+		stubPatchOppdaterDistribusjonsinfo();
+
+		putMessageOnKafkaTopic(lagHoveddokumentLest());
+
+		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
+			verify(1, getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_JOURNALPOST, JOURNALPOST_ID))));
+			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_URL)));
+			verify(0, patchRequestedFor(urlEqualTo(format(OPPDATERDISTRIBUSJONSINFO_URL, JOURNALPOST_ID))));
+			verify(0, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_URL)));
+		});
+	}
+
+	@Test
+	public void skalAvslutteBehandlingAvHoveddokumentLestHvisHoveddokumentHarFeilArkivDokumentInfoId() {
+		stubGetFinnForsendelse();
+		stubGetHentForsendelse("__files/rdist001/hentforsendelse_feil_dokumentinfoid.json", OK.value());
+		stubPatchOppdaterDistribusjonsinfo();
+
+		putMessageOnKafkaTopic(lagHoveddokumentLest());
+
+		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
+			verify(1, getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_JOURNALPOST, JOURNALPOST_ID))));
+			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_URL)));
+			verify(0, patchRequestedFor(urlEqualTo(format(OPPDATERDISTRIBUSJONSINFO_URL, JOURNALPOST_ID))));
+			verify(0, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_URL)));
+		});
+	}
+
+	@Test
+	public void skalAvslutteBehandlingAvHoveddokumentLestHvisDistribusjonskanalErUlikDittNav() {
+		stubGetFinnForsendelse();
+		stubGetHentForsendelse("__files/rdist001/hentforsendelse_distribusjonskanal_sdp.json", OK.value());
+		stubPutOppdaterForsendelse();
+
+		putMessageOnKafkaTopic(lagHoveddokumentLest());
+
+		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
+			verify(1, getRequestedFor(urlEqualTo(format(FINNFORSENDELSE_URL, PROPERTY_JOURNALPOST, JOURNALPOST_ID))));
+			verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_URL)));
+			verify(0, patchRequestedFor(urlEqualTo(format(OPPDATERDISTRIBUSJONSINFO_URL, JOURNALPOST_ID))));
+			verify(0, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_URL)));
+		});
+	}
+
+	private HoveddokumentLest lagHoveddokumentLest() {
+		return HoveddokumentLest.newBuilder()
 				.setDokumentInfoId(DOKUMENTINFO_ID)
 				.setJournalpostId(JOURNALPOST_ID)
 				.build();
-		putMessageOnKafkaTopic(hoveddokumentLest);
-
-		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo(URL_HENTFORSENDELSE)));
-			verify(1, getRequestedFor(urlEqualTo(format(URL_FINNFORSENDELSE, PROPERTY_JOURNALPOST, JOURNALPOST_ID))));
-			verify(1, putRequestedFor(urlEqualTo(URL_OPPDATERFORSENDELSE)));
-			verify(1, patchRequestedFor(urlMatching(".*/oppdaterDistribusjonsinfo")).withHeader("Authorization", matching("Bearer .*")));
-		});
 	}
 
-	@Test
-	public void shouldReadMessageFromLestavmottakerTopicenAndLogWhenDokumentInfoIdNonMatch() {
-		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
-		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-feil-dokumentinfoid.json", FORSENDELSE_ID, OK.value());
-		stubPatchOppdaterDistribusjonsinfo(JOURNALPOST_ID, OK.value());
-
-		HoveddokumentLest hoveddokumentLest = HoveddokumentLest.newBuilder()
-				.setDokumentInfoId(DOKUMENTINFOID_2)
-				.setJournalpostId(JOURNALPOST_ID)
-				.build();
-		putMessageOnKafkaTopic(hoveddokumentLest);
-
-		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo(format(URL_FINNFORSENDELSE, PROPERTY_JOURNALPOST, JOURNALPOST_ID))));
-			verify(1, getRequestedFor(urlEqualTo(URL_HENTFORSENDELSE)));
-		});
-		verify(0, patchRequestedFor(urlMatching(".*/oppdaterDistribusjonsinfo")));
-	}
-
-	@Test
-	public void shouldReadMessageFromLestavmottakerTopicenAndLogWhenDokdistkanalIsNotDITTNAV() {
-		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
-		stubGetHentForsendelse("__files/rdist001/hentForsendelseresponse-kanal-sdp.json", FORSENDELSE_ID, OK.value());
-		stubPutOppdaterForsendelse(OK.value());
-
-		HoveddokumentLest hoveddokumentLest = HoveddokumentLest.newBuilder()
-				.setDokumentInfoId(DOKUMENTINFO_ID)
-				.setJournalpostId(JOURNALPOST_ID)
-				.build();
-
-		putMessageOnKafkaTopic(hoveddokumentLest);
-
-		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo(format(URL_FINNFORSENDELSE, PROPERTY_JOURNALPOST, JOURNALPOST_ID))));
-			verify(1, getRequestedFor(urlEqualTo(URL_HENTFORSENDELSE)));
-		});
-	}
-
-	@Test
-	public void hentForsendelseWithNullRekkefølgeReturnNoContent() {
-		stubGetFinnForsendelse("__files/rdist001/finnForsendelseresponse-happy.json", OK.value());
-		stubGetHentForsendelse("__files/rdist001/hentForsendelse_rekkefølge_feil.json", FORSENDELSE_ID, NO_CONTENT.value());
-		stubPutOppdaterForsendelse(OK.value());
-
-		HoveddokumentLest hoveddokumentLest = HoveddokumentLest.newBuilder()
-				.setDokumentInfoId(DOKUMENTINFO_ID)
-				.setJournalpostId(JOURNALPOST_ID)
-				.build();
-		putMessageOnKafkaTopic(hoveddokumentLest);
-
-		await().pollInterval(500, MILLISECONDS).atMost(10, SECONDS).untilAsserted(() -> {
-			verify(1, getRequestedFor(urlEqualTo(format(URL_FINNFORSENDELSE, PROPERTY_JOURNALPOST, JOURNALPOST_ID))));
-			verify(1, getRequestedFor(urlEqualTo(URL_HENTFORSENDELSE)));
-		});
-	}
-
-	private void stubGetHentForsendelse(String responsebody, String forsendelseId, int httpStatusvalue) {
-		stubFor(get(urlEqualTo("/rest/v1/administrerforsendelse/" + forsendelseId))
+	private void stubGetHentForsendelse(String responsebody, int httpStatusvalue) {
+		stubFor(get(urlEqualTo(HENTFORSENDELSE_URL))
 				.willReturn(aResponse()
 						.withStatus(httpStatusvalue)
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBody(classpathToString(responsebody))));
 	}
 
-	void stubGetFinnForsendelse(String responseBody, int httpStatusValue) {
-		stubFor(get(format(URL_FINNFORSENDELSE, PROPERTY_JOURNALPOST, JOURNALPOST_ID))
+	void stubGetFinnForsendelse() {
+		stubFor(get(FINNFORSENDELSE_URL.formatted(PROPERTY_JOURNALPOST, JOURNALPOST_ID))
 				.willReturn(aResponse()
-						.withStatus(httpStatusValue)
+						.withStatus(OK.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-						.withBody(classpathToString(responseBody))));
+						.withBody(classpathToString("__files/rdist001/finnforsendelse_happy.json"))));
 	}
 
-	private void stubPutOppdaterForsendelse(int httpStatusvalue) {
-		stubFor(put(URL_OPPDATERFORSENDELSE)
-				.willReturn(aResponse().withStatus(httpStatusvalue)));
+	private void stubPutOppdaterForsendelse() {
+		stubFor(put(OPPDATERFORSENDELSE_URL)
+				.willReturn(aResponse()
+						.withStatus(OK.value())));
 	}
 
 	private void putMessageOnKafkaTopic(HoveddokumentLest hoveddokumentLest) {
@@ -166,9 +194,18 @@ public class Kdist001ITest extends ApplicationTestConfig {
 		);
 	}
 
-	private void stubPatchOppdaterDistribusjonsinfo(String forsendelseId, int httpStatusvalue) {
-		stubFor(patch(urlMatching("/" + forsendelseId + "/oppdaterDistribusjonsinfo"))
-				.willReturn(aResponse().withStatus(httpStatusvalue)));
+	private void stubPatchOppdaterDistribusjonsinfo() {
+		stubFor(patch(urlEqualTo(OPPDATERDISTRIBUSJONSINFO_URL.formatted(JOURNALPOST_ID)))
+				.willReturn(aResponse()
+						.withStatus(OK.value())));
+	}
+
+	private void stubAzure() {
+		stubFor(post("/azure_token")
+				.willReturn(aResponse()
+						.withStatus(OK.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile("azure/token_response_dummy.json")));
 	}
 
 	@SneakyThrows

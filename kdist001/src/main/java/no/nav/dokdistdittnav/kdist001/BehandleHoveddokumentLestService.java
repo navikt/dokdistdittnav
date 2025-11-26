@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.consumer.dokarkiv.DokarkivConsumer;
-import no.nav.dokdistdittnav.consumer.dokarkiv.JournalpostId;
 import no.nav.dokdistdittnav.consumer.dokarkiv.OppdaterDistribusjonsInfo;
 import no.nav.dokdistdittnav.consumer.rdist001.AdministrerForsendelse;
 import no.nav.dokdistdittnav.consumer.rdist001.to.FinnForsendelseRequest;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
 
-import static java.util.Objects.nonNull;
 import static no.nav.dokdistdittnav.constants.DomainConstants.HOVEDDOKUMENT;
 import static no.nav.dokdistdittnav.constants.DomainConstants.KANAL_DITTNAV;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.Oppslagsnoekkel.JOURNALPOSTID;
@@ -51,46 +49,61 @@ public class BehandleHoveddokumentLestService {
 	}
 
 	@Handler
-	public void updateVarselStatus(Exchange exchange) {
+	public void behandleHoveddokumentLest(Exchange exchange) {
 		HoveddokumentLest hoveddokumentLest = exchange.getIn().getBody(HoveddokumentLest.class);
-		log.info("Kdist001 mottatt HoveddokumentLest hendelse med journalpostId={}, dokumentInfoId={}, record(topic={}, partition={}, offset={})",
+		log.info("kdist001 har mottatt HoveddokumentLest-hendelse med journalpostId={}, dokumentInfoId={}, record(topic={}, partition={}, offset={})",
 				hoveddokumentLest.getJournalpostId(), hoveddokumentLest.getDokumentInfoId(),
 				exchange.getIn().getHeader(TOPIC, String.class), exchange.getIn().getHeader(PARTITION, String.class), exchange.getIn().getHeader(OFFSET, String.class));
 
-		String forsendelseId = administrerForsendelse.finnForsendelse(FinnForsendelseRequest.builder()
-				.oppslagsnoekkel(JOURNALPOSTID)
-				.verdi(hoveddokumentLest.getJournalpostId())
-				.build());
+		String forsendelseId = finnForsendelse(hoveddokumentLest.getJournalpostId());
+		if (forsendelseId == null) {
+			return;
+		}
 
-		if (forsendelseId != null) {
-			HentForsendelseResponse hentForsendelseResponse = administrerForsendelse.hentForsendelse(forsendelseId);
+		HentForsendelseResponse forsendelse = administrerForsendelse.hentForsendelse(forsendelseId);
 
-			if (nonNull(hentForsendelseResponse) && isValidForsendelse(hentForsendelseResponse, hoveddokumentLest)) {
+		if (isValidForsendelse(forsendelse, hoveddokumentLest)) {
+			sendDoneEventTilDittNav(forsendelseId, forsendelse);
 
-				NokkelInput nokkelInput = mapper.mapNokkelIntern(forsendelseId, dokdistdittnavProperties.getAppnavn(), hentForsendelseResponse);
-				kafkaEventProducer.publish(dokdistdittnavProperties.getBrukernotifikasjon().getTopicdone(), nokkelInput, mapper.mapDoneInput());
-				dokarkivConsumer.settTidLestHoveddokument(new JournalpostId(hoveddokumentLest.getJournalpostId()), new OppdaterDistribusjonsInfo(OffsetDateTime.now()));
-				administrerForsendelse.oppdaterForsendelse(new OppdaterForsendelseRequest(Long.valueOf(forsendelseId), null, FERDIGSTILT));
-				log.info("Kdist001 behandlet ferdig HoveddokumentLest hendelse med journalpostId={}, dokumentInfoId={}, record(topic={}, partition={}, offset={})",
-						hoveddokumentLest.getJournalpostId(), hoveddokumentLest.getDokumentInfoId(),
-						exchange.getIn().getHeader(TOPIC, String.class), exchange.getIn().getHeader(PARTITION, String.class), exchange.getIn().getHeader(OFFSET, String.class));
-			}
+			dokarkivConsumer.settDatoLest(hoveddokumentLest.getJournalpostId(), new OppdaterDistribusjonsInfo(OffsetDateTime.now()));
+			oppdaterStatusPaaForsendelseTilFerdigstilt(forsendelseId);
+
+			log.info("kdist001 har behandlet ferdig HoveddokumentLest-hendelse med journalpostId={}, dokumentInfoId={}", hoveddokumentLest.getJournalpostId(), hoveddokumentLest.getDokumentInfoId());
 		}
 	}
 
-	private boolean isValidForsendelse(HentForsendelseResponse hentForsendelseResponse, HoveddokumentLest hoveddokumentLest) {
-		return isValidStatusAndKanal(hentForsendelseResponse) && isHoveddokument(hentForsendelseResponse, hoveddokumentLest);
+	private String finnForsendelse(String journalpostId) {
+		return administrerForsendelse.finnForsendelse(FinnForsendelseRequest.builder()
+				.oppslagsnoekkel(JOURNALPOSTID)
+				.verdi(journalpostId)
+				.build());
 	}
 
-	private boolean isValidStatusAndKanal(HentForsendelseResponse hentForsendelseResponse) {
-		return OPPRETTET.name().equals(hentForsendelseResponse.getVarselStatus()) && KANAL_DITTNAV.equals(hentForsendelseResponse.getDistribusjonKanal());
+	private void sendDoneEventTilDittNav(String forsendelseId, HentForsendelseResponse forsendelse) {
+		NokkelInput nokkelInput = mapper.mapNokkelIntern(forsendelseId, dokdistdittnavProperties.getAppnavn(), forsendelse);
+		kafkaEventProducer.publish(dokdistdittnavProperties.getBrukernotifikasjon().getTopicdone(), nokkelInput, mapper.mapDoneInput());
 	}
 
-	public boolean isHoveddokument(HentForsendelseResponse hentForsendelseResponse, HoveddokumentLest hoveddokumentLest) {
-		return nonNull(hentForsendelseResponse.getDokumenter()) && hentForsendelseResponse.getDokumenter().stream()
+	private void oppdaterStatusPaaForsendelseTilFerdigstilt(String forsendelseId) {
+		administrerForsendelse.oppdaterForsendelse(new OppdaterForsendelseRequest(Long.valueOf(forsendelseId), null, FERDIGSTILT));
+	}
+
+	private boolean isValidForsendelse(HentForsendelseResponse forsendelse, HoveddokumentLest hoveddokumentLest) {
+		return forsendelse != null && erVarselstatusOpprettetOgKanalDittNav(forsendelse) && erHoveddokumentMedRiktigDokumentInfoId(forsendelse, hoveddokumentLest);
+	}
+
+	private boolean erVarselstatusOpprettetOgKanalDittNav(HentForsendelseResponse forsendelse) {
+		return OPPRETTET.name().equals(forsendelse.getVarselStatus()) && KANAL_DITTNAV.equals(forsendelse.getDistribusjonKanal());
+	}
+
+	public boolean erHoveddokumentMedRiktigDokumentInfoId(HentForsendelseResponse forsendelse, HoveddokumentLest hoveddokumentLest) {
+		if (forsendelse.getDokumenter() == null) {
+			return false;
+		}
+
+		return forsendelse.getDokumenter().stream()
 				.filter(dokument -> HOVEDDOKUMENT.equals(dokument.getTilknyttetSom()))
-				.anyMatch(dokument -> dokument.getArkivDokumentInfoId().equals(hoveddokumentLest.getDokumentInfoId())
-				);
+				.anyMatch(dokument -> dokument.getArkivDokumentInfoId().equals(hoveddokumentLest.getDokumentInfoId()));
 	}
 
 }

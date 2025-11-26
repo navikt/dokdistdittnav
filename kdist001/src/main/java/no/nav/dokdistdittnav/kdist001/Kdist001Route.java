@@ -40,11 +40,7 @@ public class Kdist001Route extends RouteBuilder {
 				.onExceptionOccurred(exchange -> {
 					Throwable exception = exchange.getProperty(EXCEPTION_CAUGHT, Throwable.class);
 					if (exception != null && !(exception instanceof AbstractDokdistdittnavFunctionalException)) {
-						DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
-						manual.getCamelExchangePayload().consumer.seek(manual.getPartition(), manual.getRecordOffset());
-
-						log.error("Kdist001 Teknisk feil. Seek tilbake til record(topic={}, partition={}, offset={})", manual.getTopicName(),
-								manual.getPartition().partition(), manual.getRecordOffset());
+						lesInnMeldingPaaNytt(exchange);
 					}
 				})
 				.retryAttemptedLogLevel(ERROR)
@@ -59,7 +55,7 @@ public class Kdist001Route extends RouteBuilder {
 				.logExhaustedMessageHistory(false)
 				.logStackTrace(false)
 				.logRetryAttempted(false)
-				.process(this::defaultKafkaManualCommit)
+				.process(this::avsluttProsesseringAvMelding)
 				.log(WARN, log, "${exception}");
 
 		from(camelKafkaProperties.buildKafkaUrl(dokdistdittnavProperties.getTopic().getLestavmottaker(), camelKafkaProperties.kafkaConsumer()))
@@ -67,22 +63,31 @@ public class Kdist001Route extends RouteBuilder {
 				.id(KDIST001_ID)
 				.process(new MDCProcessor())
 				.bean(behandleHoveddokumentLestService)
-				.process(this::defaultKafkaManualCommit)
+				.process(this::avsluttProsesseringAvMelding)
 				.end();
 		//@formatter:on
 	}
 
-	private void defaultKafkaManualCommit(Exchange exchange) {
+	private void lesInnMeldingPaaNytt(Exchange exchange) {
+		DefaultKafkaManualCommit manual = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
+		manual.getCamelExchangePayload().consumer.seek(manual.getPartition(), manual.getRecordOffset());
+
+		log.error("kdist001 teknisk feil. Seek tilbake til record(topic={}, partition={}, offset={})", manual.getTopicName(),
+				manual.getPartition().partition(), manual.getRecordOffset());
+	}
+
+	private void avsluttProsesseringAvMelding(Exchange exchange) {
 		DefaultKafkaManualCommit manualCommit = exchange.getIn().getHeader(MANUAL_COMMIT, DefaultKafkaManualCommit.class);
 		if (manualCommit != null) {
 			if (log.isDebugEnabled()) {
-				log.debug("Kdist001, manual commit {}", createLogging(manualCommit));
+				log.debug("kdist001, manual commit {}", formaterKafkaMetadata(manualCommit));
 			}
 			manualCommit.commit();
 		}
 	}
 
-	private String createLogging(DefaultKafkaManualCommit manualCommit) {
-		return format("(topic=%s, partition={%s, offset=%s, groupId=%s).", manualCommit.getTopicName(), manualCommit.getPartition().partition(), manualCommit.getRecordOffset(), camelKafkaProperties.getGroupId());
+	private String formaterKafkaMetadata(DefaultKafkaManualCommit manualCommit) {
+		return format("(topic=%s, partition={%s, offset=%s, groupId=%s).",
+				manualCommit.getTopicName(), manualCommit.getPartition().partition(), manualCommit.getRecordOffset(), camelKafkaProperties.getGroupId());
 	}
 }
