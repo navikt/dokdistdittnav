@@ -1,7 +1,6 @@
 package no.nav.dokdistdittnav.config.properties;
 
 import lombok.Data;
-import no.nav.dokdistdittnav.consumer.dokarkiv.JournalpostId;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
@@ -71,25 +70,14 @@ public class DokdistdittnavProperties {
 		private String baseUri;
 		@NotEmpty
 		private String oauthScope;
-
-		public URI getDokdistURI() {
-			return URI.create(baseUri);
-		}
-
 	}
 
 	@Data
 	@Validated
 	public static class Dokarkiv {
-		private final String oppdaterDistribusjonsinfoPath = "/oppdaterDistribusjonsinfo";
-
 		@NotEmpty
 		private String baseUri;
 		@NotEmpty
 		private String oauthScope;
-
-		public URI getOppdaterDistribusjonsinfoURI(JournalpostId journalPostId) {
-			return URI.create(baseUri + "/" + journalPostId.value() + oppdaterDistribusjonsinfoPath);
-		}
 	}
 }

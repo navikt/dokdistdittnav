@@ -9,11 +9,13 @@ import java.time.Clock;
 import java.time.LocalTime;
 import java.util.List;
 
+import static no.nav.dokdistdittnav.constants.DomainConstants.KANAL_DITTNAV;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.ANNET;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VEDTAK;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonsTypeKode.VIKTIG;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.DistribusjonstidspunktKode.UMIDDELBART;
 import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.ForsendelseStatus.KLAR_FOR_DIST;
+import static no.nav.dokdistdittnav.consumer.rdist001.kodeverk.VarselStatusCode.OPPRETTET;
 
 @Value
 @Builder
@@ -103,6 +105,10 @@ public class HentForsendelseResponse {
 		// distribusjonstidspunkt er KJERNETIDSPUNKT
 		LocalTime tid = LocalTime.now(clock);
 		return !(tid.isAfter(kjernetidStart) && tid.isBefore(kjernetidSlutt));
+	}
+
+	public boolean erVarselstatusOpprettetOgKanalDittNav() {
+		return OPPRETTET.name().equals(varselStatus) && KANAL_DITTNAV.equals(distribusjonKanal);
 	}
 
 }

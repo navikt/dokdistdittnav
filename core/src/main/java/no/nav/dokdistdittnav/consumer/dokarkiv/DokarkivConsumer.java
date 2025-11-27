@@ -23,21 +23,22 @@ import static org.springframework.security.oauth2.client.web.reactive.function.c
 public class DokarkivConsumer {
 
 	private final WebClient webClient;
-	private final DokdistdittnavProperties dokdistdittnavProperties;
 
 	public DokarkivConsumer(WebClient webClient,
 							DokdistdittnavProperties dokdistdittnavProperties) {
 		this.webClient = webClient.mutate()
 				.filter(new NavHeadersFilter())
+				.baseUrl(dokdistdittnavProperties.getDokarkiv().getBaseUri())
 				.defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 				.build();
-		this.dokdistdittnavProperties = dokdistdittnavProperties;
 	}
 
 	@Retryable(retryFor = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MAX_ATTEMPTS_SHORT))
-	public void settTidLestHoveddokument(JournalpostId journalpostId, OppdaterDistribusjonsInfo oppdaterDistribusjonsinfo) {
+	public void settDatoLest(String journalpostId, OppdaterDistribusjonsInfo oppdaterDistribusjonsinfo) {
 		webClient.patch()
-				.uri(dokdistdittnavProperties.getDokarkiv().getOppdaterDistribusjonsinfoURI(journalpostId))
+				.uri(uriBuilder -> uriBuilder
+						.path("/{journalpostId}/oppdaterDistribusjonsinfo")
+						.build(journalpostId))
 				.attributes(clientRegistrationId(CLIENT_REGISTRATION_DOKARKIV))
 				.bodyValue(oppdaterDistribusjonsinfo)
 				.retrieve()
@@ -46,16 +47,16 @@ public class DokarkivConsumer {
 				.block();
 	}
 
-	private Throwable mapError(Throwable throwable, JournalpostId journalpostId) {
+	private Throwable mapError(Throwable throwable, String journalpostId) {
 		if (throwable instanceof WebClientResponseException response && response.getStatusCode().is4xxClientError()) {
 			throw new DokarkivOppdaterDistribusjonsinfoFunctionalException(format("Kall mot dokarkiv feilet funksjonelt ved registrering av lest status for journalpost med id=%s, status=%s, feilmelding=%s",
-					journalpostId.value(),
+					journalpostId,
 					response.getStatusCode(),
 					response.getMessage()),
 					throwable);
 		} else {
-			throw new DokarkivOppdaterDistribusjonsinfoTechnicalException(format("Kall mot dokarkiv feilet teknisk ved registrering av lest status for journalpost med id=%s ,feilmelding=%s",
-					journalpostId.value(),
+			throw new DokarkivOppdaterDistribusjonsinfoTechnicalException(format("Kall mot dokarkiv feilet teknisk ved registrering av lest status for journalpost med id=%s, feilmelding=%s",
+					journalpostId,
 					throwable.getMessage()),
 					throwable);
 		}

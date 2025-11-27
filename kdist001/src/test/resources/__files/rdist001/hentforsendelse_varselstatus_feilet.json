@@ -9,7 +9,7 @@
   "tema":"FS22",
   "distribusjonstype": "VEDTAK",
   "distribusjonKanal" : "DITTNAV",
-  "varselStatus" : "OPPRETTET",
+  "varselStatus" : "FEILET",
   "forsendelseTittel": "Innkalling til informasjonsmoete",
   "mottaker": {
     "mottakerId": "22222222222",
