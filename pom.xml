@@ -30,9 +30,6 @@
 		<kafka-avro-serializer.version>7.9.2</kafka-avro-serializer.version>
 		<teamdokumenthandtering-avro-schemas.version>1.1.6</teamdokumenthandtering-avro-schemas.version>
 
-		<!-- Legacy - blir fjernet i MMA-8420 -->
-		<brukernotifikasjon.version>2.6.0</brukernotifikasjon.version>
-
 		<camel-spring-boot-bom.version>4.16.0</camel-spring-boot-bom.version>
 		<logstash-logback-encoder.version>8.1</logstash-logback-encoder.version>
 		<com.ibm.mq.jakarta.client.version>9.4.4.0</com.ibm.mq.jakarta.client.version>
@@ -102,12 +99,6 @@
 				<groupId>io.confluent</groupId>
 				<artifactId>kafka-avro-serializer</artifactId>
 				<version>${kafka-avro-serializer.version}</version>
-			</dependency>
-			<!-- Legacy - blir fjernet i MMA-8420 -->
-			<dependency>
-				<groupId>com.github.navikt</groupId>
-				<artifactId>brukernotifikasjon-schemas</artifactId>
-				<version>${brukernotifikasjon.version}</version>
 			</dependency>
 
 			<dependency>

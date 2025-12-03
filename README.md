@@ -1,13 +1,11 @@
 # Dokdistdittnav
 
-Dokdistdittnav tilbyr tenester for distribusjon av sendingar gjennom Brukarnotifikasjon (team Mi side) på nav.no.
+Dokdistdittnav tilbyr tenester for distribusjon av sendingar til Min Side (nav.no) med ekstern varsling.
 Dei tre tenestene er:
 
-- kdist001 BehandleÅpnetDokument: Får beskjed når ein brukar har lese eit dokument. Sender Done-event til
-  Brukarnotifikasjon og oppdaterer interne statusar.
-- kdist002 BehandleEksternNotifikasjonStatus: Fangar opp eksterne notifikasjonar som har feila, distribuerer
-  dokumentet via sentral print, og inaktiverer varslinga for den feila Min Side-sendinga.
-- qdist010 DistribuerForsendelseTilDittNav: Sending av varsel med ekstern notifikasjon til Min Side.
+- kdist001 BehandleÅpnetDokument: Får beskjed når ein brukar har lese eit dokument. Inaktiverer varsel på Min Side, og oppdaterer interne statusar.
+- kdist002 BehandleEksternNotifikasjonStatus: Fangar opp eksterne notifikasjonar som har feila, distribuerer dokumentet via sentral print, og inaktiverer varslinga for den feila Min Side-sendinga.
+- qdist010 DistribuerForsendelseTilMinSide: Sending av varsel med ekstern notifikasjon til Min Side.
 
 Dei tre tenestene les meldingar frå ulike stadar.
 

@@ -25,11 +25,10 @@ public class SerializerPerKafkaTopicConfiguration {
 		Map<String, Object> configs = new HashMap<>(defaultProducerFactory.getConfigurationProperties());
 		configs.put(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 		configs.put(VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-		DefaultKafkaProducerFactory<Object, Object> minSideAapenBrukervarselProducerFactory = new DefaultKafkaProducerFactory<>(configs);
+		DefaultKafkaProducerFactory<Object, Object> minSideProducerFactory = new DefaultKafkaProducerFactory<>(configs);
 
 		Map<Pattern, ProducerFactory<Object, Object>> map = new LinkedHashMap<>();
-		map.put(Pattern.compile("min-side.aapen-brukervarsel-v1.*"), minSideAapenBrukervarselProducerFactory);
-		map.put(Pattern.compile("min-side.aapen-brukernotifikasjon-done-v1.*"), defaultProducerFactory);
+		map.put(Pattern.compile("min-side.aapen-brukervarsel-v1.*"), minSideProducerFactory);
 		map.put(Pattern.compile("teamdokumenthandtering.*"), defaultProducerFactory);
 
 		return new RoutingKafkaTemplate(map);

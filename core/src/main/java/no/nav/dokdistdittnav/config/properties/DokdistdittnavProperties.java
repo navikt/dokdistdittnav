@@ -1,11 +1,11 @@
 package no.nav.dokdistdittnav.config.properties;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 
 @Data
@@ -18,7 +18,6 @@ public class DokdistdittnavProperties {
 
 	private final Topic topic = new Topic();
 	private final MinSide minside = new MinSide();
-	private final Brukernotifikasjon brukernotifikasjon = new Brukernotifikasjon();
 	private final Doknotifikasjon doknotifikasjon = new Doknotifikasjon();
 	private final Dokarkiv dokarkiv = new Dokarkiv();
 	private final Dokdist dokdistadmin = new Dokdist();
@@ -28,14 +27,6 @@ public class DokdistdittnavProperties {
 	public static class Topic {
 		@NotNull
 		private String lestavmottaker;
-	}
-
-	// Legacy - blir fjernet i MMA-8420
-	@Data
-	@Validated
-	public static class Brukernotifikasjon {
-		@NotNull
-		private String topicdone;
 	}
 
 	@Data
