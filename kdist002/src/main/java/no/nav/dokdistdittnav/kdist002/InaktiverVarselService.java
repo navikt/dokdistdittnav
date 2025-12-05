@@ -6,7 +6,7 @@ import no.nav.dokdistdittnav.kafka.KafkaEventProducer;
 import org.apache.camel.Handler;
 import org.springframework.stereotype.Service;
 
-import static no.nav.dokdistdittnav.kdist002.InaktiverVarselMapper.mapInaktiverVarsel;
+import static no.nav.dokdistdittnav.kafka.InaktiverVarselMapper.mapInaktiverVarsel;
 
 @Slf4j
 @Service

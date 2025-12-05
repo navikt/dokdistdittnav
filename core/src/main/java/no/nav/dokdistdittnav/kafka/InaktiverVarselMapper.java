@@ -1,4 +1,4 @@
-package no.nav.dokdistdittnav.kdist002;
+package no.nav.dokdistdittnav.kafka;
 
 import no.nav.tms.varsel.builder.InaktiverVarselBuilder;
 

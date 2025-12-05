@@ -1,5 +1,3 @@
-package no.nav.dokdistdittnav.kdist002;
-
 import no.nav.tms.varsel.builder.BuilderEnvironment;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -7,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-import static no.nav.dokdistdittnav.kdist002.InaktiverVarselMapper.mapInaktiverVarsel;
+import static no.nav.dokdistdittnav.kafka.InaktiverVarselMapper.mapInaktiverVarsel;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class InaktiverVarselMapperTest {
