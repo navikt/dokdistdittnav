@@ -56,8 +56,6 @@ spec:
       value: {{ DOKDISTDITTNAV_DOKDISTADMIN_BASE_URI }}
     - name: DOKDISTDITTNAV_DOKDISTADMIN_OAUTH_SCOPE
       value: {{ DOKDISTDITTNAV_DOKDISTADMIN_OAUTH_SCOPE }}
-    - name: AZURE_APP_TOKEN_URL
-      value: {{ AZURE_APP_TOKEN_URL }}
   image: {{ image }}
   ingresses:
         {{#each INGRESSES}}

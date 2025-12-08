@@ -6,7 +6,6 @@
 	"INGRESSES": [
 		"https://dokdistdittnav.intern.dev.nav.no"
 	],
-	"AZURE_APP_TOKEN_URL": "https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/oauth2/v2.0/token",
 	"DOKDISTDITTNAV_MINSIDE_VARSELTOPIC": "min-side.aapen-brukervarsel-v1",
 	"DOKDISTDITTNAV_MINSIDE_DOKUMENTARKIV_LINK": "https://www.intern.dev.nav.no/dokumentarkiv/tema/",
 	"DOKDISTDITTNAV_DOKNOTIFIKASJON_STATUSTOPIC": "teamdokumenthandtering.aapen-dok-notifikasjon-status",
