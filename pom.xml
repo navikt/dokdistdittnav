@@ -35,7 +35,7 @@
 		<java.version>25</java.version>
 
 		<varsel-java-builder.version>2.1.1</varsel-java-builder.version>
-		<kafka-avro-serializer.version>7.9.2</kafka-avro-serializer.version>
+		<kafka-avro-serializer.version>8.1.1</kafka-avro-serializer.version>
 		<teamdokumenthandtering-avro-schemas.version>1.1.6</teamdokumenthandtering-avro-schemas.version>
 
 		<camel-spring-boot-bom.version>4.17.0</camel-spring-boot-bom.version>
