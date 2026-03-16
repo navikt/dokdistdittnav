@@ -42,7 +42,7 @@
 		<logstash-logback-encoder.version>8.1</logstash-logback-encoder.version>
 		<com.ibm.mq.jakarta.client.version>9.4.5.0</com.ibm.mq.jakarta.client.version>
 		<dok-legacy-tjenestespesifikasjoner.version>41-d282678</dok-legacy-tjenestespesifikasjoner.version>
-		<resilience4j-spring-boot3.version>2.3.0</resilience4j-spring-boot3.version>
+		<resilience4j-spring-boot3.version>2.4.0</resilience4j-spring-boot3.version>
 
 		<!-- Test -->
 		<commons-io.version>2.21.0</commons-io.version>
