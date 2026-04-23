@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.8</version>
+		<version>4.0.1</version>
 	</parent>
 
 	<groupId>no.nav.dokdistdittnav</groupId>
@@ -39,14 +39,13 @@
 		<teamdokumenthandtering-avro-schemas.version>1.1.6</teamdokumenthandtering-avro-schemas.version>
 
 		<camel-spring-boot-bom.version>4.19.0</camel-spring-boot-bom.version>
-		<logstash-logback-encoder.version>8.1</logstash-logback-encoder.version>
+		<logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
 		<com.ibm.mq.jakarta.client.version>9.4.5.0</com.ibm.mq.jakarta.client.version>
 		<dok-legacy-tjenestespesifikasjoner.version>41-d282678</dok-legacy-tjenestespesifikasjoner.version>
-		<resilience4j-spring-boot3.version>2.4.0</resilience4j-spring-boot3.version>
+		<resilience4j-spring-boot4.version>2.4.0</resilience4j-spring-boot4.version>
 
 		<!-- Test -->
-		<commons-io.version>2.21.0</commons-io.version>
-		<spring-cloud-contract-wiremock.version>4.3.0</spring-cloud-contract-wiremock.version>
+		<wiremock-spring-boot.version>4.0.9</wiremock-spring-boot.version>
 
 		<!-- Plugins -->
 		<maven-toolchains-plugin.version>3.2.0</maven-toolchains-plugin.version>
@@ -88,10 +87,9 @@
 			</dependency>
 			<dependency>
 				<groupId>io.github.resilience4j</groupId>
-				<artifactId>resilience4j-spring-boot3</artifactId>
-				<version>${resilience4j-spring-boot3.version}</version>
+				<artifactId>resilience4j-spring-boot4</artifactId>
+				<version>${resilience4j-spring-boot4.version}</version>
 			</dependency>
-
 			<!-- Kafka -->
 			<dependency>
 				<groupId>no.nav.teamdokumenthandtering</groupId>
@@ -127,15 +125,9 @@
 
 			<!-- Test -->
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-contract-wiremock</artifactId>
-				<version>${spring-cloud-contract-wiremock.version}</version>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>commons-io</groupId>
-				<artifactId>commons-io</artifactId>
-				<version>${commons-io.version}</version>
+				<groupId>org.wiremock.integrations</groupId>
+				<artifactId>wiremock-spring-boot</artifactId>
+				<version>${wiremock-spring-boot.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>

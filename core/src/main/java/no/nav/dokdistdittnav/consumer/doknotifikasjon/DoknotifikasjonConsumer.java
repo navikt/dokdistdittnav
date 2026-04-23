@@ -4,8 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistdittnav.config.properties.DokdistdittnavProperties;
 import no.nav.dokdistdittnav.exception.technical.AbstractDokdistdittnavTechnicalException;
 import no.nav.dokdistdittnav.utils.NavHeadersFilter;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
+import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -36,7 +35,7 @@ public class DoknotifikasjonConsumer {
 		this.dokdistdittnavProperties = dokdistdittnavProperties;
 	}
 
-	@Retryable(retryFor = AbstractDokdistdittnavTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MULTIPLIER_SHORT))
+	@Retryable(includes = AbstractDokdistdittnavTechnicalException.class, maxRetries = 2, delay = DELAY_SHORT, multiplier = MULTIPLIER_SHORT)
 	public NotifikasjonInfoTo getNotifikasjonInfo(String bestillingsId, boolean maaInkludereSendtDato) {
 		return webClient.get()
 				.uri(dokdistdittnavProperties.getDoknotifikasjon().getNotifikasjonInfoURI(bestillingsId))
