@@ -1,16 +1,13 @@
 package no.nav.dokdistdittnav.kdist002;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.databind.json.JsonMapper;
 import lombok.SneakyThrows;
 import no.nav.dokdistdittnav.consumer.doknotifikasjon.NotifikasjonInfoTo;
 import no.nav.dokdistdittnav.consumer.rdist001.to.HentForsendelseResponse;
-import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.InputStream;
 
-import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class TestUtils {
@@ -45,16 +42,15 @@ public class TestUtils {
 
 	@SneakyThrows
 	private static <T> T objectMapper(String input, Class<T> tClass) {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.registerModule(new JavaTimeModule());
-		mapper.disable(WRITE_DATES_AS_TIMESTAMPS);
+		JsonMapper mapper = JsonMapper.builder().build();
 		return mapper.readValue(input, tClass);
 	}
 
 	@SneakyThrows
 	public static String classpathToString(String classpathResource) {
-		InputStream inputStream = new ClassPathResource(classpathResource).getInputStream();
-		return IOUtils.toString(inputStream, UTF_8);
+		try (InputStream inputStream = new ClassPathResource(classpathResource).getInputStream()) {
+			return new String(inputStream.readAllBytes(), UTF_8);
+		}
 
 	}
 }

@@ -15,10 +15,17 @@ import org.springframework.context.annotation.Profile;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSException;
 import jakarta.jms.Queue;
+import org.springframework.jms.core.JmsTemplate;
 
 @Configuration
 @Profile("itest")
 public class JmsItestConfig {
+
+	@Bean
+	@DependsOn("broker")
+	public JmsTemplate jmsTemplate(ConnectionFactory activemqConnectionFactory) {
+		return new JmsTemplate(activemqConnectionFactory);
+	}
 
 	@Bean
 	public Queue qdist010(@Value("${dokdistdittnav_qdist010_dist_ditt_nav.queuename}") String qdist010QueueName) {

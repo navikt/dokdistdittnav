@@ -5,10 +5,10 @@ import jakarta.jms.Message;
 import jakarta.jms.Queue;
 import jakarta.jms.TextMessage;
 import jakarta.xml.bind.JAXBElement;
+import no.nav.dokdistdittnav.config.kafka.KafkaConfig;
 import no.nav.dokdistdittnav.qdist010.config.ApplicationTestConfig;
 import no.nav.dokdistdittnav.qdist010.minsidevarsling.VarselService;
 import no.nav.tms.varsel.builder.BuilderEnvironment;
-import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -44,14 +44,13 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.ZoneOffset.UTC;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static no.nav.dokdistdittnav.constants.RetryConstants.MAX_ATTEMPTS_SHORT;
-import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
@@ -63,6 +62,7 @@ class Qdist010IT extends ApplicationTestConfig {
 	private static final String FORSENDELSE_ID = "33333";
 	private static final String OPPDATERFORSENDELSE_PATH = "/rest/v1/administrerforsendelse/oppdaterforsendelse";
 	private static final String HENTFORSENDELSE_PATH = "/rest/v1/administrerforsendelse/" + FORSENDELSE_ID;
+	private static final int MAX_ATTEMPTS = 4;
 	private static final LocalDateTime DISTRIBUSJON_INNENFOR_KJERNETID = LocalDateTime.of(2022, 4, 29, 13, 30, 0);
 	private static final LocalDateTime DISTRIBUSJON_FOER_KJERNETID = LocalDateTime.of(2022, 4, 29, 3, 0, 0);
 	private static final LocalDateTime DISTRIBUSJON_ETTER_KJERNETID = LocalDateTime.of(2022, 4, 29, 23, 30, 0);
@@ -87,6 +87,9 @@ class Qdist010IT extends ApplicationTestConfig {
 
 	@Autowired
 	private VarselService varselService;
+
+	@Autowired
+	private KafkaConfig kafkaConfig;
 
 	@BeforeEach
 	public void setupBefore() {
@@ -247,7 +250,7 @@ class Qdist010IT extends ApplicationTestConfig {
 			assertEquals(resultOnQdist010BackoutQueue, classpathToString("qdist010/qdist010-happy.xml"));
 		});
 
-		verify(MAX_ATTEMPTS_SHORT, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
+		verify(MAX_ATTEMPTS, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
 		verify(0, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
 	}
 
@@ -282,7 +285,7 @@ class Qdist010IT extends ApplicationTestConfig {
 		});
 
 		verify(1, getRequestedFor(urlEqualTo(HENTFORSENDELSE_PATH)));
-		verify(3, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
+		verify(MAX_ATTEMPTS, putRequestedFor(urlEqualTo(OPPDATERFORSENDELSE_PATH)));
 	}
 
 	@ParameterizedTest
@@ -400,10 +403,9 @@ class Qdist010IT extends ApplicationTestConfig {
 	}
 
 	private String classpathToString(String classpathResource) throws IOException {
-		InputStream inputStream = new ClassPathResource(classpathResource).getInputStream();
-		String message = IOUtils.toString(inputStream, UTF_8);
-		IOUtils.closeQuietly(inputStream);
-		return message;
+		try (InputStream inputStream = new ClassPathResource(classpathResource).getInputStream()) {
+			return new String(inputStream.readAllBytes(), UTF_8);
+		}
 	}
 
 }
