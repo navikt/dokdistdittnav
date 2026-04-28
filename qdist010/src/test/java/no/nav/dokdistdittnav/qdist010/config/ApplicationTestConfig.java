@@ -34,5 +34,5 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @ComponentScan(basePackages = "no.nav.dokdistdittnav")
 @SpringBootTest(classes = ApplicationTestConfig.class, webEnvironment = RANDOM_PORT)
 @EnableWireMock
-public abstract class ApplicationTestConfig {
+public class ApplicationTestConfig {
 }

@@ -35,7 +35,7 @@ public class DoknotifikasjonConsumer {
 		this.dokdistdittnavProperties = dokdistdittnavProperties;
 	}
 
-	@Retryable(includes = AbstractDokdistdittnavTechnicalException.class, maxRetries = 2, delay = DELAY_SHORT, multiplier = MULTIPLIER_SHORT)
+	@Retryable(includes = AbstractDokdistdittnavTechnicalException.class, delay = DELAY_SHORT, multiplier = MULTIPLIER_SHORT)
 	public NotifikasjonInfoTo getNotifikasjonInfo(String bestillingsId, boolean maaInkludereSendtDato) {
 		return webClient.get()
 				.uri(dokdistdittnavProperties.getDoknotifikasjon().getNotifikasjonInfoURI(bestillingsId))
