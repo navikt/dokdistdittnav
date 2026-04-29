@@ -45,7 +45,7 @@
 		<resilience4j-spring-boot4.version>2.4.0</resilience4j-spring-boot4.version>
 
 		<!-- Test -->
-		<wiremock-spring-boot.version>4.0.9</wiremock-spring-boot.version>
+		<wiremock-spring-boot.version>4.2.1</wiremock-spring-boot.version>
 
 		<!-- Plugins -->
 		<maven-toolchains-plugin.version>3.2.0</maven-toolchains-plugin.version>
