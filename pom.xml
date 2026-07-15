@@ -130,12 +130,6 @@
 				<version>${wiremock-spring-boot.version}</version>
 				<scope>test</scope>
 			</dependency>
-			<dependency>
-				<groupId>org.apache.activemq</groupId>
-				<artifactId>artemis-jakarta-server</artifactId>
-				<version>${artemis.version}</version>
-				<scope>test</scope>
-			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
