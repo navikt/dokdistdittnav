@@ -47,14 +47,14 @@ class OpprettForsendelseMapperTest {
 		OpprettForsendelseRequest request = mapper.map(createHentForsendelseResponse(), NEW_BESTILLINGS_ID);
 
 		assertEquals(NEW_BESTILLINGS_ID, request.getBestillingsId());
-		assertEquals(request.getForsendelseTittel(), FORSENDELSE_TITTEL);
-		assertEquals(request.getBatchId(), BATCH_ID);
-		assertEquals(request.getDokumentProdApp(), DOKUMENT_PROD_APP);
-		assertEquals(request.getBestillendeFagsystem(), BESTILLENDE_FAGSYSTEM);
-		assertEquals(request.getArkivInformasjon().getArkivId(), ARKIV_ID);
-		assertEquals(request.getMottaker().getMottakerId(), MOTTAKER_ID);
-		assertEquals(request.getMottaker().getMottakerNavn(), MOTTAKER_ID_NAVN);
-		assertEquals(request.getOriginalDistribusjonId(), OLD_BESTILLINGS_ID);
+		assertEquals(FORSENDELSE_TITTEL, request.getForsendelseTittel());
+		assertEquals(BATCH_ID, request.getBatchId());
+		assertEquals(DOKUMENT_PROD_APP, request.getDokumentProdApp());
+		assertEquals(BESTILLENDE_FAGSYSTEM, request.getBestillendeFagsystem());
+		assertEquals(ARKIV_ID, request.getArkivInformasjon().getArkivId());
+		assertEquals(MOTTAKER_ID, request.getMottaker().getMottakerId());
+		assertEquals(MOTTAKER_ID_NAVN, request.getMottaker().getMottakerNavn());
+		assertEquals(OLD_BESTILLINGS_ID, request.getOriginalDistribusjonId());
 		assertPostadresseTo(request.getPostadresse());
 		assertDokument(request.getDokumenter().get(1));
 	}
