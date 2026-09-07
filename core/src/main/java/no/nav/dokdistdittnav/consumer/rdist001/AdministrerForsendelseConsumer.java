@@ -16,6 +16,7 @@ import no.nav.dokdistdittnav.exception.technical.DokdistadminTechnicalException;
 import no.nav.dokdistdittnav.utils.NavHeadersFilter;
 import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Component;
+import org.springframework.util.unit.DataSize;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
@@ -27,6 +28,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId;
+import static org.springframework.util.unit.DataSize.ofMegabytes;
 
 @Slf4j
 @Component
@@ -40,6 +42,8 @@ public class AdministrerForsendelseConsumer implements AdministrerForsendelse {
 				.baseUrl(dokdistdittnavProperties.getDokdistadmin().getBaseUri())
 				.filter(new NavHeadersFilter())
 				.defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+				.codecs(configurer ->
+						configurer.defaultCodecs().maxInMemorySize((int) ofMegabytes(1L).toBytes()))
 				.build();
 	}
 
