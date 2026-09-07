@@ -35,8 +35,11 @@
 		<java.version>25</java.version>
 
 		<varsel-java-builder.version>2.1.1</varsel-java-builder.version>
-		<kafka-avro-serializer.version>7.9.2</kafka-avro-serializer.version>
-		<teamdokumenthandtering-avro-schemas.version>1.1.6</teamdokumenthandtering-avro-schemas.version>
+		<kafka-avro-serializer.version>8.3.1</kafka-avro-serializer.version>
+		<!-- Eksplisitt avro.versjon kan fjernes når kafka-avro-serializer bruker Avro 1.12.2 eller nyere. -->
+		<avro.version>1.12.2</avro.version>
+		<avro.serializable.classes>no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus,no.nav.safselvbetjening.schemas.HoveddokumentLest</avro.serializable.classes>
+		<teamdokumenthandtering-avro-schemas.version>2.0.0</teamdokumenthandtering-avro-schemas.version>
 
 		<camel-spring-boot-bom.version>4.22.0</camel-spring-boot-bom.version>
 		<logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
@@ -106,6 +109,11 @@
 				<artifactId>kafka-avro-serializer</artifactId>
 				<version>${kafka-avro-serializer.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.apache.avro</groupId>
+				<artifactId>avro</artifactId>
+				<version>${avro.version}</version>
+			</dependency>
 
 			<dependency>
 				<groupId>net.logstash.logback</groupId>
@@ -152,6 +160,20 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
+				<configuration>
+					<systemPropertyVariables>
+						<org.apache.avro.SERIALIZABLE_CLASSES>${avro.serializable.classes}</org.apache.avro.SERIALIZABLE_CLASSES>
+					</systemPropertyVariables>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<systemPropertyVariables>
+						<org.apache.avro.SERIALIZABLE_CLASSES>${avro.serializable.classes}</org.apache.avro.SERIALIZABLE_CLASSES>
+					</systemPropertyVariables>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

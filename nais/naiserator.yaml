@@ -19,6 +19,7 @@ spec:
               -Djavax.net.ssl.keyStorePassword=$(NAV_TRUSTSTORE_PASSWORD)
               -Djavax.net.ssl.keyStoreType=jks
               -Dio.netty.allocator.type=pooled
+              -Dorg.apache.avro.SERIALIZABLE_CLASSES=no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus,no.nav.safselvbetjening.schemas.HoveddokumentLest
               -XX:MaxRAMPercentage=75
               $(JAVA_PROXY_OPTIONS) $(JAVA_TRUSTSTORE_OPTIONS)"
     - name: DOKDISTDITTNAV_MINSIDE_VARSELTOPIC
