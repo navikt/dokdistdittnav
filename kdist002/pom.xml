@@ -19,10 +19,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>no.nav.teamdokumenthandtering</groupId>
-			<artifactId>teamdokumenthandtering-avro-schemas</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>no.nav.meldinger.virksomhet</groupId>
 			<artifactId>dok-melding-virksomhet-dokdistfordeling</artifactId>
 		</dependency>
