@@ -10,6 +10,7 @@ spec:
     pool: {{ KAFKA_POOL }}
   envFrom:
     - secret: dokdistdittnav
+    - configmap: dokdistdittnav
   env:
     - name: JAVA_TRUSTSTORE_OPTIONS
       value: "-Djavax.net.ssl.trustStore=$(NAV_TRUSTSTORE_PATH)
