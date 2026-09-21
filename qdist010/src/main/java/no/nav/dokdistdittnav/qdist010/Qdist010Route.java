@@ -12,6 +12,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.springframework.stereotype.Component;
 
+import static com.ibm.msg.client.jakarta.jms.JmsConstants.JMS_IBM_MSGTOKEN;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_BESTILLINGS_ID;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_FORSENDELSE_ID;
 import static no.nav.dokdistdittnav.constants.DomainConstants.PROPERTY_JOURNALPOST_ID;
@@ -53,12 +54,14 @@ public class Qdist010Route extends RouteBuilder {
 		onException(UtenforKjernetidException.class)
 				.handled(true)
 				.useOriginalMessage()
+				.removeHeader(JMS_IBM_MSGTOKEN)
 				.log(INFO, log, "Forsøk på sending av varsel til Min Side utenfor kjernetid. Legger melding på vente-kø. " + getIdsForLogging())
 				.to("jms:" + qdist010UtenforKjernetid.getQueueName());
 
 		onException(AbstractDokdistdittnavFunctionalException.class, JAXBException.class, ValidationException.class)
 				.handled(true)
 				.useOriginalMessage()
+				.removeHeader(JMS_IBM_MSGTOKEN)
 				.log(WARN, log, "${exception}; " + getIdsForLogging())
 				.to("jms:" + qdist010FunksjonellFeil.getQueueName());
 
