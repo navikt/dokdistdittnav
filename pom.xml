@@ -35,7 +35,7 @@
 		<java.version>25</java.version>
 
 		<varsel-java-builder.version>2.1.1</varsel-java-builder.version>
-		<kafka-avro-serializer.version>8.3.1</kafka-avro-serializer.version>
+		<kafka-avro-serializer.version>8.3.2</kafka-avro-serializer.version>
 		<!-- Eksplisitt avro.versjon kan fjernes når kafka-avro-serializer bruker Avro 1.12.2 eller nyere. -->
 		<avro.version>1.12.2</avro.version>
 		<teamdokumenthandtering-avro-schemas.version>2.0.0</teamdokumenthandtering-avro-schemas.version>
